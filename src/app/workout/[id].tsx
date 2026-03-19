@@ -1,7 +1,7 @@
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useLayoutEffect } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, IconButton, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { ActiveExerciseCard } from '@/features/workout/components/ActiveExerciseCard';
 import { ExerciseQueuePanel } from '@/features/workout/components/ExerciseQueuePanel';
@@ -14,12 +14,27 @@ import { useWorkoutSessionStore } from '@/features/workout/store/workoutSessionS
 export default function ActiveSessionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
+  const router = useRouter();
   const navigation = useNavigation();
   const { unit } = useUserPreferences();
 
   const store = useWorkoutSessionStore();
   const { completeSet, finishSession } = useActiveSession();
   const { restSecondsRemaining, timerRunning, skipRestTimer, addThirtySeconds } = useRestTimer();
+
+  const handleBack = () => {
+    Alert.alert(t('session.abandonTitle'), t('session.abandonMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('session.abandonConfirm'),
+        style: 'destructive',
+        onPress: () => {
+          store.endSession();
+          router.back();
+        },
+      },
+    ]);
+  };
 
   const currentExercise = store.exercises[store.currentExerciseIndex];
   const isLastSet =
@@ -29,7 +44,10 @@ export default function ActiveSessionScreen() {
   ).length;
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: store.templateName || t('session.activeWorkout') });
+    navigation.setOptions({
+      title: store.templateName || t('session.activeWorkout'),
+      headerLeft: () => <IconButton icon="arrow-left" onPress={handleBack} />,
+    });
   }, [navigation, store.templateName, t]);
 
   useEffect(() => {

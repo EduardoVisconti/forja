@@ -117,7 +117,10 @@
     "workoutComplete": "Treino concluído",
     "workoutCompleteMessage": "Você completou todas as séries! Deseja encerrar o treino?",
     "continueLbl": "Continuar",
-    "cannotOpenUrl": "Não foi possível abrir o link."
+    "cannotOpenUrl": "Não foi possível abrir o link.",
+    "abandonTitle": "Abandonar treino?",
+    "abandonMessage": "O progresso será perdido.",
+    "abandonConfirm": "Abandonar"
   },
   "timer": {
     "resting": "Descansando...",
