@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { HabitScoreCard } from '@/features/habits/components/HabitScoreCard';
 import { HabitToggleItem } from '@/features/habits/components/HabitToggleItem';
@@ -11,7 +12,7 @@ export default function HabitsScreen() {
   const { habitValues, score, streak, isLoading, toggleHabit } = useHabitCheck();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('habits.title')}</Text>
         <Text style={styles.subtitle}>{t('habits.todaySubtitle')}</Text>
@@ -36,7 +37,7 @@ export default function HabitsScreen() {
           </View>
         </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 

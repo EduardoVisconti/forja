@@ -44,6 +44,6 @@ export function CardioCategoryFilter({ activeCategory, onSelect }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 10, gap: 8, alignItems: 'center' },
+  container: { gap: 8, paddingHorizontal: 16 },
   chip: {},
 });
