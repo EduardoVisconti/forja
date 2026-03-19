@@ -100,5 +100,33 @@
     "emptyHint": "Nenhum exercício.\nToque no + para adicionar o primeiro.",
     "deleteTitle": "Excluir exercício",
     "deleteMessage": "Deseja excluir \"{{name}}\"?"
+  },
+  "session": {
+    "activeWorkout": "Treino ativo",
+    "start": "Iniciar treino",
+    "completeSet": "Concluir série",
+    "skipExercise": "Pular exercício",
+    "skipped": "Pulado",
+    "setProgress": "Série {{current}} de {{total}}",
+    "exerciseQueue": "Fila de exercícios",
+    "finishTitle": "Encerrar treino",
+    "finishMessage": "Deseja encerrar o treino agora?",
+    "finish": "Encerrar",
+    "finishEarly": "Encerrar treino",
+    "allDone": "Todos os exercícios concluídos!"
+  },
+  "timer": {
+    "resting": "Descansando...",
+    "add30": "+30s",
+    "skip": "Pular descanso"
+  },
+  "summary": {
+    "title": "Treino concluído!",
+    "minutes": "minutos",
+    "totalVolume": "volume total ({{unit}})",
+    "prsTitle": "Recordes pessoais",
+    "setsLog": "Séries realizadas",
+    "set": "Série",
+    "backToWorkouts": "Voltar aos treinos"
   }
 }

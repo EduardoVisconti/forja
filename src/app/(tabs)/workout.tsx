@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useWorkoutTemplates } from '@/features/workout/hooks/useWorkoutTemplates';
 import { TemplateCard } from '@/features/workout/components/TemplateCard';
 import { TemplateFormModal } from '@/features/workout/components/TemplateFormModal';
+import { useActiveSession } from '@/features/workout/hooks/useActiveSession';
 import type { WorkoutTemplate } from '@/features/workout/types';
 import type { TemplateFormValues } from '@/features/workout/schemas/workoutSchemas';
 import { useExerciseCounts } from '@/features/workout/hooks/useExerciseCounts';
@@ -16,6 +17,7 @@ export default function WorkoutScreen() {
   const { templates, isLoading, createTemplate, updateTemplate, deleteTemplate } =
     useWorkoutTemplates();
   const exerciseCounts = useExerciseCounts(templates);
+  const { startSession } = useActiveSession();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<WorkoutTemplate | null>(null);
@@ -82,6 +84,7 @@ export default function WorkoutScreen() {
               onPress={() => handlePressCard(item)}
               onEdit={() => handleOpenEdit(item)}
               onDelete={() => handleDelete(item)}
+              onStart={() => startSession(item)}
             />
           )}
         />

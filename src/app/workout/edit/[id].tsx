@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, FAB, SegmentedButtons, Text } from 'react-native-paper';
+import { Alert, FlatList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, FAB, SegmentedButtons, Text } from 'react-native-paper';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useExercises } from '@/features/workout/hooks/useExercises';
 import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences';
 import { useWorkoutTemplates } from '@/features/workout/hooks/useWorkoutTemplates';
+import { useActiveSession } from '@/features/workout/hooks/useActiveSession';
 import { ExerciseFormModal } from '@/features/workout/components/ExerciseFormModal';
 import { ExerciseItem } from '@/features/workout/components/ExerciseItem';
 import { TemplateFormModal } from '@/features/workout/components/TemplateFormModal';
@@ -17,6 +18,7 @@ export default function TemplateDetailScreen() {
   const { t } = useTranslation();
 
   const { templates, updateTemplate } = useWorkoutTemplates();
+  const { startSession } = useActiveSession();
   const { exercises, isLoading, addExercise, updateExercise, deleteExercise, moveExercise } =
     useExercises(id);
   const { unit, setUnit } = useUserPreferences();
@@ -45,6 +47,21 @@ export default function TemplateDetailScreen() {
     } else {
       await addExercise(data);
     }
+  };
+
+  const handleDeleteExercise = (exercise: Exercise) => {
+    Alert.alert(
+      t('exercise.deleteTitle'),
+      t('exercise.deleteMessage', { name: exercise.name }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => deleteExercise(exercise.id),
+        },
+      ],
+    );
   };
 
   const handleSaveTemplate = async (values: TemplateFormValues) => {
@@ -109,13 +126,22 @@ export default function TemplateDetailScreen() {
               onMoveUp={() => moveExercise(item.id, 'up')}
               onMoveDown={() => moveExercise(item.id, 'down')}
               onEdit={() => handleOpenEditExercise(item)}
-              onDelete={() => deleteExercise(item.id)}
+              onDelete={() => handleDeleteExercise(item)}
             />
           )}
         />
       )}
 
       <FAB icon="plus" style={styles.fab} onPress={handleOpenNewExercise} />
+
+      <Button
+        mode="contained"
+        icon="play"
+        onPress={() => template && startSession(template)}
+        style={styles.startButton}
+      >
+        {t('session.start')}
+      </Button>
 
       <TemplateFormModal
         visible={editTemplateVisible}
@@ -172,7 +198,11 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 16,
-    bottom: 24,
+    bottom: 90,
+  },
+  startButton: {
+    margin: 16,
+    marginBottom: 24,
   },
   editLink: {
     fontSize: 16,

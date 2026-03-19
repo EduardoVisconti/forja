@@ -9,6 +9,7 @@ interface TemplateCardProps {
   onPress: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onStart: () => void;
 }
 
 export function TemplateCard({
@@ -17,6 +18,7 @@ export function TemplateCard({
   onPress,
   onEdit,
   onDelete,
+  onStart,
 }: TemplateCardProps) {
   const { t } = useTranslation();
 
@@ -36,6 +38,7 @@ export function TemplateCard({
         </View>
       </View>
       <View style={styles.actions}>
+        <IconButton icon="play-circle-outline" size={24} onPress={onStart} />
         <IconButton icon="pencil-outline" size={20} onPress={onEdit} />
         <IconButton icon="trash-can-outline" size={20} onPress={onDelete} />
       </View>

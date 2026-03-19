@@ -5,8 +5,13 @@ export default function WorkoutLayout() {
     <Stack
       screenOptions={{
         headerShown: true,
+        headerBackVisible: true,
         headerBackTitle: '',
       }}
-    />
+    >
+      <Stack.Screen name="edit/[id]" />
+      <Stack.Screen name="[id]" options={{ headerBackVisible: true }} />
+      <Stack.Screen name="summary/[sessionId]" options={{ headerBackVisible: false }} />
+    </Stack>
   );
 }
