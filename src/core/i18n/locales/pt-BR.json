@@ -172,5 +172,23 @@
       "tooHigh": "Valor muito alto",
       "notesTooLong": "Observações muito longas (máx. 500 caracteres)"
     }
+  },
+  "habits": {
+    "title": "Hábitos",
+    "todaySubtitle": "Marque os hábitos de hoje",
+    "scoreLabel": "hoje",
+    "streakLabel": "dias seguidos",
+    "sun_exposure": "Sol matinal",
+    "sleep_7h": "Dormiu 7h+",
+    "water": "Bebeu 3–4L de água",
+    "no_late_caffeine": "Sem cafeína após 15h",
+    "ate_healthy": "Comeu 80%+ saudável",
+    "exercised": "Se exercitou hoje",
+    "read": "Leu algo leve",
+    "digital_balance": "Equilíbrio digital",
+    "notification": {
+      "title": "Forja — Check diário 🏋️",
+      "body": "Não esquece de marcar seus hábitos de hoje!"
+    }
   }
 }
