@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
@@ -34,7 +34,7 @@ export function LoginForm() {
   };
 
   return (
-    <View className="gap-2">
+    <View style={styles.form}>
       <Controller
         control={control}
         name="email"
@@ -85,37 +85,78 @@ export function LoginForm() {
         {errors.password?.message ? t(errors.password.message) : ''}
       </HelperText>
 
-      {serverError ? (
-        <Text className="text-sm text-red-500 text-center mb-1">{serverError}</Text>
-      ) : null}
+      {serverError ? <Text style={styles.errorText}>{serverError}</Text> : null}
 
       <Button
         mode="contained"
         onPress={handleSubmit(onSubmit)}
         loading={isLoading}
         disabled={isLoading}
-        className="mt-2"
+        style={styles.submitButton}
       >
         {t('auth.login.submitButton')}
       </Button>
 
-      <View className="flex-row items-center gap-3 my-3">
-        <View className="flex-1 h-px bg-gray-200" />
-        <Text className="text-sm text-gray-400">{t('common.or')}</Text>
-        <View className="flex-1 h-px bg-gray-200" />
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>{t('common.or')}</Text>
+        <View style={styles.dividerLine} />
       </View>
 
       <GoogleSignInButton disabled={isLoading} />
 
-      <View className="flex-row justify-center items-center gap-1 mt-4">
-        <Text className="text-sm text-gray-500">{t('auth.login.noAccount')}</Text>
-        <Text
-          className="text-sm text-green-600 font-semibold"
-          onPress={() => router.push('/(auth)/register')}
-        >
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{t('auth.login.noAccount')}</Text>
+        <Text style={styles.footerLink} onPress={() => router.push('/(auth)/register')}>
           {t('auth.login.registerLink')}
         </Text>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  form: {
+    gap: 4,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#ef4444',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  submitButton: {
+    marginTop: 8,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginVertical: 12,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e5e7eb',
+  },
+  dividerText: {
+    fontSize: 14,
+    color: '#9ca3af',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 16,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  footerLink: {
+    fontSize: 14,
+    color: '#16a34a',
+    fontWeight: '600',
+  },
+});

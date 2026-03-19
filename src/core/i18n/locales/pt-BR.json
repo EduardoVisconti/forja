@@ -1,0 +1,60 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Ocorreu um erro. Tente novamente.",
+    "back": "Voltar",
+    "or": "ou"
+  },
+  "auth": {
+    "login": {
+      "title": "Entrar",
+      "subtitle": "Bem-vindo de volta",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "seu@email.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Sua senha",
+      "submitButton": "Entrar",
+      "googleButton": "Continuar com Google",
+      "noAccount": "Não tem uma conta?",
+      "registerLink": "Criar conta"
+    },
+    "register": {
+      "title": "Criar conta",
+      "subtitle": "Comece sua jornada",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "seu@email.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Mínimo 6 caracteres",
+      "confirmPasswordLabel": "Confirmar senha",
+      "confirmPasswordPlaceholder": "Repita a senha",
+      "submitButton": "Criar conta",
+      "googleButton": "Continuar com Google",
+      "alreadyHaveAccount": "Já tem uma conta?",
+      "loginLink": "Entrar",
+      "successTitle": "Conta criada!",
+      "successMessage": "Verifique seu e-mail para confirmar a conta."
+    },
+    "errors": {
+      "invalidEmail": "E-mail inválido",
+      "passwordTooShort": "A senha deve ter no mínimo 6 caracteres",
+      "passwordsDoNotMatch": "As senhas não coincidem",
+      "invalidCredentials": "E-mail ou senha inválidos",
+      "emailAlreadyInUse": "Este e-mail já está cadastrado",
+      "cancelled": "Login cancelado",
+      "generic": "Algo deu errado. Tente novamente.",
+      "required": "Campo obrigatório"
+    }
+  },
+  "home": {
+    "title": "Forja",
+    "welcome": "Bom treino!",
+    "signOut": "Sair"
+  },
+  "tabs": {
+    "home": "Início",
+    "workout": "Treino",
+    "cardio": "Cardio",
+    "habits": "Hábitos",
+    "history": "Histórico"
+  }
+}
