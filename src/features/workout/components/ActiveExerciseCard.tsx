@@ -37,7 +37,7 @@ export function ActiveExerciseCard({ exercise, currentSet, preferences, onComple
 
   const handleInfo = async () => {
     const query = encodeURIComponent(exercise.name);
-    const url = `https://www.google.com/search?q=${query}&tbm=isch`;
+    const url = `https://www.google.com/search?q=${query}`;
     const supported = await Linking.canOpenURL(url);
     if (supported) {
       await Linking.openURL(url);

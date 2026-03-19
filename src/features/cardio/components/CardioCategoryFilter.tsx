@@ -20,7 +20,8 @@ export function CardioCategoryFilter({ activeCategory, onSelect }: Props) {
     >
       <Chip
         compact
-        style={styles.chip}
+        style={[styles.chip, { height: 32 }]}
+        contentStyle={{ paddingHorizontal: 4 }}
         selected={activeCategory === null}
         onPress={() => onSelect(null)}
       >
@@ -30,7 +31,8 @@ export function CardioCategoryFilter({ activeCategory, onSelect }: Props) {
         <Chip
           key={cat}
           compact
-          style={styles.chip}
+          style={[styles.chip, { height: 32 }]}
+          contentStyle={{ paddingHorizontal: 4 }}
           selected={activeCategory === cat}
           onPress={() => onSelect(activeCategory === cat ? null : cat)}
         >
@@ -42,6 +44,6 @@ export function CardioCategoryFilter({ activeCategory, onSelect }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+  container: { paddingHorizontal: 16, paddingVertical: 10, gap: 8, alignItems: 'center' },
   chip: {},
 });
