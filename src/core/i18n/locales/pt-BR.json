@@ -128,5 +128,45 @@
     "setsLog": "Séries realizadas",
     "set": "Série",
     "backToWorkouts": "Voltar aos treinos"
+  },
+  "cardio": {
+    "title": "Cardio",
+    "newEntry": "Novo registro",
+    "editEntry": "Editar registro",
+    "filterAll": "Todos",
+    "emptyHint": "Nenhum registro de cardio.\nToque no + para adicionar o primeiro.",
+    "deleteTitle": "Excluir registro",
+    "deleteMessage": "Deseja excluir este registro de cardio?",
+    "date": "Data (AAAA-MM-DD)",
+    "duration": "Duração (min)",
+    "distanceKm": "Distância (km)",
+    "distanceMi": "Distância (mi)",
+    "avgPace": "Pace médio",
+    "pacePerKm": "min/km",
+    "pacePerMile": "min/mi",
+    "avgHr": "FC média (bpm)",
+    "notes": "Observações",
+    "optional": "Opcional",
+    "category": {
+      "label": "Categoria",
+      "z1": "Zona 1",
+      "z2": "Zona 2",
+      "z3": "Zona 3",
+      "z4": "Zona 4",
+      "z5": "Zona 5",
+      "walk": "Caminhada",
+      "regenerative": "Regenerativo",
+      "intervals": "Tiros",
+      "long": "Longo"
+    },
+    "errors": {
+      "invalidDate": "Formato inválido. Use AAAA-MM-DD",
+      "invalidPace": "Formato inválido. Use M:SS (ex: 5:30)",
+      "minOne": "Valor mínimo: 1",
+      "minZero": "Valor mínimo: 0",
+      "minThirty": "Valor mínimo: 30",
+      "tooHigh": "Valor muito alto",
+      "notesTooLong": "Observações muito longas (máx. 500 caracteres)"
+    }
   }
 }
