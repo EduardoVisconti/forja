@@ -3,7 +3,12 @@
     "loading": "Carregando...",
     "error": "Ocorreu um erro. Tente novamente.",
     "back": "Voltar",
-    "or": "ou"
+    "or": "ou",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "confirm": "Confirmar"
   },
   "auth": {
     "login": {
@@ -56,5 +61,44 @@
     "cardio": "Cardio",
     "habits": "Hábitos",
     "history": "Histórico"
+  },
+  "workout": {
+    "title": "Meus Treinos",
+    "newTemplate": "Novo treino",
+    "editTemplate": "Editar treino",
+    "templateName": "Nome do treino",
+    "type": {
+      "gym": "Musculação",
+      "cardio": "Cardio"
+    },
+    "exerciseCount_one": "{{count}} exercício",
+    "exerciseCount_other": "{{count}} exercícios",
+    "emptyHint": "Nenhum treino ainda.\nToque no + para criar o primeiro.",
+    "deleteTitle": "Excluir treino",
+    "deleteMessage": "Deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita.",
+    "errors": {
+      "nameRequired": "Nome é obrigatório",
+      "nameTooLong": "Nome muito longo (máx. 50 caracteres)",
+      "exerciseNameRequired": "Nome do exercício é obrigatório",
+      "exerciseNameTooLong": "Nome muito longo (máx. 60 caracteres)",
+      "minOne": "Valor mínimo: 1",
+      "minZero": "Valor mínimo: 0",
+      "tooHigh": "Valor muito alto",
+      "notesTooLong": "Observações muito longas (máx. 200 caracteres)"
+    }
+  },
+  "exercise": {
+    "newExercise": "Novo exercício",
+    "editExercise": "Editar exercício",
+    "name": "Nome",
+    "sets": "Séries",
+    "reps": "Reps",
+    "weight": "Peso",
+    "restSeconds": "Descanso (s)",
+    "notes": "Observações",
+    "setsReps": "{{sets}}×{{reps}}",
+    "emptyHint": "Nenhum exercício.\nToque no + para adicionar o primeiro.",
+    "deleteTitle": "Excluir exercício",
+    "deleteMessage": "Deseja excluir \"{{name}}\"?"
   }
 }
