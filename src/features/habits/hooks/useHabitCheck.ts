@@ -1,10 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/core/auth/authStore';
-import { getChecks, getTodayCheck, upsertCheck } from '../services/habitStorage';
-import { HABIT_KEYS, type HabitCheck, type HabitKey } from '../types';
+import {
+  getCheckForDate,
+  getChecks,
+  getConfig,
+  saveConfig as saveConfigToStorage,
+  seedDefaultHabits,
+  upsertCheck,
+} from '../services/habitStorage';
+import type { HabitCheck, HabitConfig } from '../types';
 
 function todayISO(): string {
   return new Date().toISOString().split('T')[0];
+}
+
+function addDays(iso: string, delta: number): string {
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  return d.toISOString().split('T')[0];
 }
 
 function diffDays(a: string, b: string): number {
@@ -30,65 +43,118 @@ function computeStreak(checks: HabitCheck[]): number {
   for (const date of sorted) {
     const check = byDate.get(date)!;
     if (date === today && check.score === 0) {
-      // Today exists but has no checks — don't count today, start from yesterday
-      expected = new Date(new Date(today).getTime() - 86_400_000).toISOString().split('T')[0];
+      expected = addDays(today, -1);
       continue;
     }
     if (diffDays(date, expected) > 1) break;
     if (check.score === 0) break;
     streak++;
-    expected = new Date(new Date(date).getTime() - 86_400_000).toISOString().split('T')[0];
+    expected = addDays(date, -1);
   }
 
   return streak;
 }
 
-const DEFAULT_HABIT_VALUES = Object.fromEntries(
-  HABIT_KEYS.map((k) => [k, false]),
-) as Record<HabitKey, boolean>;
-
 export function useHabitCheck() {
   const userId = useAuthStore((s) => s.user?.id ?? '');
-  const [todayCheck, setTodayCheck] = useState<HabitCheck | null>(null);
+  const [selectedDate, setSelectedDate] = useState(todayISO);
+  const [habitConfigs, setHabitConfigs] = useState<HabitConfig[]>([]);
+  const [selectedCheck, setSelectedCheck] = useState<HabitCheck | null>(null);
   const [streak, setStreak] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  const isToday = selectedDate === todayISO();
+
+  const goToPreviousDay = useCallback(() => {
+    setSelectedDate((prev) => addDays(prev, -1));
+  }, []);
+
+  const goToNextDay = useCallback(() => {
+    if (selectedDate === todayISO()) return;
+    setSelectedDate((prev) => addDays(prev, 1));
+  }, [selectedDate]);
+
+  const goToToday = useCallback(() => {
+    setSelectedDate(todayISO());
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
 
     const load = async () => {
-      const [today, all] = await Promise.all([getTodayCheck(userId), getChecks(userId)]);
-      setTodayCheck(today);
+      let config = await getConfig(userId);
+      if (!config || config.length === 0) {
+        config = await seedDefaultHabits(userId);
+      }
+      setHabitConfigs(config);
+
+      const [check, all] = await Promise.all([
+        getCheckForDate(userId, selectedDate),
+        getChecks(userId),
+      ]);
+      setSelectedCheck(check);
       setStreak(computeStreak(all));
       setIsLoading(false);
     };
 
+    setIsLoading(true);
     load();
-  }, [userId]);
+  }, [userId, selectedDate]);
 
   const toggleHabit = useCallback(
-    async (key: HabitKey, value: boolean) => {
-      const updated = await upsertCheck(userId, key, value);
-      setTodayCheck(updated);
+    async (habitId: string, value: boolean) => {
+      if (!isToday) return;
 
-      // Recompute streak after toggle (today's score may have changed)
+      const activeIds = habitConfigs.filter((c) => c.active).map((c) => c.id);
+      const updated = await upsertCheck(userId, habitId, value, activeIds);
+      setSelectedCheck(updated);
+
       const all = await getChecks(userId);
       setStreak(computeStreak(all));
     },
-    [userId],
+    [userId, isToday, habitConfigs],
   );
 
-  const habitValues = todayCheck
-    ? (Object.fromEntries(HABIT_KEYS.map((k) => [k, todayCheck[k]])) as Record<HabitKey, boolean>)
-    : DEFAULT_HABIT_VALUES;
+  const refreshConfigs = useCallback(async () => {
+    if (!userId) return;
+    const config = await getConfig(userId);
+    if (config) setHabitConfigs(config);
+  }, [userId]);
 
-  const score = todayCheck?.score ?? 0;
+  const activeConfigs = habitConfigs.filter((c) => c.active);
+
+  const habitValues: Record<string, boolean> = activeConfigs.reduce<Record<string, boolean>>(
+    (acc, c) => {
+      acc[c.id] = selectedCheck?.habits.find((h) => h.habitId === c.id)?.checked ?? false;
+      return acc;
+    },
+    {} as Record<string, boolean>,
+  );
+
+  const score = selectedCheck?.score ?? 0;
+  const totalActive = activeConfigs.length;
 
   return {
+    selectedDate,
+    isToday,
+    goToPreviousDay,
+    goToNextDay,
+    goToToday,
+    habitConfigs: activeConfigs,
+    allHabitConfigs: habitConfigs,
     habitValues,
     score,
+    totalActive,
     streak,
     isLoading,
     toggleHabit,
+    refreshConfigs,
+    saveConfig: useCallback(
+      async (configs: HabitConfig[]) => {
+        await saveConfigToStorage(userId, configs);
+        setHabitConfigs(configs);
+      },
+      [userId],
+    ),
   };
 }

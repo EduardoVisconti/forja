@@ -2,16 +2,15 @@ import { StyleSheet, View } from 'react-native';
 import { Card, ProgressBar, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
-const TOTAL_HABITS = 8;
-
 interface Props {
   score: number;
+  totalActive: number;
   streak: number;
 }
 
-export function HabitScoreCard({ score, streak }: Props) {
+export function HabitScoreCard({ score, totalActive, streak }: Props) {
   const { t } = useTranslation();
-  const progress = score / TOTAL_HABITS;
+  const progress = totalActive > 0 ? score / totalActive : 0;
 
   return (
     <Card style={styles.card}>
@@ -21,7 +20,7 @@ export function HabitScoreCard({ score, streak }: Props) {
             <Text variant="displaySmall" style={styles.scoreNumber}>
               {score}
               <Text variant="headlineSmall" style={styles.total}>
-                /{TOTAL_HABITS}
+                /{totalActive}
               </Text>
             </Text>
             <Text variant="labelMedium" style={styles.label}>

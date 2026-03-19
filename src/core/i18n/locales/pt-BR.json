@@ -183,6 +183,8 @@
   "habits": {
     "title": "Hábitos",
     "todaySubtitle": "Marque os hábitos de hoje",
+    "pastDaySubtitle": "Hábitos do dia {{date}}",
+    "today": "Hoje",
     "scoreLabel": "hoje",
     "streakLabel": "dias seguidos",
     "sun_exposure": "Sol matinal",
@@ -193,6 +195,12 @@
     "exercised": "Se exercitou hoje",
     "read": "Leu algo leve",
     "digital_balance": "Equilíbrio digital",
+    "config": {
+      "title": "Configurar Hábitos",
+      "labelPlaceholder": "Nome do hábito",
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
     "notification": {
       "title": "Forja — Check diário 🏋️",
       "body": "Não esquece de marcar seus hábitos de hoje!"
