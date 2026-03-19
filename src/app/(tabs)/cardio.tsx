@@ -14,7 +14,7 @@ import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences'
 export default function CardioScreen() {
   const { t } = useTranslation();
   const { unit } = useUserPreferences();
-  const { logs, isLoading, activeCategory, setActiveCategory, createLog, updateLog, deleteLog } =
+  const { logs, isLoading, activeFilter, setActiveFilter, createLog, updateLog, deleteLog } =
     useCardioLog();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -34,7 +34,8 @@ export default function CardioScreen() {
     if (editingLog) {
       await updateLog(editingLog.id, {
         date: values.date,
-        category: values.category,
+        trainingType: values.trainingType,
+        zone: values.zone,
         durationMinutes: values.durationMinutes,
         distanceKm: values.distance,
         avgPace: values.avgPace,
@@ -44,7 +45,8 @@ export default function CardioScreen() {
     } else {
       await createLog({
         date: values.date,
-        category: values.category,
+        trainingType: values.trainingType,
+        zone: values.zone,
         durationMinutes: values.durationMinutes,
         distanceKm: values.distance,
         avgPace: values.avgPace,
@@ -68,7 +70,7 @@ export default function CardioScreen() {
         <Text style={styles.title}>{t('cardio.title')}</Text>
       </View>
 
-      <CardioCategoryFilter activeCategory={activeCategory} onSelect={setActiveCategory} />
+      <CardioCategoryFilter activeFilter={activeFilter} onSelect={setActiveFilter} />
 
       {isLoading ? (
         <ActivityIndicator style={styles.center} />

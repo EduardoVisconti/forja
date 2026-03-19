@@ -1,7 +1,28 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { CardioLog } from '../types';
+import type { CardioLog, CardioType, CardioZone } from '../types';
 
 const logsKey = (userId: string) => `cardio:logs:${userId}`;
+
+const TRAINING_TYPE_VALUES = new Set(['regenerative', 'intervals', 'long', 'walk']);
+const ZONE_VALUES = new Set(['z1', 'z2', 'z3', 'z4', 'z5']);
+
+interface LegacyCardioLog extends Omit<CardioLog, 'trainingType' | 'zone'> {
+  category?: string;
+  trainingType?: CardioType;
+  zone?: CardioZone;
+}
+
+function migrateLog(raw: LegacyCardioLog): CardioLog {
+  if ('trainingType' in raw && 'zone' in raw && !('category' in raw)) {
+    return raw as CardioLog;
+  }
+
+  const { category, ...rest } = raw;
+  const trainingType = (category && TRAINING_TYPE_VALUES.has(category) ? category : null) as CardioType;
+  const zone = (category && ZONE_VALUES.has(category) ? category : null) as CardioZone;
+
+  return { ...rest, trainingType, zone };
+}
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -9,7 +30,8 @@ function generateId(): string {
 
 export async function getLogs(userId: string): Promise<CardioLog[]> {
   const raw = await AsyncStorage.getItem(logsKey(userId));
-  const logs: CardioLog[] = raw ? JSON.parse(raw) : [];
+  const parsed: LegacyCardioLog[] = raw ? JSON.parse(raw) : [];
+  const logs = parsed.map(migrateLog);
   return logs.sort((a, b) => b.date.localeCompare(a.date));
 }
 
@@ -28,7 +50,6 @@ export async function createLog(
     userId,
     createdAt: new Date().toISOString(),
   };
-  // Most recent first
   await saveLogs(userId, [log, ...logs]);
   return log;
 }

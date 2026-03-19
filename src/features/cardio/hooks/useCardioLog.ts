@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '@/core/auth/authStore';
 import * as storage from '../services/cardioStorage';
-import type { CardioCategory, CardioLog } from '../types';
+import type { CardioLog } from '../types';
+import type { CardioFilterValue } from '../components/CardioCategoryFilter';
 
 export function useCardioLog() {
   const userId = useAuthStore((s) => s.user?.id ?? '');
   const [logs, setLogs] = useState<CardioLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<CardioCategory | null>(null);
+  const [activeFilter, setActiveFilter] = useState<CardioFilterValue>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -18,8 +19,11 @@ export function useCardioLog() {
   }, [userId]);
 
   const filteredLogs = useMemo(
-    () => (activeCategory ? logs.filter((l) => l.category === activeCategory) : logs),
-    [logs, activeCategory],
+    () =>
+      activeFilter
+        ? logs.filter((l) => l.trainingType === activeFilter || l.zone === activeFilter)
+        : logs,
+    [logs, activeFilter],
   );
 
   const createLog = useCallback(
@@ -49,8 +53,8 @@ export function useCardioLog() {
   return {
     logs: filteredLogs,
     isLoading,
-    activeCategory,
-    setActiveCategory,
+    activeFilter,
+    setActiveFilter,
     createLog,
     updateLog,
     deleteLog,

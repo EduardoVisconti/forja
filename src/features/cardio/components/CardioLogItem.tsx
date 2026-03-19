@@ -12,9 +12,24 @@ interface Props {
 
 const KM_TO_MILES = 0.621371;
 
+function useLogTitle(log: CardioLog): string {
+  const { t } = useTranslation();
+  const parts: string[] = [];
+
+  if (log.trainingType) {
+    parts.push(t(`cardio.trainingType.${log.trainingType}`));
+  }
+  if (log.zone) {
+    parts.push(t(`cardio.zone.${log.zone}`));
+  }
+
+  return parts.length > 0 ? parts.join(' — ') : t('cardio.title');
+}
+
 export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
   const { t } = useTranslation();
   const isImperial = unit === 'lbs';
+  const title = useLogTitle(log);
 
   const displayDistance = isImperial
     ? `${(log.distanceKm * KM_TO_MILES).toFixed(2)} mi`
@@ -25,12 +40,12 @@ export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
   return (
     <Card style={styles.card}>
       <Card.Title
-        title={t(`cardio.category.${log.category}`)}
+        title={title}
         subtitle={log.date}
         right={(props) => (
           <View style={styles.actions}>
-            <IconButton {...props} icon="pencil-outline" size={20} onPress={onEdit} />
-            <IconButton {...props} icon="trash-can-outline" size={20} onPress={onDelete} />
+            <IconButton {...props} icon="pencil-outline" onPress={onEdit} />
+            <IconButton {...props} icon="trash-can-outline" onPress={onDelete} />
           </View>
         )}
       />

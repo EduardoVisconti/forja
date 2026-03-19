@@ -154,12 +154,15 @@
     "avgHr": "FC média (bpm)",
     "notes": "Observações",
     "optional": "Opcional",
-    "category": {
-      "label": "Categoria",
+    "trainingType": {
+      "label": "Tipo de treino",
       "regenerative": "Regenerativo",
       "intervals": "Tiros",
       "long": "Longo",
-      "walk": "Caminhada",
+      "walk": "Caminhada"
+    },
+    "zone": {
+      "label": "Zona",
       "z1": "Z1",
       "z2": "Z2",
       "z3": "Z3",
@@ -173,7 +176,8 @@
       "minZero": "Valor mínimo: 0",
       "minThirty": "Valor mínimo: 30",
       "tooHigh": "Valor muito alto",
-      "notesTooLong": "Observações muito longas (máx. 500 caracteres)"
+      "notesTooLong": "Observações muito longas (máx. 500 caracteres)",
+      "selectOne": "Selecione ao menos um tipo de treino ou zona"
     }
   },
   "habits": {

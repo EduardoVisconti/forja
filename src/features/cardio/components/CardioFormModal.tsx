@@ -2,11 +2,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Dialog, HelperText, Portal, SegmentedButtons, Text, TextInput } from 'react-native-paper';
+import { Button, Chip, Dialog, HelperText, Portal, Text, TextInput } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
-import { CARDIO_CATEGORIES, cardioSchema, type CardioFormValues } from '../schemas/cardioSchemas';
-import type { CardioCategory, CardioLog } from '../types';
+import { TRAINING_TYPES, CARDIO_ZONES, cardioSchema, type CardioFormValues } from '../schemas/cardioSchemas';
+import type { CardioLog } from '../types';
 
 interface Props {
   visible: boolean;
@@ -21,9 +21,6 @@ const KM_TO_MILES = 0.621371;
 function todayISO(): string {
   return new Date().toISOString().split('T')[0];
 }
-
-const OTHER_CATEGORIES = ['regenerative', 'intervals', 'long', 'walk'] as const;
-const ZONE_CATEGORIES = ['z1', 'z2', 'z3', 'z4', 'z5'] as const;
 
 function parseISODate(iso: string): Date {
   const [y, m, d] = iso.split('-').map(Number);
@@ -49,7 +46,8 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
     resolver: zodResolver(cardioSchema),
     defaultValues: {
       date: todayISO(),
-      category: 'z2',
+      trainingType: null,
+      zone: null,
       durationMinutes: 30,
       distance: 0,
       avgPace: '',
@@ -68,7 +66,8 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
 
       reset({
         date: initial.date,
-        category: initial.category,
+        trainingType: initial.trainingType,
+        zone: initial.zone,
         durationMinutes: initial.durationMinutes,
         distance: displayDistance,
         avgPace: initial.avgPace,
@@ -78,7 +77,8 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
     } else {
       reset({
         date: todayISO(),
-        category: 'z2',
+        trainingType: null,
+        zone: null,
         durationMinutes: 30,
         distance: 0,
         avgPace: '',
@@ -89,7 +89,6 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
   }, [visible, initial, isImperial, reset]);
 
   const handleSave = (values: CardioFormValues) => {
-    // Convert display unit back to km before handing off
     const distanceKm = isImperial ? values.distance / KM_TO_MILES : values.distance;
     onSubmit({ ...values, distance: distanceKm });
   };
@@ -142,36 +141,57 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
               )}
             />
 
-            {/* Category — zones */}
+            {/* Training Type */}
             <Text variant="labelMedium" style={styles.sectionLabel}>
-              {t('cardio.category.label')}
+              {t('cardio.trainingType.label')} ({t('cardio.optional')})
             </Text>
             <Controller
               control={control}
-              name="category"
+              name="trainingType"
               render={({ field: { value, onChange } }) => (
-                <>
-                  <SegmentedButtons
-                    value={value}
-                    onValueChange={(v) => onChange(v as CardioCategory)}
-                    buttons={OTHER_CATEGORIES.map((cat) => ({
-                      value: cat,
-                      label: t(`cardio.category.${cat}`),
-                    }))}
-                    style={styles.input}
-                  />
-                  <SegmentedButtons
-                    value={value}
-                    onValueChange={(v) => onChange(v as CardioCategory)}
-                    buttons={ZONE_CATEGORIES.map((cat) => ({
-                      value: cat,
-                      label: t(`cardio.category.${cat}`),
-                    }))}
-                    style={styles.input}
-                  />
-                </>
+                <View style={styles.chipRow}>
+                  {TRAINING_TYPES.map((type) => (
+                    <Chip
+                      key={type}
+                      selected={value === type}
+                      onPress={() => onChange(value === type ? null : type)}
+                      style={styles.chip}
+                      compact
+                    >
+                      {t(`cardio.trainingType.${type}`)}
+                    </Chip>
+                  ))}
+                </View>
               )}
             />
+
+            {/* Zone */}
+            <Text variant="labelMedium" style={styles.sectionLabel}>
+              {t('cardio.zone.label')} ({t('cardio.optional')})
+            </Text>
+            <Controller
+              control={control}
+              name="zone"
+              render={({ field: { value, onChange } }) => (
+                <View style={styles.chipRow}>
+                  {CARDIO_ZONES.map((z) => (
+                    <Chip
+                      key={z}
+                      selected={value === z}
+                      onPress={() => onChange(value === z ? null : z)}
+                      style={styles.chip}
+                      compact
+                    >
+                      {t(`cardio.zone.${z}`)}
+                    </Chip>
+                  ))}
+                </View>
+              )}
+            />
+
+            {errors.trainingType && (
+              <HelperText type="error">{t(errors.trainingType.message ?? '')}</HelperText>
+            )}
 
             {/* Duration + Distance */}
             <View style={styles.row}>
@@ -310,6 +330,8 @@ const styles = StyleSheet.create({
   scrollArea: { paddingHorizontal: 0 },
   input: { marginBottom: 8 },
   sectionLabel: { marginTop: 8, marginBottom: 4, color: '#6b7280' },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
+  chip: {},
   row: { flexDirection: 'row', gap: 12, marginBottom: 8 },
   half: { flex: 1 },
 });

@@ -1,22 +1,14 @@
 import { z } from 'zod';
 
-export const CARDIO_CATEGORIES = [
-  'regenerative',
-  'intervals',
-  'long',
-  'walk',
-  'z1',
-  'z2',
-  'z3',
-  'z4',
-  'z5',
-] as const;
+export const TRAINING_TYPES = ['regenerative', 'intervals', 'long', 'walk'] as const;
+export const CARDIO_ZONES = ['z1', 'z2', 'z3', 'z4', 'z5'] as const;
 
-export const cardioSchema = z.object({
+const baseCardioSchema = z.object({
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'cardio.errors.invalidDate'),
-  category: z.enum(CARDIO_CATEGORIES),
+  trainingType: z.enum(TRAINING_TYPES).nullable(),
+  zone: z.enum(CARDIO_ZONES).nullable(),
   durationMinutes: z
     .number()
     .int()
@@ -39,4 +31,9 @@ export const cardioSchema = z.object({
   notes: z.string().max(500, 'cardio.errors.notesTooLong'),
 });
 
-export type CardioFormValues = z.infer<typeof cardioSchema>;
+export const cardioSchema = baseCardioSchema.refine(
+  (data) => data.trainingType !== null || data.zone !== null,
+  { message: 'cardio.errors.selectOne', path: ['trainingType'] },
+);
+
+export type CardioFormValues = z.infer<typeof baseCardioSchema>;
