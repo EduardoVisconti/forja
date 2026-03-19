@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/core/auth/useAuth';
 
 export default function HomeScreen() {
@@ -8,7 +9,7 @@ export default function HomeScreen() {
   const { user, signOut, isLoading } = useAuth();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>{t('home.title')}</Text>
       <Text style={styles.welcome}>{t('home.welcome')}</Text>
       {user?.email ? <Text style={styles.email}>{user.email}</Text> : null}
@@ -16,7 +17,7 @@ export default function HomeScreen() {
       <Button mode="outlined" onPress={signOut} disabled={isLoading} style={styles.button}>
         {t('home.signOut')}
       </Button>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, FAB, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { CardioCategoryFilter } from '@/features/cardio/components/CardioCategoryFilter';
 import { CardioFormModal } from '@/features/cardio/components/CardioFormModal';
 import { CardioLogItem } from '@/features/cardio/components/CardioLogItem';
@@ -62,7 +63,7 @@ export default function CardioScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('cardio.title')}</Text>
       </View>
@@ -101,7 +102,7 @@ export default function CardioScreen() {
         onSubmit={handleSubmit}
         onDismiss={() => setModalVisible(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

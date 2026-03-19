@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -41,16 +41,19 @@ export default function SessionSummaryScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <SessionSummaryCard summary={summary} unit={unit} />
-      <Button
-        mode="contained"
-        onPress={() => router.replace('/(tabs)/workout' as never)}
-        style={styles.button}
-      >
-        {t('summary.backToWorkouts')}
-      </Button>
-    </ScrollView>
+    <>
+      <Stack.Screen options={{ title: t('summary.title') }} />
+      <ScrollView contentContainerStyle={styles.container}>
+        <SessionSummaryCard summary={summary} unit={unit} />
+        <Button
+          mode="contained"
+          onPress={() => router.replace('/(tabs)/workout' as never)}
+          style={styles.button}
+        >
+          {t('summary.backToWorkouts')}
+        </Button>
+      </ScrollView>
+    </>
   );
 }
 

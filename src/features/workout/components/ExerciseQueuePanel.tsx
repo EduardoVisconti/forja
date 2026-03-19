@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { IconButton, List, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { SessionExercise } from '../types/session';
@@ -23,15 +23,14 @@ export function ExerciseQueuePanel({
   const { t } = useTranslation();
 
   return (
-    <FlatList
-      data={exercises}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item, index }) => {
+    <View>
+      {exercises.map((item, index) => {
         const isCurrent = index === currentIndex;
         const isDone = index < currentIndex || item.skipped;
 
         return (
           <List.Item
+            key={item.id}
             title={item.name}
             description={`${item.sets}×${item.reps}`}
             titleStyle={[isDone && styles.done, item.skipped && styles.skipped]}
@@ -71,8 +70,8 @@ export function ExerciseQueuePanel({
             }
           />
         );
-      }}
-    />
+      })}
+    </View>
   );
 }
 

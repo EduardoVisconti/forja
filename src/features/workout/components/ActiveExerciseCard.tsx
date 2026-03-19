@@ -1,6 +1,6 @@
 import * as Linking from 'expo-linking';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { Button, Card, IconButton, Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { SessionExercise } from '../types/session';
@@ -35,9 +35,15 @@ export function ActiveExerciseCard({ exercise, currentSet, preferences, onComple
     onCompleteSet(repsNum, weightKg);
   };
 
-  const handleInfo = () => {
+  const handleInfo = async () => {
     const query = encodeURIComponent(exercise.name);
-    Linking.openURL(`https://www.google.com/search?q=${query}`);
+    const url = `https://www.google.com/search?q=${query}&tbm=isch`;
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert(t('common.error'), t('session.cannotOpenUrl'));
+    }
   };
 
   return (

@@ -3,6 +3,7 @@ import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, FAB, Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWorkoutTemplates } from '@/features/workout/hooks/useWorkoutTemplates';
 import { TemplateCard } from '@/features/workout/components/TemplateCard';
 import { TemplateFormModal } from '@/features/workout/components/TemplateFormModal';
@@ -60,7 +61,7 @@ export default function WorkoutScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('workout.title')}</Text>
       </View>
@@ -98,7 +99,7 @@ export default function WorkoutScreen() {
         onSubmit={handleSave}
         onDismiss={() => setModalVisible(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
 export const CARDIO_CATEGORIES = [
+  'regenerative',
+  'intervals',
+  'long',
+  'walk',
   'z1',
   'z2',
   'z3',
   'z4',
   'z5',
-  'walk',
-  'regenerative',
-  'intervals',
-  'long',
 ] as const;
 
 export const cardioSchema = z.object({

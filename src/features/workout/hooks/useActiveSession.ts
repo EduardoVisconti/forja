@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
+import { Alert } from 'react-native';
 import * as Crypto from 'expo-crypto';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { saveSession, saveSetLogs } from '../services/sessionStorage';
 import { getExercises } from '../services/workoutStorage';
@@ -10,8 +12,10 @@ import type { WorkoutTemplate } from '../types/index';
 
 export function useActiveSession() {
   const router = useRouter();
+  const { t } = useTranslation();
   const userId = useAuthStore((s) => s.user?.id ?? '');
   const store = useWorkoutSessionStore();
+  const finishRef = useRef<() => Promise<void>>();
 
   const startSession = useCallback(
     async (template: WorkoutTemplate) => {
@@ -33,31 +37,6 @@ export function useActiveSession() {
       router.push(`/workout/${template.id}` as never);
     },
     [userId, store, router],
-  );
-
-  const completeSet = useCallback(
-    (repsDone: number, weightKg: number) => {
-      const { sessionId, currentExerciseIndex, currentSetNumber, exercises } = store;
-      if (!sessionId) return;
-
-      const exercise = exercises[currentExerciseIndex];
-      if (!exercise) return;
-
-      const log: SetLog = {
-        id: Crypto.randomUUID(),
-        sessionId,
-        exerciseId: exercise.id,
-        exerciseName: exercise.name,
-        setNumber: currentSetNumber,
-        repsDone,
-        weightKg,
-        completedAt: new Date().toISOString(),
-      };
-
-      store.logSet(log);
-      store.startRestTimer(exercise.restSeconds || 60);
-    },
-    [store],
   );
 
   const finishSession = useCallback(async () => {
@@ -85,6 +64,51 @@ export function useActiveSession() {
     store.endSession();
     router.replace(`/workout/summary/${sessionId}` as never);
   }, [store, userId, router]);
+
+  finishRef.current = finishSession;
+
+  const completeSet = useCallback(
+    (repsDone: number, weightKg: number) => {
+      const { sessionId, currentExerciseIndex, currentSetNumber, exercises } = store;
+      if (!sessionId) return;
+
+      const exercise = exercises[currentExerciseIndex];
+      if (!exercise) return;
+
+      const log: SetLog = {
+        id: Crypto.randomUUID(),
+        sessionId,
+        exerciseId: exercise.id,
+        exerciseName: exercise.name,
+        setNumber: currentSetNumber,
+        repsDone,
+        weightKg,
+        completedAt: new Date().toISOString(),
+      };
+
+      store.logSet(log);
+      store.startRestTimer(exercise.restSeconds || 60);
+
+      const isLastSet = currentSetNumber === exercise.sets;
+      const hasRemaining = exercises.some(
+        (ex, i) => i > currentExerciseIndex && !ex.skipped,
+      );
+
+      if (isLastSet && !hasRemaining) {
+        setTimeout(() => {
+          Alert.alert(
+            t('session.workoutComplete'),
+            t('session.workoutCompleteMessage'),
+            [
+              { text: t('session.continueLbl'), style: 'cancel' },
+              { text: t('session.finish'), style: 'default', onPress: () => finishRef.current?.() },
+            ],
+          );
+        }, 0);
+      }
+    },
+    [store, t],
+  );
 
   return {
     ...store,

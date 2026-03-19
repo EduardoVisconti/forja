@@ -19,6 +19,7 @@ export function CardioCategoryFilter({ activeCategory, onSelect }: Props) {
       contentContainerStyle={styles.container}
     >
       <Chip
+        compact
         style={styles.chip}
         selected={activeCategory === null}
         onPress={() => onSelect(null)}
@@ -28,6 +29,7 @@ export function CardioCategoryFilter({ activeCategory, onSelect }: Props) {
       {CARDIO_CATEGORIES.map((cat) => (
         <Chip
           key={cat}
+          compact
           style={styles.chip}
           selected={activeCategory === cat}
           onPress={() => onSelect(activeCategory === cat ? null : cat)}

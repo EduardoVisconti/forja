@@ -9,7 +9,8 @@ function generateId(): string {
 
 export async function getLogs(userId: string): Promise<CardioLog[]> {
   const raw = await AsyncStorage.getItem(logsKey(userId));
-  return raw ? (JSON.parse(raw) as CardioLog[]) : [];
+  const logs: CardioLog[] = raw ? JSON.parse(raw) : [];
+  return logs.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 async function saveLogs(userId: string, logs: CardioLog[]): Promise<void> {

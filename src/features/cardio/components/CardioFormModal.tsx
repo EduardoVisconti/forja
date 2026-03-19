@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, HelperText, Portal, SegmentedButtons, Text, TextInput } from 'react-native-paper';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
 import { CARDIO_CATEGORIES, cardioSchema, type CardioFormValues } from '../schemas/cardioSchemas';
 import type { CardioCategory, CardioLog } from '../types';
@@ -21,12 +22,23 @@ function todayISO(): string {
   return new Date().toISOString().split('T')[0];
 }
 
+const OTHER_CATEGORIES = ['regenerative', 'intervals', 'long', 'walk'] as const;
 const ZONE_CATEGORIES = ['z1', 'z2', 'z3', 'z4', 'z5'] as const;
-const OTHER_CATEGORIES = ['walk', 'regenerative', 'intervals', 'long'] as const;
+
+function parseISODate(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function formatDDMMYYYY(iso: string): string {
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
 
 export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }: Props) {
   const { t } = useTranslation();
   const isImperial = unit === 'lbs';
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const {
     control,
@@ -99,14 +111,30 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
               name="date"
               render={({ field: { value, onChange } }) => (
                 <>
-                  <TextInput
-                    label={t('cardio.date')}
-                    value={value}
-                    onChangeText={onChange}
-                    mode="outlined"
-                    placeholder="AAAA-MM-DD"
-                    style={styles.input}
-                  />
+                  <Pressable onPress={() => setShowDatePicker(true)}>
+                    <TextInput
+                      label={t('cardio.date')}
+                      value={formatDDMMYYYY(value)}
+                      mode="outlined"
+                      style={styles.input}
+                      editable={false}
+                      right={<TextInput.Icon icon="calendar" onPress={() => setShowDatePicker(true)} />}
+                    />
+                  </Pressable>
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={parseISODate(value)}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={(_event, selectedDate) => {
+                        setShowDatePicker(Platform.OS === 'ios');
+                        if (selectedDate) {
+                          const iso = selectedDate.toISOString().split('T')[0];
+                          onChange(iso);
+                        }
+                      }}
+                    />
+                  )}
                   {errors.date && (
                     <HelperText type="error">{t(errors.date.message ?? '')}</HelperText>
                   )}
@@ -126,7 +154,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
                   <SegmentedButtons
                     value={value}
                     onValueChange={(v) => onChange(v as CardioCategory)}
-                    buttons={ZONE_CATEGORIES.map((cat) => ({
+                    buttons={OTHER_CATEGORIES.map((cat) => ({
                       value: cat,
                       label: t(`cardio.category.${cat}`),
                     }))}
@@ -135,7 +163,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
                   <SegmentedButtons
                     value={value}
                     onValueChange={(v) => onChange(v as CardioCategory)}
-                    buttons={OTHER_CATEGORIES.map((cat) => ({
+                    buttons={ZONE_CATEGORIES.map((cat) => ({
                       value: cat,
                       label: t(`cardio.category.${cat}`),
                     }))}
