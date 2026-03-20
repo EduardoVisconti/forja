@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Dialog, Portal, Switch, Text, TextInput } from 'react-native-paper';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Dialog, IconButton, Portal, Switch, Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { HabitConfig } from '../types';
+
+const EMOJI_PRESETS = ['💪', '😴', '💧', '☀️', '🥗', '📖', '📵', '🏃', '🧘', '❤️'] as const;
+
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
 
 interface Props {
   visible: boolean;
@@ -14,10 +20,16 @@ interface Props {
 export function HabitConfigModal({ visible, configs, onSave, onDismiss }: Props) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState<HabitConfig[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newLabel, setNewLabel] = useState('');
+  const [newEmoji, setNewEmoji] = useState<(typeof EMOJI_PRESETS)[number]>(EMOJI_PRESETS[0]);
 
   useEffect(() => {
     if (visible) {
       setEditing(configs.map((c) => ({ ...c })));
+      setShowAddForm(false);
+      setNewLabel('');
+      setNewEmoji(EMOJI_PRESETS[0]);
     }
   }, [visible, configs]);
 
@@ -25,6 +37,46 @@ export function HabitConfigModal({ visible, configs, onSave, onDismiss }: Props)
     setEditing((prev) =>
       prev.map((h) => (h.id === habitId ? { ...h, ...updates } : h)),
     );
+  };
+
+  const handleDeleteHabit = (habitId: string, habitLabel: string) => {
+    Alert.alert(t('habits.config.deleteTitle'), t('habits.config.deleteMessage', { label: habitLabel }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: () => setEditing((prev) => prev.filter((h) => h.id !== habitId)),
+      },
+    ]);
+  };
+
+  const handleOpenAddForm = () => {
+    setShowAddForm(true);
+    setNewLabel('');
+    setNewEmoji(EMOJI_PRESETS[0]);
+  };
+
+  const handleCancelAdd = () => {
+    setShowAddForm(false);
+    setNewLabel('');
+    setNewEmoji(EMOJI_PRESETS[0]);
+  };
+
+  const handleSaveAdd = () => {
+    const label = newLabel.trim();
+    if (!label) return;
+
+    const next: HabitConfig = {
+      id: generateId(),
+      label,
+      emoji: newEmoji,
+      active: true,
+    };
+
+    setEditing((prev) => [...prev, next]);
+    setShowAddForm(false);
+    setNewLabel('');
+    setNewEmoji(EMOJI_PRESETS[0]);
   };
 
   const handleSave = () => {
@@ -53,8 +105,55 @@ export function HabitConfigModal({ visible, configs, onSave, onDismiss }: Props)
                   value={habit.active}
                   onValueChange={(v) => updateHabit(habit.id, { active: v })}
                 />
+                <IconButton
+                  icon="trash-can-outline"
+                  size={18}
+                  onPress={() => handleDeleteHabit(habit.id, habit.label)}
+                  style={styles.deleteBtn}
+                  accessibilityLabel={t('habits.config.deleteTitle')}
+                />
               </View>
             ))}
+
+            <View style={styles.addSection}>
+              {!showAddForm ? (
+                <Button mode="outlined" icon="plus" onPress={handleOpenAddForm} style={styles.addBtn}>
+                  {t('habits.config.addHabit')}
+                </Button>
+              ) : (
+                <View style={styles.addForm}>
+                  <View style={styles.emojiPicker}>
+                    {EMOJI_PRESETS.map((emoji) => (
+                      <Pressable
+                        key={emoji}
+                        onPress={() => setNewEmoji(emoji)}
+                        style={[styles.emojiOption, newEmoji === emoji && styles.emojiOptionSelected]}
+                        accessibilityRole="button"
+                        accessibilityLabel={emoji}
+                      >
+                        <Text style={styles.emojiOptionText}>{emoji}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+
+                  <TextInput
+                    value={newLabel}
+                    onChangeText={setNewLabel}
+                    placeholder={t('habits.config.labelPlaceholder')}
+                    mode="outlined"
+                    dense
+                    style={styles.addInput}
+                  />
+
+                  <View style={styles.addFormActions}>
+                    <Button onPress={handleCancelAdd}>{t('common.cancel')}</Button>
+                    <Button mode="contained" onPress={handleSaveAdd} disabled={!newLabel.trim()}>
+                      {t('common.save')}
+                    </Button>
+                  </View>
+                </View>
+              )}
+            </View>
           </ScrollView>
         </Dialog.ScrollArea>
         <Dialog.Actions>
@@ -80,4 +179,25 @@ const styles = StyleSheet.create({
   },
   emoji: { fontSize: 24 },
   input: { flex: 1 },
+  deleteBtn: { margin: 0 },
+  addSection: { padding: 16, paddingTop: 8 },
+  addBtn: { alignSelf: 'stretch' },
+  addForm: { gap: 12 },
+  emojiPicker: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  emojiOption: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f3f4f6',
+  },
+  emojiOptionSelected: {
+    backgroundColor: '#dbeafe',
+    borderWidth: 1,
+    borderColor: '#2563eb',
+  },
+  emojiOptionText: { fontSize: 18 },
+  addInput: { marginTop: 2 },
+  addFormActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
 });

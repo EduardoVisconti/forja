@@ -199,7 +199,10 @@
       "title": "Configurar Hábitos",
       "labelPlaceholder": "Nome do hábito",
       "active": "Ativo",
-      "inactive": "Inativo"
+      "inactive": "Inativo",
+      "deleteTitle": "Excluir hábito",
+      "deleteMessage": "Deseja excluir \"{{label}}\"? Esta ação não pode ser desfeita.",
+      "addHabit": "Adicionar hábito"
     },
     "notification": {
       "title": "Forja — Check diário 🏋️",
