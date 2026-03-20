@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, Line, Polyline, Text as SvgText } from 'react-native-svg';
+import Svg, { G, Rect, Text, Line, Path, Circle, Polyline } from 'react-native-svg';
 
 export interface SimpleLinePoint {
   label?: string;
@@ -64,12 +64,12 @@ export const SimpleLineChart = memo(function SimpleLineChart({
           const frac = maxValue > 0 ? v / maxValue : 0;
           const y = plotTop + plotHeight - frac * plotHeight;
           return (
-            <g key={`tick-${idx}`}>
+            <G key={`tick-${idx}`}>
               <Line x1={plotLeft} x2={plotLeft + plotWidth} y1={y} y2={y} stroke="#e5e7eb" />
-              <SvgText x={plotLeft - 6} y={y + 4} fontSize="10" fill="#6b7280" textAnchor="end">
+              <Text x={plotLeft - 6} y={y + 4} fontSize="10" fill="#6b7280" textAnchor="end">
                 {formatTick(v)}
-              </SvgText>
-            </g>
+              </Text>
+            </G>
           );
         })}
 
@@ -83,10 +83,10 @@ export const SimpleLineChart = memo(function SimpleLineChart({
           const cx = getX(i);
           const cy = getY(p.value);
           return (
-            <g key={`p-${i}`}>
+            <G key={`p-${i}`}>
               <Circle cx={cx} cy={cy} r={3.5} fill={strokeColor} />
               <Circle cx={cx} cy={cy} r={6} fill={strokeColor} opacity={0.12} />
-            </g>
+            </G>
           );
         })}
 
@@ -100,9 +100,9 @@ export const SimpleLineChart = memo(function SimpleLineChart({
               const y = plotTop + plotHeight + 18;
               if (!p.label) return null;
               return (
-                <SvgText key={`x-${i}`} x={x} y={y} fontSize="10" fill="#374151" textAnchor="middle">
+                <Text key={`x-${i}`} x={x} y={y} fontSize="10" fill="#374151" textAnchor="middle">
                   {p.label}
-                </SvgText>
+                </Text>
               );
             })
           : null}

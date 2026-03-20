@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
+import Svg, { G, Rect, Text, Line, Path, Circle } from 'react-native-svg';
 
 export interface SimpleBarChartItem {
   label: string;
@@ -57,12 +57,12 @@ export const SimpleBarChart = memo(function SimpleBarChart({
           const frac = maxValue > 0 ? v / maxValue : 0;
           const y = plotTop + plotHeight - frac * plotHeight;
           return (
-            <g key={`tick-${idx}`}>
+            <G key={`tick-${idx}`}>
               <Line x1={plotLeft} x2={plotLeft + plotWidth} y1={y} y2={y} stroke="#e5e7eb" />
-              <SvgText x={plotLeft - 6} y={y + 4} fontSize="10" fill="#6b7280" textAnchor="end">
+              <Text x={plotLeft - 6} y={y + 4} fontSize="10" fill="#6b7280" textAnchor="end">
                 {formatTick(v)}
-              </SvgText>
-            </g>
+              </Text>
+            </G>
           );
         })}
 
@@ -83,7 +83,7 @@ export const SimpleBarChart = memo(function SimpleBarChart({
             const x = plotLeft + i * barSlot + barSlot / 2;
             const y = plotTop + plotHeight + 18;
             return (
-              <SvgText
+              <Text
                 key={`${item.label}-x`}
                 x={x}
                 y={y}
@@ -92,7 +92,7 @@ export const SimpleBarChart = memo(function SimpleBarChart({
                 textAnchor="middle"
               >
                 {item.label}
-              </SvgText>
+              </Text>
             );
           })}
       </Svg>
