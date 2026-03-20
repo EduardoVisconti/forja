@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Chip } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { TRAINING_TYPES, CARDIO_ZONES } from '../schemas/cardioSchemas';
@@ -15,11 +15,12 @@ export function CardioCategoryFilter({ activeFilter, onSelect }: Props) {
   const { t } = useTranslation();
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-    >
+    <View style={styles.wrapper}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+      >
       <Chip
         compact
         style={[styles.chip, { height: 32 }]}
@@ -50,11 +51,13 @@ export function CardioCategoryFilter({ activeFilter, onSelect }: Props) {
           {t(`cardio.zone.${z}`)}
         </Chip>
       ))}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: { paddingVertical: 8 },
   container: { gap: 8, paddingHorizontal: 16 },
   chip: {},
 });
