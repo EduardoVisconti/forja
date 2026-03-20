@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#111827', marginBottom: 12 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   list: { padding: 16, paddingBottom: 100 },
   empty: { alignItems: 'center', paddingTop: 80 },
