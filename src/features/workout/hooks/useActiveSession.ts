@@ -15,7 +15,7 @@ export function useActiveSession() {
   const { t } = useTranslation();
   const userId = useAuthStore((s) => s.user?.id ?? '');
   const store = useWorkoutSessionStore();
-  const finishRef = useRef<() => Promise<void>>();
+  const finishRef = useRef<(() => Promise<void>) | null>(null);
 
   const startSession = useCallback(
     async (template: WorkoutTemplate) => {

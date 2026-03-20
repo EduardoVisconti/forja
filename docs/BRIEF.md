@@ -352,3 +352,11 @@ ate_healthy, exercised, read, digital_balance, score, created_at
 
 *Last updated: March 2026*  
 *Status: Discovery complete — ready for scaffold*
+
+## Supabase Setup Notes
+
+Email confirmation links (Supabase Auth URL configuration) precisam ter a Expo dev URL configurada:
+
+- Site URL: `exp://localhost:8081`
+- Redirect URLs (adicione ambos):
+  - `exp://localhost:8081/--/`

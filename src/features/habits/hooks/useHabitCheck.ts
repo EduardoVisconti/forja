@@ -129,13 +129,13 @@ export function useHabitCheck() {
       if (!isEditable) return;
 
       const activeIds = habitConfigs.filter((c) => c.active).map((c) => c.id);
-      const updated = await upsertCheck(userId, habitId, value, activeIds);
+      const updated = await upsertCheck(userId, habitId, value, activeIds, selectedDate);
       setSelectedCheck(updated);
 
       const all = await getChecks(userId);
       setStreak(computeStreak(all));
     },
-    [userId, isEditable, habitConfigs],
+    [userId, isEditable, habitConfigs, selectedDate],
   );
 
   const refreshConfigs = useCallback(async () => {

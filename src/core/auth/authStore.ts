@@ -14,5 +14,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   setSession: (session) => set({ session }),
   setLoading: (isLoading) => set({ isLoading }),
   setInitialized: (isInitialized) => set({ isInitialized }),
-  reset: () => set(initialState),
+  // Ao fazer signOut precisamos liberar o AuthGate para redirecionar ao login.
+  // Se isInitialized voltar para false, o layout retorna null e aparenta "tela branca".
+  reset: () => set({ ...initialState, isInitialized: true }),
 }));

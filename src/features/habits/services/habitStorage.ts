@@ -111,10 +111,10 @@ export async function upsertCheck(
   habitId: string,
   value: boolean,
   activeHabitIds: string[],
+  dateISO: string,
 ): Promise<HabitCheck> {
   const checks = await getChecks(userId);
-  const today = todayISO();
-  const existingIndex = checks.findIndex((c) => c.date === today);
+  const existingIndex = checks.findIndex((c) => c.date === dateISO);
   const totalActive = activeHabitIds.length;
 
   let updated: HabitCheck;
@@ -126,7 +126,8 @@ export async function upsertCheck(
       checked: id === habitId ? value : (existing.habits.find((h) => h.habitId === id)?.checked ?? false),
     }));
     const score = habits.filter((h) => h.checked).length;
-    updated = { ...existing, habits, score, totalActive };
+    // Garante que a data do registro continua consistente com a tela atual.
+    updated = { ...existing, date: dateISO, habits, score, totalActive };
     checks[existingIndex] = updated;
   } else {
     const habits: HabitCheckItem[] = activeHabitIds.map((id) => ({
@@ -137,7 +138,7 @@ export async function upsertCheck(
     updated = {
       id: generateId(),
       userId,
-      date: today,
+      date: dateISO,
       score,
       totalActive,
       habits,

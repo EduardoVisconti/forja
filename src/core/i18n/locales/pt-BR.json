@@ -208,5 +208,49 @@
       "title": "Forja — Check diário 🏋️",
       "body": "Não esquece de marcar seus hábitos de hoje!"
     }
+  },
+  "history": {
+    "weekdays": {
+      "mon": "Seg",
+      "tue": "Ter",
+      "wed": "Qua",
+      "thu": "Qui",
+      "fri": "Sex",
+      "sat": "Sáb",
+      "sun": "Dom"
+    },
+    "daySummary": {
+      "title": "Resumo do dia",
+      "empty": "Nenhuma atividade registrada neste dia.",
+      "workoutsTitle": "Treinos",
+      "workoutsLine": "{{count}} treino(s)",
+      "workoutsVolumeLine": "Volume: {{volume}} kg",
+      "cardioTitle": "Cardio",
+      "cardioLine": "{{count}} registro(s)",
+      "cardioDurationLine": "Duração: {{minutes}} min",
+      "habitsTitle": "Hábitos",
+      "habitsScoreLine": "Score: {{score}}/{{total}}"
+    },
+    "weeklyVolume": {
+      "title": "Volume semanal"
+    },
+    "weeklyHabitScore": {
+      "title": "Score de hábitos (7 dias)"
+    },
+    "templateGroup": {
+      "pull": "Pull",
+      "push": "Push",
+      "legs": "Legs",
+      "custom": "Custom"
+    },
+    "pr": {
+      "title": "PR por exercício",
+      "emptyHint": "Ainda não há PRs com pelo menos 2 sessões distintas.",
+      "bestLine": "Melhor: {{weight}} kg em {{date}}",
+      "sessionCountLine": "{{count}} sessões",
+      "dialogTitleFallback": "PR",
+      "dialogBestLine": "Melhor: {{weight}} kg em {{date}}",
+      "dialogEmpty": "Sem dados suficientes para exibir a progressão."
+    }
   }
 }

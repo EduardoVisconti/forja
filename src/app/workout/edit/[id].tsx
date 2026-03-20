@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, FAB, SegmentedButtons, Text } from 'react-native-paper';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { ActivityIndicator, Button, FAB, IconButton, SegmentedButtons, Text } from 'react-native-paper';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useExercises } from '@/features/workout/hooks/useExercises';
 import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences';
@@ -15,6 +15,7 @@ import type { TemplateFormValues } from '@/features/workout/schemas/workoutSchem
 
 export default function TemplateDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const { t } = useTranslation();
 
   const { templates, updateTemplate } = useWorkoutTemplates();
@@ -81,6 +82,9 @@ export default function TemplateDetailScreen() {
       <Stack.Screen
         options={{
           title: template.name,
+          headerLeft: () => (
+            <IconButton icon="arrow-left" onPress={() => router.navigate('/(tabs)/workout')} />
+          ),
           headerRight: () => (
             <Text
               style={styles.editLink}

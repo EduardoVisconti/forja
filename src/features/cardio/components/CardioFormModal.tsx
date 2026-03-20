@@ -44,6 +44,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
     formState: { errors },
   } = useForm<CardioFormValues>({
     resolver: zodResolver(cardioSchema),
+    mode: 'onSubmit',
     defaultValues: {
       date: todayISO(),
       trainingType: null,
@@ -227,7 +228,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
                         label={distanceLabel}
                         value={String(value)}
                         onChangeText={(v) => onChange(parseFloat(v) || 0)}
-                        keyboardType="numeric"
+                        keyboardType="decimal-pad"
                         mode="outlined"
                       />
                       {errors.distance && (
