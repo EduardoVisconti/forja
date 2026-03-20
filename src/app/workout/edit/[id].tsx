@@ -207,6 +207,5 @@ const styles = StyleSheet.create({
   editLink: {
     fontSize: 16,
     color: '#16a34a',
-    marginRight: 8,
   },
 });
