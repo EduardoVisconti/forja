@@ -1,9 +1,10 @@
 import '@/core/i18n';
 
-import { PaperProvider } from 'react-native-paper';
+import { MD3DarkTheme, MD3LightTheme, PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useColorScheme } from 'react-native';
 import { supabase } from '@/core/supabase/client';
 import { useAuthStore } from '@/core/auth/authStore';
 import {
@@ -18,6 +19,8 @@ interface AppProviderProps {
 export function AppProvider({ children }: AppProviderProps) {
   const { setUser, setSession, setInitialized } = useAuthStore();
   const { t } = useTranslation();
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -51,7 +54,7 @@ export function AppProvider({ children }: AppProviderProps) {
 
   return (
     <SafeAreaProvider>
-      <PaperProvider>{children}</PaperProvider>
+      <PaperProvider theme={theme}>{children}</PaperProvider>
     </SafeAreaProvider>
   );
 }

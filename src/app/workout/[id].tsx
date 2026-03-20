@@ -30,7 +30,7 @@ export default function ActiveSessionScreen() {
         style: 'destructive',
         onPress: () => {
           store.endSession();
-          router.back();
+          router.navigate('/(tabs)/workout');
         },
       },
     ]);
@@ -46,7 +46,7 @@ export default function ActiveSessionScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       title: store.templateName || t('session.activeWorkout'),
-      headerLeft: () => <IconButton icon="arrow-left" onPress={handleBack} />,
+      headerLeft: () => <IconButton icon="arrow-left" onPress={handleBack} style={{ marginLeft: -8 }} />,
     });
   }, [navigation, store.templateName, t]);
 

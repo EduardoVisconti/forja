@@ -11,13 +11,29 @@ import {
 import type { HabitCheck, HabitConfig } from '../types';
 
 function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function addDays(iso: string, delta: number): string {
   const d = new Date(iso + 'T12:00:00');
   d.setDate(d.getDate() + delta);
-  return d.toISOString().split('T')[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function yesterdayISO(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function diffDays(a: string, b: string): number {
@@ -63,20 +79,27 @@ export function useHabitCheck() {
   const [streak, setStreak] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isToday = selectedDate === todayISO();
+  const today = todayISO();
+  const minDate = yesterdayISO();
+  const isToday = selectedDate === today;
+  const canGoBack = selectedDate !== minDate;
+  const isEditable = selectedDate === today || selectedDate === minDate;
 
   const goToPreviousDay = useCallback(() => {
-    setSelectedDate((prev) => addDays(prev, -1));
-  }, []);
+    setSelectedDate((prev) => {
+      if (prev === minDate) return prev;
+      return addDays(prev, -1);
+    });
+  }, [minDate]);
 
   const goToNextDay = useCallback(() => {
-    if (selectedDate === todayISO()) return;
+    if (selectedDate === today) return;
     setSelectedDate((prev) => addDays(prev, 1));
-  }, [selectedDate]);
+  }, [selectedDate, today]);
 
   const goToToday = useCallback(() => {
-    setSelectedDate(todayISO());
-  }, []);
+    setSelectedDate(today);
+  }, [today]);
 
   useEffect(() => {
     if (!userId) return;
@@ -103,7 +126,7 @@ export function useHabitCheck() {
 
   const toggleHabit = useCallback(
     async (habitId: string, value: boolean) => {
-      if (!isToday) return;
+      if (!isEditable) return;
 
       const activeIds = habitConfigs.filter((c) => c.active).map((c) => c.id);
       const updated = await upsertCheck(userId, habitId, value, activeIds);
@@ -112,7 +135,7 @@ export function useHabitCheck() {
       const all = await getChecks(userId);
       setStreak(computeStreak(all));
     },
-    [userId, isToday, habitConfigs],
+    [userId, isEditable, habitConfigs],
   );
 
   const refreshConfigs = useCallback(async () => {
@@ -137,6 +160,8 @@ export function useHabitCheck() {
   return {
     selectedDate,
     isToday,
+    canGoBack,
+    isEditable,
     goToPreviousDay,
     goToNextDay,
     goToToday,

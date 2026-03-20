@@ -19,6 +19,8 @@ export default function HabitsScreen() {
   const {
     selectedDate,
     isToday,
+    canGoBack,
+    isEditable,
     goToPreviousDay,
     goToNextDay,
     goToToday,
@@ -54,6 +56,7 @@ export default function HabitsScreen() {
             icon="chevron-left"
             size={24}
             onPress={goToPreviousDay}
+            disabled={!canGoBack}
           />
           <Text style={styles.dateText}>{formatDDMMYYYY(selectedDate)}</Text>
           <IconButton
@@ -84,7 +87,7 @@ export default function HabitsScreen() {
                 label={habit.label}
                 emoji={habit.emoji}
                 checked={habitValues[habit.id] ?? false}
-                disabled={!isToday}
+                disabled={!isEditable}
                 onToggle={toggleHabit}
               />
             ))}
