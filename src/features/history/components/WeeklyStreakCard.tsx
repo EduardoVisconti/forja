@@ -7,7 +7,7 @@ interface Props {
   data: WeeklyStreakVM | null;
 }
 
-const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+const WEEKDAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 export function WeeklyStreakCard({ data }: Props) {
   const { t } = useTranslation();
@@ -37,9 +37,9 @@ export function WeeklyStreakCard({ data }: Props) {
         </View>
         <View style={styles.right}>
           <View style={styles.weekLabels}>
-            {WEEKDAY_KEYS.map((key) => (
-              <Text key={key} style={styles.weekLabel}>
-                {t(`history.weekdays.${key}`).charAt(0)}
+            {WEEKDAY_LABELS.map((label) => (
+              <Text key={label} style={styles.weekLabel}>
+                {label}
               </Text>
             ))}
           </View>
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#6b7280',
     fontWeight: '600',
-    width: 20,
+    minWidth: 24,
     textAlign: 'center',
   },
   dotsRow: {
