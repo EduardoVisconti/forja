@@ -83,7 +83,11 @@ export default function TemplateDetailScreen() {
         options={{
           title: template.name,
           headerLeft: () => (
-            <IconButton icon="arrow-left" onPress={() => router.navigate('/(tabs)/workout')} />
+            <IconButton 
+              icon="arrow-left" 
+              onPress={() => router.navigate('/(tabs)/workout')}
+              style={{ margin: 0 }}
+            />
           ),
           headerRight: () => (
             <Text
