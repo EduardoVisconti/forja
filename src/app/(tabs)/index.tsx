@@ -1,8 +1,9 @@
-import { Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/core/auth/useAuth';
+import { SyncStatusIndicator } from '@/core/sync/SyncStatusIndicator';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -10,19 +11,40 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>{t('home.title')}</Text>
+      <View style={styles.header}>
+        <View style={styles.headerSpacer} />
+        <SyncStatusIndicator />
+      </View>
+      <View style={styles.content}>
+        <Text style={styles.title}>{t('home.title')}</Text>
       <Text style={styles.welcome}>{t('home.welcome')}</Text>
       {user?.email ? <Text style={styles.email}>{user.email}</Text> : null}
 
       <Button mode="outlined" onPress={signOut} disabled={isLoading} style={styles.button}>
         {t('home.signOut')}
       </Button>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  header: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  headerSpacer: {
+    flex: 1,
+  },
+  content: {
     flex: 1,
     backgroundColor: '#ffffff',
     justifyContent: 'center',

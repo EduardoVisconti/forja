@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { triggerSync } from '@/core/sync/syncStore';
 import * as storage from '../services/workoutStorage';
 import type { Exercise } from '../types';
 
@@ -25,6 +26,7 @@ export function useExercises(templateId: string) {
     async (data: Omit<Exercise, 'id' | 'templateId' | 'orderIndex'>) => {
       const created = await storage.addExercise(templateId, data);
       setExercises((prev) => [...prev, created]);
+      triggerSync();
       return created;
     },
     [templateId],
@@ -34,6 +36,7 @@ export function useExercises(templateId: string) {
     async (id: string, data: Partial<Omit<Exercise, 'id' | 'templateId' | 'orderIndex'>>) => {
       await storage.updateExercise(templateId, id, data);
       setExercises((prev) => prev.map((e) => (e.id === id ? { ...e, ...data } : e)));
+      triggerSync();
     },
     [templateId],
   );
@@ -45,6 +48,7 @@ export function useExercises(templateId: string) {
         const filtered = prev.filter((e) => e.id !== id);
         return filtered.map((e, i) => ({ ...e, orderIndex: i }));
       });
+      triggerSync();
     },
     [templateId],
   );
@@ -61,6 +65,7 @@ export function useExercises(templateId: string) {
         [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
         return reordered.map((e, i) => ({ ...e, orderIndex: i }));
       });
+      triggerSync();
     },
     [templateId],
   );

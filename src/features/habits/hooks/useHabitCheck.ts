@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/core/auth/authStore';
+import { triggerSync } from '@/core/sync/syncStore';
 import {
   getCheckForDate,
   getChecks,
@@ -134,6 +135,7 @@ export function useHabitCheck() {
 
       const all = await getChecks(userId);
       setStreak(computeStreak(all));
+      triggerSync();
     },
     [userId, isEditable, habitConfigs, selectedDate],
   );
@@ -178,6 +180,7 @@ export function useHabitCheck() {
       async (configs: HabitConfig[]) => {
         await saveConfigToStorage(userId, configs);
         setHabitConfigs(configs);
+        triggerSync();
       },
       [userId],
     ),

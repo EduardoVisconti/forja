@@ -50,6 +50,12 @@
       "required": "Campo obrigatório"
     }
   },
+  "sync": {
+    "synced": "Sincronizado",
+    "syncing": "Sincronizando...",
+    "offline": "Offline",
+    "error": "Erro ao sincronizar"
+  },
   "home": {
     "title": "Forja",
     "welcome": "Bom treino!",

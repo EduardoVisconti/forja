@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/core/auth/authStore';
+import { triggerSync } from '@/core/sync/syncStore';
 import * as storage from '../services/workoutStorage';
 import type { WorkoutTemplate } from '../types';
 
@@ -28,6 +29,7 @@ export function useWorkoutTemplates() {
     async (data: Pick<WorkoutTemplate, 'name' | 'type'>) => {
       const created = await storage.createTemplate(userId, data);
       setTemplates((prev) => [...prev, created]);
+      triggerSync();
       return created;
     },
     [userId],
@@ -37,6 +39,7 @@ export function useWorkoutTemplates() {
     async (id: string, data: Partial<Pick<WorkoutTemplate, 'name' | 'type'>>) => {
       await storage.updateTemplate(userId, id, data);
       setTemplates((prev) => prev.map((t) => (t.id === id ? { ...t, ...data } : t)));
+      triggerSync();
     },
     [userId],
   );
@@ -45,6 +48,7 @@ export function useWorkoutTemplates() {
     async (id: string) => {
       await storage.deleteTemplate(userId, id);
       setTemplates((prev) => prev.filter((t) => t.id !== id));
+      triggerSync();
     },
     [userId],
   );

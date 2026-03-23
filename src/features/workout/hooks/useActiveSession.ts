@@ -4,6 +4,7 @@ import { Alert } from 'react-native';
 import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
+import { triggerSync } from '@/core/sync/syncStore';
 import { saveSession, saveSetLogs } from '../services/sessionStorage';
 import { getExercises } from '../services/workoutStorage';
 import { useWorkoutSessionStore } from '../store/workoutSessionStore';
@@ -61,6 +62,7 @@ export function useActiveSession() {
       totalVolumeKg,
     });
 
+    triggerSync();
     store.endSession();
     router.replace(`/workout/summary/${sessionId}` as never);
   }, [store, userId, router]);

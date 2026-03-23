@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '@/core/auth/authStore';
+import { triggerSync } from '@/core/sync/syncStore';
 import * as storage from '../services/cardioStorage';
 import type { CardioLog } from '../types';
 import type { CardioFilterValue } from '../components/CardioCategoryFilter';
@@ -30,6 +31,7 @@ export function useCardioLog() {
     async (data: Omit<CardioLog, 'id' | 'userId' | 'createdAt'>) => {
       const log = await storage.createLog(userId, data);
       setLogs((prev) => [log, ...prev]);
+      triggerSync();
     },
     [userId],
   );
@@ -38,6 +40,7 @@ export function useCardioLog() {
     async (id: string, data: Partial<Omit<CardioLog, 'id' | 'userId' | 'createdAt'>>) => {
       await storage.updateLog(userId, id, data);
       setLogs((prev) => prev.map((l) => (l.id === id ? { ...l, ...data } : l)));
+      triggerSync();
     },
     [userId],
   );
@@ -46,6 +49,7 @@ export function useCardioLog() {
     async (id: string) => {
       await storage.deleteLog(userId, id);
       setLogs((prev) => prev.filter((l) => l.id !== id));
+      triggerSync();
     },
     [userId],
   );

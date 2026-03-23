@@ -11,6 +11,7 @@ import {
   requestPermissions,
   scheduleDailyReminder,
 } from '@/features/habits/services/notificationService';
+import { useSync } from '@/core/sync/useSync';
 
 interface AppProviderProps {
   children: ReactNode;
@@ -19,6 +20,8 @@ interface AppProviderProps {
 export function AppProvider({ children }: AppProviderProps) {
   const { setUser, setSession, setInitialized } = useAuthStore();
   const { t } = useTranslation();
+
+  useSync();
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
 
