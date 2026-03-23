@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { CalendarView } from '@/features/history/components/CalendarView';
 import { DaySummaryDialog } from '@/features/history/components/DaySummaryDialog';
-import { WeeklyVolumeBarChart } from '@/features/history/components/WeeklyVolumeBarChart';
+import { WeeklyStreakCard } from '@/features/history/components/WeeklyStreakCard';
 import { WeeklyHabitScoreLineChart } from '@/features/history/components/WeeklyHabitScoreLineChart';
 import { PrExerciseList } from '@/features/history/components/PrExerciseList';
 import { ExerciseWeightProgressionDialog } from '@/features/history/components/ExerciseWeightProgressionDialog';
@@ -24,7 +24,7 @@ export default function HistoryScreen() {
     dayDialogVisible,
     daySummary,
     closeDayDialog,
-    weeklyVolume,
+    weeklyStreak,
     weeklyHabitScore,
     prExercises,
     exerciseDialogVisible,
@@ -69,7 +69,7 @@ export default function HistoryScreen() {
 
           <DaySummaryDialog visible={dayDialogVisible} summary={daySummary} onDismiss={closeDayDialog} />
 
-          <WeeklyVolumeBarChart data={weeklyVolume} />
+          <WeeklyStreakCard data={weeklyStreak} />
           <WeeklyHabitScoreLineChart data={weeklyHabitScore} />
 
           <PrExerciseList exercises={prExercises} onPressExercise={openExerciseDialog} />

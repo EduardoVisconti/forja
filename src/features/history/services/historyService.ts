@@ -15,8 +15,7 @@ import type {
   PrExerciseVM,
   TemplateGroup,
   WeeklyHabitScoreVM,
-  WeeklyVolumeBarItem,
-  WeeklyVolumeVM,
+  WeeklyStreakVM,
   WorkoutDayAgg,
 } from '../types/historyTypes';
 import type { PrSessionWeightPoint } from '../types/historyTypes';
@@ -98,19 +97,6 @@ function ensureHabitAgg(daily: HistoryDailyAgg, dateISO: string): HabitDayAgg {
   throw new Error(`Habit agg must be created from HabitCheck (${dateISO})`);
 }
 
-function formatColorForGroup(group: TemplateGroup): string {
-  switch (group) {
-    case 'pull':
-      return '#22c55e';
-    case 'push':
-      return '#3b82f6';
-    case 'legs':
-      return '#8b5cf6';
-    case 'custom':
-      return '#9ca3af';
-  }
-}
-
 interface ExerciseAgg {
   exerciseName: string;
   bestWeightKg: number;
@@ -125,7 +111,7 @@ export async function getHistorySources(userId: string): Promise<HistorySources>
   if (!userId) {
     return {
       daily: { workout: {}, cardio: {}, habits: {} },
-      weeklyVolume: { items: [], maxValueKg: 0 },
+      weeklyStreak: { streakCount: 0, currentWeekHasActiveDay: false, weekDays: [] },
       weeklyHabitScore: { points: [], maxHabits: 8 },
       prExercises: [],
     };
@@ -217,11 +203,11 @@ export async function getHistorySources(userId: string): Promise<HistorySources>
     };
   }
 
-  const weeklyVolume = buildWeeklyVolume(daily);
+  const weeklyStreak = buildWeeklyStreak(daily);
   const weeklyHabitScore = buildWeeklyHabitScore(daily);
   const prExercises = buildPrExercises(exerciseAggById, sessionsById);
 
-  return { daily, weeklyVolume, weeklyHabitScore, prExercises };
+  return { daily, weeklyStreak, weeklyHabitScore, prExercises };
 }
 
 export function buildDaySummary(dateISO: string, daily: HistoryDailyAgg): DaySummaryVM {
@@ -269,35 +255,67 @@ export function buildCalendarDayVM({
   };
 }
 
-function buildWeeklyVolume(daily: HistoryDailyAgg): WeeklyVolumeVM {
+function isDayActive(daily: HistoryDailyAgg, dateISO: string): boolean {
+  const hasWorkout = (daily.workout[dateISO]?.sessionsCount ?? 0) > 0;
+  const hasCardio = (daily.cardio[dateISO]?.logs?.length ?? 0) > 0;
+  return hasWorkout || hasCardio;
+}
+
+function getMondayOfWeek(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const mondayOffset = (day + 6) % 7;
+  d.setDate(d.getDate() - mondayOffset);
+  return d;
+}
+
+function buildWeeklyStreak(daily: HistoryDailyAgg): WeeklyStreakVM {
   const today = new Date();
-  const last7 = getLastNDaysISO(7, today);
+  const todayISO = toLocalDayISO(today);
+  const monday = getMondayOfWeek(today);
 
-  const totalsByGroup: Record<TemplateGroup, number> = {
-    pull: 0,
-    push: 0,
-    legs: 0,
-    custom: 0,
-  };
-
-  for (const dateISO of last7) {
-    const workout = daily.workout[dateISO];
-    if (!workout) continue;
-
-    for (const group of TEMPLATE_GROUPS) {
-      totalsByGroup[group] += workout.volumeByGroupKg[group] ?? 0;
-    }
+  const weekDays: WeeklyStreakVM['weekDays'] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dateISO = toLocalDayISO(d);
+    weekDays.push({
+      dateISO,
+      isActive: isDayActive(daily, dateISO),
+      isToday: dateISO === todayISO,
+    });
   }
 
-  const items: WeeklyVolumeBarItem[] = TEMPLATE_GROUPS.map((group) => ({
-    group,
-    labelKey: group,
-    valueKg: totalsByGroup[group],
-    color: formatColorForGroup(group),
-  }));
+  const currentWeekHasActiveDay = weekDays.some((d) => d.isActive);
 
-  const maxValueKg = Math.max(...items.map((i) => i.valueKg), 0);
-  return { items, maxValueKg };
+  let streakCount = 0;
+  let weekStart = new Date(monday);
+  weekStart.setDate(weekStart.getDate() - 7);
+
+  while (true) {
+    let weekHasActive = false;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      if (isDayActive(daily, toLocalDayISO(d))) {
+        weekHasActive = true;
+        break;
+      }
+    }
+    if (!weekHasActive) break;
+    streakCount++;
+    weekStart.setDate(weekStart.getDate() - 7);
+  }
+
+  if (currentWeekHasActiveDay) {
+    streakCount++;
+  }
+
+  return {
+    streakCount,
+    currentWeekHasActiveDay,
+    weekDays,
+  };
 }
 
 function buildWeeklyHabitScore(daily: HistoryDailyAgg): WeeklyHabitScoreVM {

@@ -39,9 +39,6 @@ export function DaySummaryDialog({ visible, summary, onDismiss }: Props) {
                         {t('history.daySummary.workoutsTitle')}
                       </Text>
                       <Text>{t('history.daySummary.workoutsLine', { count: summary.workout.sessionsCount })}</Text>
-                      <Text style={styles.subtle}>
-                        {t('history.daySummary.workoutsVolumeLine', { volume: Math.round(summary.workout.totalVolumeKg) })}
-                      </Text>
                       {summary.workout.templateNames.length > 0 ? (
                         <View style={styles.chips}>
                           {summary.workout.templateNames.slice(0, 5).map((name) => (

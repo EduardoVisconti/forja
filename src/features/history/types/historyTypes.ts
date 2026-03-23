@@ -53,6 +53,18 @@ export interface WeeklyHabitScoreVM {
   maxHabits: number;
 }
 
+export interface WeeklyStreakDay {
+  dateISO: string;
+  isActive: boolean;
+  isToday: boolean;
+}
+
+export interface WeeklyStreakVM {
+  streakCount: number;
+  currentWeekHasActiveDay: boolean;
+  weekDays: WeeklyStreakDay[];
+}
+
 export interface PrSessionWeightPoint {
   sessionId: string;
   dateISO: string;
@@ -98,7 +110,7 @@ export interface CalendarMonthVM {
 
 export interface HistorySources {
   daily: HistoryDailyAgg;
-  weeklyVolume: WeeklyVolumeVM;
+  weeklyStreak: WeeklyStreakVM;
   weeklyHabitScore: WeeklyHabitScoreVM;
   prExercises: PrExerciseVM[];
 }

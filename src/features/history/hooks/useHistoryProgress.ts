@@ -172,7 +172,7 @@ export function useHistoryProgress() {
     closeDayDialog,
     onSelectDay,
 
-    weeklyVolume: sources?.weeklyVolume ?? null,
+    weeklyStreak: sources?.weeklyStreak ?? null,
     weeklyHabitScore: sources?.weeklyHabitScore ?? null,
     prExercises: sources?.prExercises ?? [],
 
