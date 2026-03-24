@@ -108,7 +108,7 @@ export default function HomeScreen() {
         </Card>
 
         <View style={styles.bottomRow}>
-          <View style={styles.bottomRowItem}>
+          <View style={{ flex: 1, overflow: 'hidden', borderRadius: 12 }}>
             <Card elevation={0} style={[styles.card, styles.bottomRowCard]}>
               <Card.Content style={styles.bottomRowContent}>
               <Text style={styles.cardTitle}>{t('home.lastWorkout')}</Text>
@@ -131,7 +131,7 @@ export default function HomeScreen() {
             </Card>
           </View>
 
-          <View style={styles.bottomRowItem}>
+          <View style={{ flex: 1, overflow: 'hidden', borderRadius: 12 }}>
             <Card elevation={0} style={[styles.card, styles.bottomRowCard]}>
               <Card.Content style={styles.bottomRowContent}>
               <Text style={styles.habitsCardTitle}>{t('home.habitsToday')}</Text>
@@ -216,9 +216,6 @@ const createStyles = (theme: MD3Theme) =>
     bottomRow: {
       flexDirection: 'row',
       gap: 12,
-    },
-    bottomRowItem: {
-      flex: 1,
     },
     bottomRowCard: {
       flex: 1,
