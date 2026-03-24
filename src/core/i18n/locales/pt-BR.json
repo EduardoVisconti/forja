@@ -78,6 +78,7 @@
     "habitsToday": "Hábitos hoje",
     "habitsNotChecked": "Ainda não registrado hoje",
     "habitsScore": "Score {{score}}/{{total}}",
+    "motivationalEmpty": "Cada treino conta.",
     "weekStreak": "Sequência",
     "today": "hoje",
     "yesterday": "ontem",

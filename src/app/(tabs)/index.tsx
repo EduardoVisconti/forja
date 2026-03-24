@@ -134,14 +134,17 @@ export default function HomeScreen() {
           <View style={styles.bottomRowItem}>
             <Card elevation={0} style={[styles.card, styles.bottomRowCard]}>
               <Card.Content style={styles.bottomRowContent}>
-              <Text style={styles.cardTitle}>{t('home.habitsToday')}</Text>
+              <Text style={styles.habitsCardTitle}>{t('home.habitsToday')}</Text>
               {isOverviewLoading ? (
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
               ) : todayHabits ? (
                 <>
-                  <Text style={styles.habitsScoreText}>
-                    {t('home.habitsScore', { score: habitsScore, total: habitsTotal })}
-                  </Text>
+                  <View style={styles.habitsScoreRow}>
+                    <Text style={{ fontSize: 28, fontWeight: '700', color: '#ffffff' }}>
+                      {habitsScore}
+                    </Text>
+                    <Text style={{ fontSize: 16, color: '#525252' }}>/{habitsTotal}</Text>
+                  </View>
                   {!hasCheckedHabits ? (
                     <Text style={styles.secondarySmall}>Vamos lá?</Text>
                   ) : null}
@@ -158,6 +161,9 @@ export default function HomeScreen() {
         </View>
 
         <WeeklyStreakCard data={weeklyStreak} title={t('home.weekStreak')} style={styles.card} />
+        {lastWorkout === null ? (
+          <Text style={styles.motivationalEmpty}>{t('home.motivationalEmpty')}</Text>
+        ) : null}
 
         {error ? <Text style={styles.errorText}>{t('common.error')}</Text> : null}
       </ScrollView>
@@ -230,6 +236,11 @@ const createStyles = (theme: MD3Theme) =>
       color: theme.colors.onSurfaceVariant,
       marginBottom: 8,
     },
+    habitsCardTitle: {
+      fontSize: 12,
+      color: '#6b6b6b',
+      marginBottom: 8,
+    },
     greeting: {
       fontSize: 24,
       fontWeight: '700',
@@ -250,10 +261,9 @@ const createStyles = (theme: MD3Theme) =>
       fontWeight: '700',
       color: '#ffffff',
     },
-    habitsScoreText: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: '#ef4444',
+    habitsScoreRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
     },
     mutedText: {
       fontSize: 14,
@@ -268,5 +278,11 @@ const createStyles = (theme: MD3Theme) =>
       color: theme.colors.primary,
       fontSize: 13,
       paddingHorizontal: 4,
+    },
+    motivationalEmpty: {
+      fontSize: 13,
+      color: '#2a2a2a',
+      textAlign: 'center',
+      marginTop: 8,
     },
   });

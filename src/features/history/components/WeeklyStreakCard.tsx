@@ -29,7 +29,11 @@ export function WeeklyStreakCard({ data, title, style }: Props) {
 
   return (
     <Card style={[styles.card, style]}>
-      <Card.Title title={title ?? t('history.weekStreak')} />
+      <Card.Title
+        title={title ?? t('history.weekStreak')}
+        style={styles.titleContainer}
+        titleStyle={styles.title}
+      />
       <Card.Content style={styles.content}>
         <View style={styles.left}>
           <Text style={styles.flame}>🔥</Text>
@@ -72,6 +76,13 @@ const createStyles = (theme: MD3Theme) =>
       justifyContent: 'space-between',
       gap: 16,
     },
+    titleContainer: {
+      marginBottom: 8,
+    },
+    title: {
+      fontSize: 13,
+      color: '#6b6b6b',
+    },
     left: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -84,13 +95,13 @@ const createStyles = (theme: MD3Theme) =>
       alignItems: 'center',
     },
     count: {
-      fontSize: 24,
+      fontSize: 36,
       fontWeight: '700',
       color: '#ffffff',
     },
     label: {
-      fontSize: 12,
-      color: '#9ca3af',
+      fontSize: 11,
+      color: '#525252',
       marginTop: 2,
     },
     right: {
