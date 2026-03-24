@@ -62,6 +62,9 @@ export function useOnboarding(): UseOnboardingResult {
 
       await AsyncStorage.setItem(userNameKey(userId), trimmedName);
 
+      await setOnboardingComplete(userId);
+      setHasCompleted(true);
+
       const { error } = await supabase.auth.updateUser({
         data: { full_name: trimmedName },
       });
@@ -69,9 +72,6 @@ export function useOnboarding(): UseOnboardingResult {
       if (error) {
         throw error;
       }
-
-      await setOnboardingComplete(userId);
-      setHasCompleted(true);
     },
     [userId],
   );
