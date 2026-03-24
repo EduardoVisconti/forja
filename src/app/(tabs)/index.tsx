@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Card, IconButton, ProgressBar, Text } from 'react-native-paper';
+import { Card, IconButton, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/core/auth/useAuth';
@@ -70,7 +70,6 @@ export default function HomeScreen() {
   const greetingKey = getGreetingKey(new Date().getHours());
   const habitsTotal = todayHabits?.totalActive ?? 0;
   const habitsScore = todayHabits?.score ?? 0;
-  const progress = habitsTotal > 0 ? habitsScore / habitsTotal : 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -104,46 +103,51 @@ export default function HomeScreen() {
           </Card.Content>
         </Card>
 
-        <WeeklyStreakCard data={weeklyStreak} title={t('home.weekStreak')} />
+        <WeeklyStreakCard data={weeklyStreak} title={t('home.weekStreak')} style={styles.card} />
 
-        <Card style={styles.card}>
-          <Card.Title title={t('home.lastWorkout')} />
-          <Card.Content>
-            {isOverviewLoading ? (
-              <Text style={styles.mutedText}>{t('common.loading')}</Text>
-            ) : lastWorkout ? (
-              <>
-                <Text style={styles.primaryText}>{lastWorkout.templateName}</Text>
-                <Text style={styles.mutedText}>
-                  {formatWorkoutDateLabel(lastWorkout.finishedAt, t)}
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.primaryText}>{t('home.noWorkoutYet')}</Text>
-                <Text style={styles.mutedText}>{t('home.noWorkoutHint')}</Text>
-              </>
-            )}
-          </Card.Content>
-        </Card>
+        <View style={styles.bottomRow}>
+          <Card style={[styles.card, styles.halfCard]}>
+            <Card.Content>
+              <Text style={styles.cardTitle}>{t('home.lastWorkout')}</Text>
+              {isOverviewLoading ? (
+                <Text style={styles.mutedText}>{t('common.loading')}</Text>
+              ) : lastWorkout ? (
+                <>
+                  <Text style={styles.primaryText}>{lastWorkout.templateName}</Text>
+                  <Text style={styles.mutedText}>
+                    {formatWorkoutDateLabel(lastWorkout.finishedAt, t)}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.primaryText}>{t('home.noWorkoutYet')}</Text>
+                  <Text style={styles.mutedText}>{t('home.noWorkoutHint')}</Text>
+                </>
+              )}
+            </Card.Content>
+          </Card>
 
-        <Card style={styles.card}>
-          <Card.Title title={t('home.habitsToday')} />
-          <Card.Content>
-            {isOverviewLoading ? (
-              <Text style={styles.mutedText}>{t('common.loading')}</Text>
-            ) : todayHabits ? (
-              <>
-                <Text style={styles.primaryText}>
-                  {t('home.habitsScore', { score: habitsScore, total: habitsTotal })}
-                </Text>
-                <ProgressBar progress={progress} style={styles.progress} />
-              </>
-            ) : (
-              <Text style={styles.mutedText}>{t('home.habitsNotChecked')}</Text>
-            )}
-          </Card.Content>
-        </Card>
+          <Card style={[styles.card, styles.halfCard]}>
+            <Card.Content>
+              <Text style={styles.cardTitle}>{t('home.habitsToday')}</Text>
+              {isOverviewLoading ? (
+                <Text style={styles.mutedText}>{t('common.loading')}</Text>
+              ) : todayHabits ? (
+                <>
+                  <Text style={styles.primaryText}>
+                    {t('home.habitsScore', { score: habitsScore, total: habitsTotal })}
+                  </Text>
+                  <Text style={styles.secondarySmall}>Vamos l\u00E1?</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.mutedText}>{t('home.habitsNotChecked')}</Text>
+                  <Text style={styles.secondarySmall}>Vamos l\u00E1?</Text>
+                </>
+              )}
+            </Card.Content>
+          </Card>
+        </View>
 
         {error ? <Text style={styles.errorText}>{t('common.error')}</Text> : null}
       </ScrollView>
@@ -187,7 +191,20 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    marginHorizontal: 0,
+    margin: 0,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  halfCard: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
   },
   greeting: {
     fontSize: 24,
@@ -208,11 +225,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9ca3af',
   },
-  progress: {
-    height: 8,
-    marginTop: 8,
-    borderRadius: 6,
-    backgroundColor: '#e5e7eb',
+  secondarySmall: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
   },
   errorText: {
     color: '#ef4444',

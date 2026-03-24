@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Card, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { WeeklyStreakVM } from '../types/historyTypes';
@@ -6,16 +6,17 @@ import type { WeeklyStreakVM } from '../types/historyTypes';
 interface Props {
   data: WeeklyStreakVM | null;
   title?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 const WEEKDAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
-export function WeeklyStreakCard({ data, title }: Props) {
+export function WeeklyStreakCard({ data, title, style }: Props) {
   const { t } = useTranslation();
 
   if (!data) {
     return (
-      <Card style={styles.card}>
+      <Card style={[styles.card, style]}>
         <Card.Content>
           <Text>{t('common.loading')}</Text>
         </Card.Content>
@@ -26,7 +27,7 @@ export function WeeklyStreakCard({ data, title }: Props) {
   const countStyle = data.currentWeekHasActiveDay ? styles.countActive : styles.countDimmed;
 
   return (
-    <Card style={styles.card}>
+    <Card style={[styles.card, style]}>
       <Card.Title title={title ?? t('history.weekStreak')} />
       <Card.Content style={styles.content}>
         <View style={styles.left}>
