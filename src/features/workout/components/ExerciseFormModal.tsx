@@ -90,10 +90,10 @@ export function ExerciseFormModal({
           {isEditing ? t('exercise.editExercise') : t('exercise.newExercise')}
         </Dialog.Title>
 
-        <Dialog.Content style={[styles.dialogContent, { backgroundColor: 'transparent' }]}>
+        <Dialog.Content style={{ backgroundColor: 'transparent' }}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            style={[styles.scrollView, { backgroundColor: 'transparent' }]}
+            style={{ backgroundColor: 'transparent' }}
             contentContainerStyle={styles.fields}
           >
             <Controller
@@ -254,15 +254,10 @@ export function ExerciseFormModal({
 
 const createStyles = () =>
   StyleSheet.create({
-    dialogContent: {
-      paddingHorizontal: 16,
-      paddingBottom: 8,
-    },
-    scrollView: {
-      backgroundColor: 'transparent',
-    },
     fields: {
       paddingTop: 4,
+      paddingHorizontal: 16,
+      paddingBottom: 8,
     },
     row: {
       flexDirection: 'row',
