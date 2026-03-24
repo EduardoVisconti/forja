@@ -108,8 +108,9 @@ export default function HomeScreen() {
         </Card>
 
         <View style={styles.bottomRow}>
-          <Card style={[styles.card, styles.bottomRowCard]}>
-            <Card.Content style={styles.bottomRowContent}>
+          <View style={styles.bottomRowItem}>
+            <Card elevation={0} style={[styles.card, styles.bottomRowCard]}>
+              <Card.Content style={styles.bottomRowContent}>
               <Text style={styles.cardTitle}>{t('home.lastWorkout')}</Text>
               {isOverviewLoading ? (
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
@@ -126,11 +127,13 @@ export default function HomeScreen() {
                   <Text style={styles.mutedText}>{t('home.noWorkoutHint')}</Text>
                 </>
               )}
-            </Card.Content>
-          </Card>
+              </Card.Content>
+            </Card>
+          </View>
 
-          <Card style={[styles.card, styles.bottomRowCard]}>
-            <Card.Content style={styles.bottomRowContent}>
+          <View style={styles.bottomRowItem}>
+            <Card elevation={0} style={[styles.card, styles.bottomRowCard]}>
+              <Card.Content style={styles.bottomRowContent}>
               <Text style={styles.cardTitle}>{t('home.habitsToday')}</Text>
               {isOverviewLoading ? (
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
@@ -149,8 +152,9 @@ export default function HomeScreen() {
                   <Text style={styles.secondarySmall}>Vamos lá?</Text>
                 </>
               )}
-            </Card.Content>
-          </Card>
+              </Card.Content>
+            </Card>
+          </View>
         </View>
 
         <WeeklyStreakCard data={weeklyStreak} title={t('home.weekStreak')} style={styles.card} />
@@ -207,9 +211,15 @@ const createStyles = (theme: MD3Theme) =>
       flexDirection: 'row',
       gap: 12,
     },
+    bottomRowItem: {
+      flex: 1,
+    },
     bottomRowCard: {
       flex: 1,
       borderRadius: 12,
+      borderWidth: 0.5,
+      borderColor: '#2a2a2a',
+      overflow: 'hidden',
     },
     bottomRowContent: {
       padding: 12,
