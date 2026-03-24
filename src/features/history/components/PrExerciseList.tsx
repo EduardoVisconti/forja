@@ -21,7 +21,7 @@ export function PrExerciseList({ exercises, onPressExercise }: Props) {
       <Card.Title title={t('history.pr.title')} />
       <Card.Content>
         {exercises.length === 0 ? (
-          <Text>{t('history.pr.emptyHint')}</Text>
+          <Text>{t('history.prEmpty', { defaultValue: t('history.pr.emptyHint') })}</Text>
         ) : (
           <FlatList
             data={exercises}
