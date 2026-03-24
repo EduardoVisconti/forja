@@ -65,13 +65,9 @@ export function useOnboarding(): UseOnboardingResult {
       await setOnboardingComplete(userId);
       setHasCompleted(true);
 
-      const { error } = await supabase.auth.updateUser({
+      void supabase.auth.updateUser({
         data: { full_name: trimmedName },
       });
-
-      if (error) {
-        throw error;
-      }
     },
     [userId],
   );
