@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import { Card, ProgressBar, Text } from 'react-native-paper';
+import { Card, ProgressBar, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
 
 export function HabitScoreCard({ score, totalActive, streak }: Props) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const progress = totalActive > 0 ? score / totalActive : 0;
 
   return (
@@ -17,14 +20,11 @@ export function HabitScoreCard({ score, totalActive, streak }: Props) {
       <Card.Content style={styles.content}>
         <View style={styles.stats}>
           <View style={styles.stat}>
-            <Text variant="displaySmall" style={styles.scoreNumber}>
+            <Text variant="displayMedium" style={styles.scoreNumber}>
               {score}
               <Text variant="headlineSmall" style={styles.total}>
                 /{totalActive}
               </Text>
-            </Text>
-            <Text variant="labelMedium" style={styles.label}>
-              {t('habits.scoreLabel')}
             </Text>
           </View>
           <View style={styles.divider} />
@@ -47,19 +47,25 @@ export function HabitScoreCard({ score, totalActive, streak }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: { margin: 16 },
-  content: { gap: 16 },
-  stats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  stat: { alignItems: 'center', gap: 4 },
-  scoreNumber: { fontWeight: 'bold', color: '#111827' },
-  streakNumber: { fontWeight: 'bold', color: '#f59e0b' },
-  total: { color: '#9ca3af' },
-  label: { color: '#6b7280' },
-  divider: { width: 1, height: 56, backgroundColor: '#e5e7eb' },
-  progressBar: { height: 8, borderRadius: 4 },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    card: {
+      margin: 16,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+    },
+    content: { gap: 16 },
+    stats: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    },
+    stat: { alignItems: 'center', gap: 4 },
+    scoreNumber: { fontWeight: '700', color: '#ffffff' },
+    streakNumber: { fontWeight: '700', color: '#ef4444' },
+    total: { color: '#9ca3af' },
+    label: { color: theme.colors.onSurfaceVariant },
+    divider: { width: 1, height: 56, backgroundColor: theme.colors.outline },
+    progressBar: { height: 8, borderRadius: 4 },
+  });

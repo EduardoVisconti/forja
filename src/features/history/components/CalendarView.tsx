@@ -70,7 +70,6 @@ export function CalendarView({ month, selectedDateISO, onSelectDay }: Props) {
                 style={[
                   styles.cell,
                   isSelected && styles.cellSelected,
-                  isOtherMonth && styles.cellOtherMonth,
                 ]}
                 onPress={() => onSelectDay(day.dateISO)}
                 accessibilityRole="button"
@@ -95,12 +94,18 @@ export function CalendarView({ month, selectedDateISO, onSelectDay }: Props) {
 
 const createStyles = (theme: MD3Theme) =>
   StyleSheet.create({
-    container: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
+    container: {
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      paddingBottom: 12,
+      borderWidth: 0.5,
+      borderColor: '#404040',
+    },
     weekHeader: { flexDirection: 'row' },
     weekday: {
       flex: 1,
       fontSize: 12,
-      color: theme.colors.onSurfaceVariant,
+      color: '#9ca3af',
       textAlign: 'center',
       marginBottom: 6,
     },
@@ -117,11 +122,8 @@ const createStyles = (theme: MD3Theme) =>
     cellSelected: {
       backgroundColor: theme.colors.primaryContainer,
     },
-    cellOtherMonth: {
-      opacity: 0.5,
-    },
-    dayNumber: { fontSize: 13, fontWeight: '700', color: theme.colors.onSurface },
-    dayNumberOtherMonth: { fontWeight: '600' },
+    dayNumber: { fontSize: 13, fontWeight: '700', color: '#d1d5db' },
+    dayNumberOtherMonth: { fontWeight: '600', color: '#525252' },
     dotsRow: { flexDirection: 'row', gap: 4, marginTop: 2, height: 10, alignItems: 'center' },
     dot: { width: 7, height: 7, borderRadius: 99 },
   });

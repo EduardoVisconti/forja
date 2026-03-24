@@ -115,7 +115,7 @@ export default function HomeScreen() {
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
               ) : lastWorkout ? (
                 <>
-                  <Text style={styles.primaryText}>{lastWorkout.templateName}</Text>
+                  <Text style={styles.templateNameText}>{lastWorkout.templateName}</Text>
                   <Text style={styles.mutedText}>
                     {formatWorkoutDateLabel(lastWorkout.finishedAt, t)}
                   </Text>
@@ -136,7 +136,7 @@ export default function HomeScreen() {
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
               ) : todayHabits ? (
                 <>
-                  <Text style={styles.primaryText}>
+                  <Text style={styles.habitsScoreText}>
                     {t('home.habitsScore', { score: habitsScore, total: habitsTotal })}
                   </Text>
                   {!hasCheckedHabits ? (
@@ -213,7 +213,7 @@ const createStyles = (theme: MD3Theme) =>
     cardTitle: {
       fontSize: 16,
       fontWeight: '700',
-      color: theme.colors.onSurface,
+      color: theme.colors.onSurfaceVariant,
       marginBottom: 8,
     },
     greeting: {
@@ -230,6 +230,16 @@ const createStyles = (theme: MD3Theme) =>
       fontSize: 16,
       fontWeight: '600',
       color: theme.colors.onSurface,
+    },
+    templateNameText: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: '#ffffff',
+    },
+    habitsScoreText: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: '#ef4444',
     },
     mutedText: {
       fontSize: 14,

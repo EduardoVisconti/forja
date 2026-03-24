@@ -1,5 +1,6 @@
-import { useWindowDimensions } from 'react-native';
-import { Card, Text } from 'react-native-paper';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import { Card, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { WeeklyHabitScoreVM } from '../types/historyTypes';
 import { SimpleLineChart } from './charts/SimpleLineChart';
@@ -34,6 +35,8 @@ function weekdayKeyFromDateISO(dateISO: string): string {
 
 export function WeeklyHabitScoreLineChart({ data }: Props) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const { width } = useWindowDimensions();
 
   const chartWidth = Math.max(width - 32, 280);
@@ -45,11 +48,11 @@ export function WeeklyHabitScoreLineChart({ data }: Props) {
     })) ?? [];
 
   return (
-    <Card style={{ marginHorizontal: 16, marginTop: 8 }}>
+    <Card style={styles.card}>
       <Card.Title title={t('history.weeklyHabitScore.title')} />
       <Card.Content>
         {data ? (
-          <SimpleLineChart points={points} width={chartWidth} height={220} yMax={data.maxHabits} strokeColor="#8b5cf6" />
+          <SimpleLineChart points={points} width={chartWidth} height={176} yMax={data.maxHabits} strokeColor="#ef4444" />
         ) : (
           <Text>{t('common.loading')}</Text>
         )}
@@ -58,3 +61,13 @@ export function WeeklyHabitScoreLineChart({ data }: Props) {
   );
 }
 
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    card: {
+      marginHorizontal: 16,
+      marginTop: 8,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+    },
+  });
