@@ -1,13 +1,9 @@
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { CalendarDayVM, CalendarMonthVM } from '../types/historyTypes';
-
-const DOTS = {
-  workout: '#22c55e',
-  cardio: '#3b82f6',
-  habit: '#8b5cf6',
-} as const;
 
 function chunkDays(days: CalendarDayVM[], size: number): CalendarDayVM[][] {
   const chunks: CalendarDayVM[][] = [];
@@ -33,8 +29,15 @@ interface Props {
 
 export function CalendarView({ month, selectedDateISO, onSelectDay }: Props) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
 
   const rows = useMemo(() => chunkDays(month.days, 7), [month.days]);
+  const dots = {
+    workout: theme.colors.primary,
+    cardio: theme.colors.secondary,
+    habit: theme.colors.onSurfaceVariant,
+  } as const;
 
   const weekLabels = [
     t('history.weekdays.mon'),
@@ -77,9 +80,9 @@ export function CalendarView({ month, selectedDateISO, onSelectDay }: Props) {
                   {day.dayNumber}
                 </Text>
                 <View style={styles.dotsRow}>
-                  {day.dots.workout ? <View style={[styles.dot, { backgroundColor: DOTS.workout }]} /> : null}
-                  {day.dots.cardio ? <View style={[styles.dot, { backgroundColor: DOTS.cardio }]} /> : null}
-                  {day.dots.habit ? <View style={[styles.dot, { backgroundColor: DOTS.habit }]} /> : null}
+                  {day.dots.workout ? <View style={[styles.dot, { backgroundColor: dots.workout }]} /> : null}
+                  {day.dots.cardio ? <View style={[styles.dot, { backgroundColor: dots.cardio }]} /> : null}
+                  {day.dots.habit ? <View style={[styles.dot, { backgroundColor: dots.habit }]} /> : null}
                 </View>
               </Pressable>
             );
@@ -90,29 +93,35 @@ export function CalendarView({ month, selectedDateISO, onSelectDay }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
-  weekHeader: { flexDirection: 'row' },
-  weekday: { flex: 1, fontSize: 12, color: '#6b7280', textAlign: 'center', marginBottom: 6 },
-  row: { flexDirection: 'row' },
-  cell: {
-    flex: 1,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    marginHorizontal: 1,
-    marginVertical: 2,
-  },
-  cellSelected: {
-    backgroundColor: '#dbeafe',
-  },
-  cellOtherMonth: {
-    opacity: 0.5,
-  },
-  dayNumber: { fontSize: 13, fontWeight: '700', color: '#111827' },
-  dayNumberOtherMonth: { fontWeight: '600' },
-  dotsRow: { flexDirection: 'row', gap: 4, marginTop: 2, height: 10, alignItems: 'center' },
-  dot: { width: 7, height: 7, borderRadius: 99 },
-});
-
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    container: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
+    weekHeader: { flexDirection: 'row' },
+    weekday: {
+      flex: 1,
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+      marginBottom: 6,
+    },
+    row: { flexDirection: 'row' },
+    cell: {
+      flex: 1,
+      height: 52,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 10,
+      marginHorizontal: 1,
+      marginVertical: 2,
+    },
+    cellSelected: {
+      backgroundColor: theme.colors.primaryContainer,
+    },
+    cellOtherMonth: {
+      opacity: 0.5,
+    },
+    dayNumber: { fontSize: 13, fontWeight: '700', color: theme.colors.onSurface },
+    dayNumberOtherMonth: { fontWeight: '600' },
+    dotsRow: { flexDirection: 'row', gap: 4, marginTop: 2, height: 10, alignItems: 'center' },
+    dot: { width: 7, height: 7, borderRadius: 99 },
+  });

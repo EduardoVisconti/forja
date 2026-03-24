@@ -4,7 +4,6 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useColorScheme } from 'react-native';
 import { supabase } from '@/core/supabase/client';
 import { useAuthStore } from '@/core/auth/authStore';
 import {
@@ -13,23 +12,41 @@ import {
 } from '@/features/habits/services/notificationService';
 import { useSync } from '@/core/sync/useSync';
 
-const lightTheme = {
-  ...MD3LightTheme,
-  colors: {
-    ...MD3LightTheme.colors,
-    primary: '#16a34a',
-    primaryContainer: '#dcfce7',
-    onPrimaryContainer: '#14532d',
-  },
-};
-
-const darkTheme = {
+export const darkTheme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    primary: '#4ade80',
-    primaryContainer: '#14532d',
-    onPrimaryContainer: '#dcfce7',
+    background: '#0a0a0a',
+    surface: '#141414',
+    surfaceVariant: '#1e1e1e',
+    primary: '#ef4444',
+    primaryContainer: '#7f1d1d',
+    onPrimary: '#ffffff',
+    onPrimaryContainer: '#fecaca',
+    secondary: '#f87171',
+    onBackground: '#f5f5f5',
+    onSurface: '#f5f5f5',
+    onSurfaceVariant: '#a3a3a3',
+    outline: '#404040',
+  },
+};
+
+export const lightTheme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    background: '#0a0a0a',
+    surface: '#141414',
+    surfaceVariant: '#1e1e1e',
+    primary: '#ef4444',
+    primaryContainer: '#7f1d1d',
+    onPrimary: '#ffffff',
+    onPrimaryContainer: '#fecaca',
+    secondary: '#f87171',
+    onBackground: '#f5f5f5',
+    onSurface: '#f5f5f5',
+    onSurfaceVariant: '#a3a3a3',
+    outline: '#404040',
   },
 };
 
@@ -42,8 +59,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const { t } = useTranslation();
 
   useSync();
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const theme = darkTheme;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

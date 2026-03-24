@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import { Switch, Text } from 'react-native-paper';
+import { Switch, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 
 interface Props {
   habitId: string;
@@ -11,6 +12,9 @@ interface Props {
 }
 
 export function HabitToggleItem({ habitId, label, emoji, checked, disabled, onToggle }: Props) {
+  const theme = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <View style={[styles.row, disabled && styles.disabled]}>
       <Text style={styles.icon}>{emoji}</Text>
@@ -26,17 +30,18 @@ export function HabitToggleItem({ habitId, label, emoji, checked, disabled, onTo
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e5e7eb',
-    backgroundColor: '#ffffff',
-  },
-  disabled: { opacity: 0.5 },
-  icon: { fontSize: 22, marginRight: 12 },
-  label: { flex: 1, color: '#111827' },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.outline,
+      backgroundColor: theme.colors.surface,
+    },
+    disabled: { opacity: 0.5 },
+    icon: { fontSize: 22, marginRight: 12 },
+    label: { flex: 1, color: theme.colors.onSurface },
+  });

@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import { IconButton, Text } from 'react-native-paper';
+import { IconButton, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { Exercise, UserPreferences } from '../types';
 
@@ -41,6 +42,8 @@ export function ExerciseItem({
   onDelete,
 }: ExerciseItemProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.row}>
@@ -79,48 +82,49 @@ export function ExerciseItem({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
-  },
-  reorder: {
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  reorderBtn: {
-    margin: 0,
-    width: 28,
-    height: 28,
-  },
-  info: {
-    flex: 1,
-    paddingHorizontal: 4,
-  },
-  name: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  details: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginTop: 2,
-  },
-  notes: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginTop: 2,
-    fontStyle: 'italic',
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 10,
+      padding: 8,
+      marginBottom: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+    },
+    reorder: {
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    reorderBtn: {
+      margin: 0,
+      width: 28,
+      height: 28,
+    },
+    info: {
+      flex: 1,
+      paddingHorizontal: 4,
+    },
+    name: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.colors.onSurface,
+    },
+    details: {
+      fontSize: 13,
+      color: theme.colors.onSurfaceVariant,
+      marginTop: 2,
+    },
+    notes: {
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      marginTop: 2,
+      fontStyle: 'italic',
+    },
+    actions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+  });

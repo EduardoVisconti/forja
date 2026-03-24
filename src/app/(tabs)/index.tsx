@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Card, IconButton, Text } from 'react-native-paper';
+import { Card, IconButton, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/core/auth/useAuth';
@@ -55,6 +56,8 @@ function formatWorkoutDateLabel(finishedAtISO: string, t: (key: string, options?
 
 export default function HomeScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const { signOut, isLoading } = useAuth();
   const [profileVisible, setProfileVisible] = useState(false);
   const {
@@ -103,8 +106,6 @@ export default function HomeScreen() {
           </Card.Content>
         </Card>
 
-        <WeeklyStreakCard data={weeklyStreak} title={t('home.weekStreak')} style={styles.card} />
-
         <View style={styles.bottomRow}>
           <Card style={[styles.card, styles.halfCard]}>
             <Card.Content>
@@ -149,6 +150,8 @@ export default function HomeScreen() {
           </Card>
         </View>
 
+        <WeeklyStreakCard data={weeklyStreak} title={t('home.weekStreak')} style={styles.card} />
+
         {error ? <Text style={styles.errorText}>{t('common.error')}</Text> : null}
       </ScrollView>
 
@@ -161,78 +164,82 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 4,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  logo: {
-    width: 32,
-    height: 32,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 32,
-    gap: 12,
-  },
-  card: {
-    margin: 0,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  halfCard: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 6,
-  },
-  primaryText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  mutedText: {
-    fontSize: 14,
-    color: '#9ca3af',
-  },
-  secondarySmall: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginTop: 4,
-  },
-  errorText: {
-    color: '#ef4444',
-    fontSize: 13,
-    paddingHorizontal: 4,
-  },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      paddingBottom: 4,
+      backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outline,
+    },
+    logo: {
+      width: 32,
+      height: 32,
+    },
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 32,
+      gap: 12,
+    },
+    card: {
+      margin: 0,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+    },
+    bottomRow: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    halfCard: {
+      flex: 1,
+    },
+    cardTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.colors.onSurface,
+      marginBottom: 8,
+    },
+    greeting: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: theme.colors.onSurface,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
+      marginTop: 6,
+    },
+    primaryText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.colors.onSurface,
+    },
+    mutedText: {
+      fontSize: 14,
+      color: theme.colors.onSurfaceVariant,
+    },
+    secondarySmall: {
+      fontSize: 12,
+      color: theme.colors.onSurfaceVariant,
+      marginTop: 4,
+    },
+    errorText: {
+      color: theme.colors.primary,
+      fontSize: 13,
+      paddingHorizontal: 4,
+    },
+  });

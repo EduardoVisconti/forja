@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import { Card, IconButton, Text } from 'react-native-paper';
+import { Card, IconButton, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { CardioLog } from '../types';
 
@@ -28,6 +29,8 @@ function useLogTitle(log: CardioLog): string {
 
 export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const isImperial = unit === 'lbs';
   const title = useLogTitle(log);
 
@@ -36,6 +39,16 @@ export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
     : `${log.distanceKm.toFixed(2)} km`;
 
   const paceUnit = isImperial ? t('cardio.pacePerMile') : t('cardio.pacePerKm');
+  const Stat = ({ label, value }: { label: string; value: string }) => (
+    <View style={styles.stat}>
+      <Text variant="labelSmall" style={styles.statLabel}>
+        {label}
+      </Text>
+      <Text variant="bodyMedium" style={styles.statValue}>
+        {value}
+      </Text>
+    </View>
+  );
 
   return (
     <Card style={styles.card}>
@@ -68,26 +81,19 @@ export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.stat}>
-      <Text variant="labelSmall" style={styles.statLabel}>
-        {label}
-      </Text>
-      <Text variant="bodyMedium" style={styles.statValue}>
-        {value}
-      </Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  card: { marginBottom: 12 },
-  content: { gap: 8 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  stat: { minWidth: 70 },
-  statLabel: { color: '#6b7280', marginBottom: 2 },
-  statValue: { fontWeight: '600' },
-  actions: { flexDirection: 'row' },
-  notes: { color: '#6b7280', fontStyle: 'italic', marginTop: 4 },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    card: {
+      marginBottom: 12,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+    },
+    content: { gap: 8 },
+    row: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+    stat: { minWidth: 70 },
+    statLabel: { color: theme.colors.onSurfaceVariant, marginBottom: 2 },
+    statValue: { fontWeight: '600', color: theme.colors.onSurface },
+    actions: { flexDirection: 'row' },
+    notes: { color: theme.colors.onSurfaceVariant, fontStyle: 'italic', marginTop: 4 },
+  });

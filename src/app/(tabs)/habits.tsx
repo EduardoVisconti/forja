@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, IconButton, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, IconButton, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { HabitConfigModal } from '@/features/habits/components/HabitConfigModal';
@@ -15,6 +16,8 @@ function formatDDMMYYYY(iso: string): string {
 
 export default function HabitsScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const {
     selectedDate,
@@ -122,37 +125,48 @@ export default function HabitsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
-  subtitle: { fontSize: 13, color: '#6b7280', marginTop: 2 },
-  dateNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  dateText: { flex: 1, fontSize: 16, textAlign: 'center', color: '#111827' },
-  todayButton: { alignSelf: 'center', marginTop: 4 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyIcon: { fontSize: 30, marginBottom: 8 },
-  emptyText: { color: '#6b7280', textAlign: 'center', marginBottom: 12, paddingHorizontal: 24 },
-  errorText: { color: '#ef4444', textAlign: 'center', marginBottom: 12, paddingHorizontal: 24 },
-  scroll: { flexGrow: 1, paddingBottom: 40 },
-  list: {
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    header: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 12,
+      backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outline,
+    },
+    headerTop: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.onSurface },
+    subtitle: { fontSize: 13, color: theme.colors.onSurfaceVariant, marginTop: 2 },
+    dateNav: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    dateText: { flex: 1, fontSize: 16, textAlign: 'center', color: theme.colors.onSurface },
+    todayButton: { alignSelf: 'center', marginTop: 4 },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    emptyIcon: { fontSize: 30, marginBottom: 8 },
+    emptyText: {
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+      marginBottom: 12,
+      paddingHorizontal: 24,
+    },
+    errorText: {
+      color: theme.colors.primary,
+      textAlign: 'center',
+      marginBottom: 12,
+      paddingHorizontal: 24,
+    },
+    scroll: { flexGrow: 1, paddingBottom: 40 },
+    list: {
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.outline,
+    },
+  });

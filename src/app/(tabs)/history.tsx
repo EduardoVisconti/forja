@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, IconButton, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, IconButton, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { CalendarView } from '@/features/history/components/CalendarView';
@@ -13,6 +14,8 @@ import { useHistoryProgress } from '@/features/history/hooks/useHistoryProgress'
 
 export default function HistoryScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const {
     isLoading,
     error,
@@ -101,15 +104,29 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
-  header: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, backgroundColor: '#ffffff', borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
-  monthNav: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  monthLabel: { flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '700', color: '#111827' },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, padding: 16 },
-  loadingText: { color: '#6b7280' },
-  emptyIcon: { fontSize: 30 },
-  errorText: { color: '#ef4444', textAlign: 'center' },
-  scroll: { flexGrow: 1, paddingBottom: 40 },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    header: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 12,
+      backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outline,
+    },
+    title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.onSurface },
+    monthNav: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+    monthLabel: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.colors.onSurface,
+    },
+    loading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, padding: 16 },
+    loadingText: { color: theme.colors.onSurfaceVariant },
+    emptyIcon: { fontSize: 30 },
+    errorText: { color: theme.colors.primary, textAlign: 'center' },
+    scroll: { flexGrow: 1, paddingBottom: 40 },
+  });

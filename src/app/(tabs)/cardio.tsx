@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, FAB, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, FAB, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CardioCategoryFilter } from '@/features/cardio/components/CardioCategoryFilter';
@@ -13,6 +14,8 @@ import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences'
 
 export default function CardioScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const { unit } = useUserPreferences();
   const {
     logs,
@@ -128,23 +131,24 @@ export default function CardioScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  list: { padding: 16, paddingBottom: 100 },
-  empty: { alignItems: 'center', paddingTop: 80, paddingHorizontal: 20, gap: 12 },
-  emptyIcon: { fontSize: 30 },
-  emptyText: { fontSize: 15, color: '#9ca3af', textAlign: 'center' },
-  emptyAction: { marginTop: 4 },
-  errorText: { color: '#ef4444', textAlign: 'center', marginBottom: 12 },
-  fab: { position: 'absolute', right: 16, bottom: 24 },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    header: {
+      paddingHorizontal: 16,
+      paddingTop: 20,
+      paddingBottom: 12,
+      backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outline,
+    },
+    title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.onSurface },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    list: { padding: 16, paddingBottom: 100 },
+    empty: { alignItems: 'center', paddingTop: 80, paddingHorizontal: 20, gap: 12 },
+    emptyIcon: { fontSize: 30 },
+    emptyText: { fontSize: 15, color: theme.colors.onSurfaceVariant, textAlign: 'center' },
+    emptyAction: { marginTop: 4 },
+    errorText: { color: theme.colors.primary, textAlign: 'center', marginBottom: 12 },
+    fab: { position: 'absolute', right: 16, bottom: 24 },
+  });

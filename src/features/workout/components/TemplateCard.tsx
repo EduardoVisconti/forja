@@ -1,5 +1,6 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { IconButton, Text } from 'react-native-paper';
+import { IconButton, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutTemplate } from '../types';
 
@@ -21,6 +22,8 @@ export function TemplateCard({
   onStart,
 }: TemplateCardProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
@@ -46,53 +49,54 @@ export function TemplateCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  left: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 6,
-  },
-  meta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  badge: {
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  badgeGym: {
-    backgroundColor: '#dcfce7',
-  },
-  badgeCardio: {
-    backgroundColor: '#dbeafe',
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  count: {
-    fontSize: 13,
-    color: '#6b7280',
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.outline,
+    },
+    left: {
+      flex: 1,
+    },
+    name: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: theme.colors.onSurface,
+      marginBottom: 6,
+    },
+    meta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    badge: {
+      borderRadius: 6,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+    },
+    badgeGym: {
+      backgroundColor: theme.colors.primaryContainer,
+    },
+    badgeCardio: {
+      backgroundColor: theme.colors.surfaceVariant,
+    },
+    badgeText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.onSurface,
+    },
+    count: {
+      fontSize: 13,
+      color: theme.colors.onSurfaceVariant,
+    },
+    actions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+  });
