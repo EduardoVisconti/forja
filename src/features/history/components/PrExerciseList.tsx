@@ -17,7 +17,7 @@ export function PrExerciseList({ exercises, onPressExercise }: Props) {
   const { t } = useTranslation();
 
   return (
-    <Card style={{ marginHorizontal: 16, marginTop: 8 }}>
+    <Card style={{ marginHorizontal: 16, marginTop: 8, backgroundColor: '#141414' }}>
       <Card.Title title={t('history.pr.title')} />
       <Card.Content>
         {exercises.length === 0 ? (
@@ -38,6 +38,7 @@ export function PrExerciseList({ exercises, onPressExercise }: Props) {
                   description={t('history.pr.bestLine', { weight: bestWeight, date: bestDate })}
                   onPress={() => onPressExercise(item.exerciseId)}
                   titleStyle={styles.title}
+                  style={styles.listItem}
                 />
               );
             }}
@@ -51,5 +52,6 @@ export function PrExerciseList({ exercises, onPressExercise }: Props) {
 const styles = StyleSheet.create({
   separator: { height: 1, backgroundColor: '#e5e7eb' },
   title: { fontWeight: '700' },
+  listItem: { backgroundColor: '#141414' },
 });
 
