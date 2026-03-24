@@ -108,9 +108,8 @@ export default function HomeScreen() {
         </Card>
 
         <View style={styles.bottomRow}>
-          <View style={{ flex: 1, overflow: 'hidden', borderRadius: 12 }}>
-            <Card elevation={0} style={[styles.card, styles.bottomRowCard]}>
-              <Card.Content style={styles.bottomRowContent}>
+          <View style={[styles.bottomRowCard, { flex: 1 }]}>
+            <View style={styles.bottomRowContent}>
               <Text style={styles.cardTitle}>{t('home.lastWorkout')}</Text>
               {isOverviewLoading ? (
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
@@ -127,13 +126,11 @@ export default function HomeScreen() {
                   <Text style={styles.mutedText}>{t('home.noWorkoutHint')}</Text>
                 </>
               )}
-              </Card.Content>
-            </Card>
+            </View>
           </View>
 
-          <View style={{ flex: 1, overflow: 'hidden', borderRadius: 12 }}>
-            <Card elevation={0} style={[styles.card, styles.bottomRowCard]}>
-              <Card.Content style={styles.bottomRowContent}>
+          <View style={[styles.bottomRowCard, { flex: 1 }]}>
+            <View style={styles.bottomRowContent}>
               <Text style={styles.habitsCardTitle}>{t('home.habitsToday')}</Text>
               {isOverviewLoading ? (
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
@@ -155,8 +152,7 @@ export default function HomeScreen() {
                   <Text style={styles.secondarySmall}>Vamos lá?</Text>
                 </>
               )}
-              </Card.Content>
-            </Card>
+            </View>
           </View>
         </View>
 
@@ -218,11 +214,10 @@ const createStyles = (theme: MD3Theme) =>
       gap: 12,
     },
     bottomRowCard: {
-      flex: 1,
       borderRadius: 12,
+      backgroundColor: '#141414',
       borderWidth: 0.5,
       borderColor: '#2a2a2a',
-      overflow: 'hidden',
     },
     bottomRowContent: {
       padding: 12,
