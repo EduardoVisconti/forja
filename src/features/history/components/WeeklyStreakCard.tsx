@@ -5,11 +5,12 @@ import type { WeeklyStreakVM } from '../types/historyTypes';
 
 interface Props {
   data: WeeklyStreakVM | null;
+  title?: string;
 }
 
 const WEEKDAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
-export function WeeklyStreakCard({ data }: Props) {
+export function WeeklyStreakCard({ data, title }: Props) {
   const { t } = useTranslation();
 
   if (!data) {
@@ -26,7 +27,7 @@ export function WeeklyStreakCard({ data }: Props) {
 
   return (
     <Card style={styles.card}>
-      <Card.Title title={t('history.weekStreak')} />
+      <Card.Title title={title ?? t('history.weekStreak')} />
       <Card.Content style={styles.content}>
         <View style={styles.left}>
           <Text style={styles.flame}>🔥</Text>

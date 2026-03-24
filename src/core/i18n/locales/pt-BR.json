@@ -58,9 +58,20 @@
     "error": "Erro ao sincronizar"
   },
   "home": {
-    "title": "Forja",
-    "welcome": "Bom treino!",
-    "signOut": "Sair"
+    "signOut": "Sair",
+    "goodMorning": "Bom dia",
+    "goodAfternoon": "Boa tarde",
+    "goodEvening": "Boa noite",
+    "lastWorkout": "Último treino",
+    "noWorkoutYet": "Nenhum treino ainda",
+    "noWorkoutHint": "Quando você concluir seu primeiro treino, ele aparecerá aqui.",
+    "habitsToday": "Hábitos hoje",
+    "habitsNotChecked": "Ainda não registrado hoje",
+    "habitsScore": "Score {{score}}/{{total}}",
+    "weekStreak": "Sequência",
+    "today": "hoje",
+    "yesterday": "ontem",
+    "daysAgo": "há {{count}} dias"
   },
   "tabs": {
     "home": "Início",
