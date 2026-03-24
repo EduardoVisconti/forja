@@ -108,8 +108,8 @@ export default function HomeScreen() {
         </Card>
 
         <View style={styles.bottomRow}>
-          <Card style={[styles.card, styles.halfCard]}>
-            <Card.Content>
+          <Card style={[styles.card, styles.bottomRowCard]}>
+            <Card.Content style={styles.bottomRowContent}>
               <Text style={styles.cardTitle}>{t('home.lastWorkout')}</Text>
               {isOverviewLoading ? (
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
@@ -129,8 +129,8 @@ export default function HomeScreen() {
             </Card.Content>
           </Card>
 
-          <Card style={[styles.card, styles.halfCard]}>
-            <Card.Content>
+          <Card style={[styles.card, styles.bottomRowCard]}>
+            <Card.Content style={styles.bottomRowContent}>
               <Text style={styles.cardTitle}>{t('home.habitsToday')}</Text>
               {isOverviewLoading ? (
                 <Text style={styles.mutedText}>{t('common.loading')}</Text>
@@ -207,8 +207,12 @@ const createStyles = (theme: MD3Theme) =>
       flexDirection: 'row',
       gap: 12,
     },
-    halfCard: {
+    bottomRowCard: {
       flex: 1,
+      borderRadius: 12,
+    },
+    bottomRowContent: {
+      padding: 12,
     },
     cardTitle: {
       fontSize: 16,
