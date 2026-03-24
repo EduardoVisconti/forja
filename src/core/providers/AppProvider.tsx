@@ -13,6 +13,26 @@ import {
 } from '@/features/habits/services/notificationService';
 import { useSync } from '@/core/sync/useSync';
 
+const lightTheme = {
+  ...MD3LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: '#16a34a',
+    primaryContainer: '#dcfce7',
+    onPrimaryContainer: '#14532d',
+  },
+};
+
+const darkTheme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    primary: '#4ade80',
+    primaryContainer: '#14532d',
+    onPrimaryContainer: '#dcfce7',
+  },
+};
+
 interface AppProviderProps {
   children: ReactNode;
 }
@@ -23,7 +43,7 @@ export function AppProvider({ children }: AppProviderProps) {
 
   useSync();
   const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
