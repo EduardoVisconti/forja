@@ -106,7 +106,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
         <Dialog.Title style={styles.title}>
           {initial ? t('cardio.editEntry') : t('cardio.newEntry')}
         </Dialog.Title>
-        <Dialog.ScrollArea style={styles.scrollArea}>
+        <Dialog.Content style={styles.contentWrapper}>
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
             {/* Date */}
             <Controller
@@ -317,7 +317,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
               )}
             />
           </ScrollView>
-        </Dialog.ScrollArea>
+        </Dialog.Content>
         <Dialog.Actions style={styles.actions}>
           <Button onPress={onDismiss}>{t('common.cancel')}</Button>
           <Button mode="contained" onPress={handleSubmit(handleSave)}>
@@ -331,11 +331,15 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
 
 const createStyles = (theme: MD3Theme) =>
   StyleSheet.create({
-    dialog: { maxHeight: '90%' },
+    dialog: {
+      borderRadius: 16,
+      backgroundColor: theme.colors.surface,
+      maxHeight: '90%',
+    },
     title: { paddingHorizontal: 16 },
-    scrollArea: { paddingHorizontal: 16 },
+    contentWrapper: { paddingHorizontal: 16, paddingBottom: 8 },
     content: { paddingVertical: 4 },
-    actions: { paddingHorizontal: 16 },
+    actions: { paddingHorizontal: 16, paddingBottom: 0, marginBottom: 0 },
     input: { marginBottom: 8 },
     sectionLabel: { marginTop: 8, marginBottom: 4, color: theme.colors.onSurfaceVariant },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
