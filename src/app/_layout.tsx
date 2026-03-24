@@ -52,6 +52,7 @@ function AuthGate() {
 
     const inAuthGroup = segments[0] === '(auth)';
     const inOnboardingScreen = segments[0] === 'onboarding';
+    const inTabsGroup = segments[0] === '(tabs)';
 
     if (!user && !inAuthGroup) {
       router.replace('/(auth)/login');
@@ -62,7 +63,7 @@ function AuthGate() {
 
     if (isCheckingOnboarding || hasCompleted === null) return;
 
-    if (!hasCompleted && !inOnboardingScreen) {
+    if (!hasCompleted && !inOnboardingScreen && !inTabsGroup) {
       router.replace('/onboarding');
       return;
     }
