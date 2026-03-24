@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Chip, Dialog, HelperText, Portal, Text, TextInput } from 'react-native-paper';
+import { Button, Chip, Dialog, HelperText, Portal, Text, TextInput, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
 import { TRAINING_TYPES, CARDIO_ZONES, cardioSchema, type CardioFormValues } from '../schemas/cardioSchemas';
@@ -34,6 +35,8 @@ function formatDDMMYYYY(iso: string): string {
 
 export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }: Props) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const isImperial = unit === 'lbs';
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -100,11 +103,11 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onDismiss} style={styles.dialog}>
-        <Dialog.Title>
+        <Dialog.Title style={styles.title}>
           {initial ? t('cardio.editEntry') : t('cardio.newEntry')}
         </Dialog.Title>
         <Dialog.ScrollArea style={styles.scrollArea}>
-          <ScrollView keyboardShouldPersistTaps="handled">
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
             {/* Date */}
             <Controller
               control={control}
@@ -315,7 +318,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
             />
           </ScrollView>
         </Dialog.ScrollArea>
-        <Dialog.Actions>
+        <Dialog.Actions style={styles.actions}>
           <Button onPress={onDismiss}>{t('common.cancel')}</Button>
           <Button mode="contained" onPress={handleSubmit(handleSave)}>
             {t('common.save')}
@@ -326,13 +329,17 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
   );
 }
 
-const styles = StyleSheet.create({
-  dialog: { maxHeight: '90%' },
-  scrollArea: { paddingHorizontal: 0 },
-  input: { marginBottom: 8 },
-  sectionLabel: { marginTop: 8, marginBottom: 4, color: '#6b7280' },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  chip: {},
-  row: { flexDirection: 'row', gap: 12, marginBottom: 8 },
-  half: { flex: 1 },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    dialog: { maxHeight: '90%' },
+    title: { paddingHorizontal: 16 },
+    scrollArea: { paddingHorizontal: 16 },
+    content: { paddingVertical: 4 },
+    actions: { paddingHorizontal: 16 },
+    input: { marginBottom: 8 },
+    sectionLabel: { marginTop: 8, marginBottom: 4, color: theme.colors.onSurfaceVariant },
+    chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
+    chip: {},
+    row: { flexDirection: 'row', gap: 12, marginBottom: 8 },
+    half: { flex: 1 },
+  });

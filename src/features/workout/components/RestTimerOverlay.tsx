@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import { Button, Text } from 'react-native-paper';
+import { Button, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -16,6 +17,8 @@ function formatTime(seconds: number): string {
 
 export function RestTimerOverlay({ secondsRemaining, onSkip, onAdd30 }: Props) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>
@@ -37,15 +40,17 @@ export function RestTimerOverlay({ secondsRemaining, onSkip, onAdd30 }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
-    gap: 16,
-  },
-  label: { color: 'gray' },
-  time: { fontWeight: 'bold' },
-  actions: { flexDirection: 'row', gap: 12 },
-  button: { flex: 1 },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    container: {
+      alignItems: 'center',
+      paddingVertical: 40,
+      paddingHorizontal: 24,
+      gap: 16,
+      backgroundColor: theme.colors.background,
+    },
+    label: { color: theme.colors.onSurfaceVariant },
+    time: { fontWeight: 'bold', color: theme.colors.onSurface },
+    actions: { flexDirection: 'row', gap: 12 },
+    button: { flex: 1 },
+  });

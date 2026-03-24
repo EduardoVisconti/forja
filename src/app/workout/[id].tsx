@@ -1,7 +1,8 @@
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { useEffect, useLayoutEffect } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, IconButton, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { ActiveExerciseCard } from '@/features/workout/components/ActiveExerciseCard';
 import { ExerciseQueuePanel } from '@/features/workout/components/ExerciseQueuePanel';
@@ -12,9 +13,9 @@ import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences'
 import { useWorkoutSessionStore } from '@/features/workout/store/workoutSessionStore';
 
 export default function ActiveSessionScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation();
-  const router = useRouter();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const navigation = useNavigation();
   const { unit } = useUserPreferences();
 
@@ -22,26 +23,7 @@ export default function ActiveSessionScreen() {
   const { completeSet, finishSession } = useActiveSession();
   const { restSecondsRemaining, timerRunning, skipRestTimer, addThirtySeconds } = useRestTimer();
 
-  const handleBack = () => {
-    Alert.alert(t('session.abandonTitle'), t('session.abandonMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('session.abandonConfirm'),
-        style: 'destructive',
-        onPress: () => {
-          store.endSession();
-          router.navigate('/(tabs)/workout');
-        },
-      },
-    ]);
-  };
-
   const currentExercise = store.exercises[store.currentExerciseIndex];
-  const isLastSet =
-    currentExercise && store.currentSetNumber === currentExercise.sets;
-  const activeExercisesLeft = store.exercises.filter(
-    (ex, i) => i > store.currentExerciseIndex && !ex.skipped,
-  ).length;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -96,7 +78,7 @@ export default function ActiveSessionScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       {timerRunning && restSecondsRemaining !== null ? (
         <RestTimerOverlay
           secondsRemaining={restSecondsRemaining}
@@ -135,7 +117,7 @@ export default function ActiveSessionScreen() {
         mode="outlined"
         onPress={handleFinish}
         style={styles.finishBtn}
-        textColor="red"
+        textColor={theme.colors.error}
       >
         {t('session.finishEarly')}
       </Button>
@@ -143,9 +125,29 @@ export default function ActiveSessionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flexGrow: 1 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16, padding: 24 },
-  queueHeader: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 4 },
-  finishBtn: { margin: 16 },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    container: {
+      flexGrow: 1,
+      backgroundColor: theme.colors.background,
+    },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 16,
+      padding: 24,
+      backgroundColor: theme.colors.background,
+    },
+    queueHeader: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 4,
+      backgroundColor: theme.colors.background,
+    },
+    finishBtn: { margin: 16 },
+  });

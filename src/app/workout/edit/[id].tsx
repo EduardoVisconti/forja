@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, FAB, IconButton, SegmentedButtons, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, FAB, IconButton, SegmentedButtons, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useExercises } from '@/features/workout/hooks/useExercises';
@@ -17,6 +18,8 @@ export default function TemplateDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
 
   const { templates, updateTemplate } = useWorkoutTemplates();
   const { startSession } = useActiveSession();
@@ -106,10 +109,33 @@ export default function TemplateDetailScreen() {
           value={unit}
           onValueChange={(v) => setUnit(v as 'kg' | 'lbs')}
           buttons={[
-            { value: 'kg', label: 'kg' },
-            { value: 'lbs', label: 'lbs' },
+            {
+              value: 'kg',
+              label: 'kg',
+              checkedColor: theme.colors.onPrimaryContainer,
+              uncheckedColor: theme.colors.onSurfaceVariant,
+              style: {
+                backgroundColor:
+                  unit === 'kg' ? theme.colors.primaryContainer : theme.colors.surfaceVariant,
+              },
+            },
+            {
+              value: 'lbs',
+              label: 'lbs',
+              checkedColor: theme.colors.onPrimaryContainer,
+              uncheckedColor: theme.colors.onSurfaceVariant,
+              style: {
+                backgroundColor:
+                  unit === 'lbs' ? theme.colors.primaryContainer : theme.colors.surfaceVariant,
+              },
+            },
           ]}
           style={styles.unitToggle}
+          theme={{
+            colors: {
+              outline: theme.colors.outline,
+            },
+          }}
         />
       </View>
 
@@ -169,51 +195,53 @@ export default function TemplateDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  unitRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  unitToggle: {
-    alignSelf: 'center',
-    maxWidth: 200,
-  },
-  list: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  empty: {
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: '#9ca3af',
-    textAlign: 'center',
-  },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 90,
-  },
-  startButton: {
-    margin: 16,
-    marginBottom: 24,
-  },
-  editLink: {
-    fontSize: 16,
-    color: '#16a34a',
-  },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    unitRow: {
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.outline,
+    },
+    unitToggle: {
+      alignSelf: 'center',
+      maxWidth: 200,
+    },
+    list: {
+      padding: 16,
+      paddingBottom: 100,
+    },
+    empty: {
+      alignItems: 'center',
+      paddingTop: 60,
+    },
+    emptyText: {
+      fontSize: 15,
+      color: theme.colors.onSurfaceVariant,
+      textAlign: 'center',
+    },
+    fab: {
+      position: 'absolute',
+      right: 16,
+      bottom: 90,
+    },
+    startButton: {
+      margin: 16,
+      marginBottom: 24,
+    },
+    editLink: {
+      fontSize: 16,
+      color: theme.colors.primary,
+    },
+  });

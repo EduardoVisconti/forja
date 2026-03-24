@@ -73,6 +73,7 @@ export default function HomeScreen() {
   const greetingKey = getGreetingKey(new Date().getHours());
   const habitsTotal = todayHabits?.totalActive ?? 0;
   const habitsScore = todayHabits?.score ?? 0;
+  const hasCheckedHabits = habitsScore > 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -138,12 +139,14 @@ export default function HomeScreen() {
                   <Text style={styles.primaryText}>
                     {t('home.habitsScore', { score: habitsScore, total: habitsTotal })}
                   </Text>
-                  <Text style={styles.secondarySmall}>Vamos l\u00E1?</Text>
+                  {!hasCheckedHabits ? (
+                    <Text style={styles.secondarySmall}>Vamos lá?</Text>
+                  ) : null}
                 </>
               ) : (
                 <>
                   <Text style={styles.mutedText}>{t('home.habitsNotChecked')}</Text>
-                  <Text style={styles.secondarySmall}>Vamos l\u00E1?</Text>
+                  <Text style={styles.secondarySmall}>Vamos lá?</Text>
                 </>
               )}
             </Card.Content>

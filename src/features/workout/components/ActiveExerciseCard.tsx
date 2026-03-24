@@ -1,7 +1,8 @@
 import * as Linking from 'expo-linking';
 import { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
-import { Button, Card, IconButton, Text, TextInput } from 'react-native-paper';
+import { Button, Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { SessionExercise } from '../types/session';
 import type { UserPreferences } from '../types/index';
@@ -18,6 +19,8 @@ const KG_TO_LBS = 2.20462;
 
 export function ActiveExerciseCard({ exercise, currentSet, preferences, onCompleteSet, onSkip }: Props) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const isLbs = preferences.unit === 'lbs';
 
   const defaultWeightDisplay = isLbs
@@ -81,7 +84,7 @@ export function ActiveExerciseCard({ exercise, currentSet, preferences, onComple
         </View>
       </Card.Content>
       <Card.Actions>
-        <Button onPress={onSkip} textColor="gray">
+        <Button onPress={onSkip} textColor={theme.colors.onSurfaceVariant}>
           {t('session.skipExercise')}
         </Button>
         <Button mode="contained" onPress={handleCompleteSet}>
@@ -92,9 +95,15 @@ export function ActiveExerciseCard({ exercise, currentSet, preferences, onComple
   );
 }
 
-const styles = StyleSheet.create({
-  card: { margin: 16 },
-  notes: { marginBottom: 12, color: 'gray', fontStyle: 'italic' },
-  inputs: { flexDirection: 'row', gap: 12 },
-  input: { flex: 1 },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    card: {
+      margin: 16,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.outlineVariant,
+    },
+    notes: { marginBottom: 12, color: theme.colors.onSurfaceVariant, fontStyle: 'italic' },
+    inputs: { flexDirection: 'row', gap: 12 },
+    input: { flex: 1 },
+  });

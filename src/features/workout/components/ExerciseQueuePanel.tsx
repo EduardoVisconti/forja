@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import { IconButton, List, Text } from 'react-native-paper';
+import { IconButton, List, Text, useTheme } from 'react-native-paper';
+import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { SessionExercise } from '../types/session';
 
@@ -21,6 +22,8 @@ export function ExerciseQueuePanel({
   onMoveDown,
 }: Props) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
 
   return (
     <View>
@@ -75,11 +78,15 @@ export function ExerciseQueuePanel({
   );
 }
 
-const styles = StyleSheet.create({
-  item: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#e0e0e0' },
-  current: { backgroundColor: '#f0f4ff' },
-  done: { color: 'gray' },
-  skipped: { color: 'gray', textDecorationLine: 'line-through' },
-  skippedBadge: { alignSelf: 'center', color: 'gray', fontSize: 12 },
-  reorder: { flexDirection: 'column', justifyContent: 'center' },
-});
+const createStyles = (theme: MD3Theme) =>
+  StyleSheet.create({
+    item: {
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.outlineVariant,
+    },
+    current: { backgroundColor: theme.colors.secondaryContainer },
+    done: { color: theme.colors.onSurfaceVariant },
+    skipped: { color: theme.colors.onSurfaceVariant, textDecorationLine: 'line-through' },
+    skippedBadge: { alignSelf: 'center', color: theme.colors.onSurfaceVariant, fontSize: 12 },
+    reorder: { flexDirection: 'column', justifyContent: 'center' },
+  });
