@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { dialogActionsStyle, modalStyle } from '@/core/theme/tokens';
 import { useProfile } from '@/features/home/hooks/useProfile';
 
 interface ProfileModalProps {
@@ -25,7 +26,7 @@ export function ProfileModal({ visible, onDismiss, onNameUpdated }: ProfileModal
 
   return (
     <Portal>
-      <Dialog visible={visible} onDismiss={onDismiss} style={styles.dialog}>
+      <Dialog visible={visible} onDismiss={onDismiss} style={[modalStyle, styles.dialog]}>
         <Dialog.Title>{t('home.profile.title')}</Dialog.Title>
         <Dialog.Content style={styles.content}>
           <TextInput
@@ -51,7 +52,7 @@ export function ProfileModal({ visible, onDismiss, onNameUpdated }: ProfileModal
           ) : null}
         </Dialog.Content>
 
-        <Dialog.Actions style={styles.actions}>
+        <Dialog.Actions style={[dialogActionsStyle, styles.actions]}>
           <Button
             mode="contained"
             onPress={changeName}
@@ -82,6 +83,7 @@ const styles = StyleSheet.create({
   content: {
     gap: 12,
     paddingTop: 4,
+    backgroundColor: 'transparent',
   },
   actions: {
     justifyContent: 'space-between',

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, IconButton, Portal, Switch, Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { dialogActionsStyle, modalStyle } from '@/core/theme/tokens';
 import type { HabitConfig } from '../types';
 
 const EMOJI_PRESETS = ['💪', '😴', '💧', '☀️', '🥗', '📖', '📵', '🏃', '🧘', '❤️'] as const;
@@ -86,19 +87,11 @@ export function HabitConfigModal({ visible, configs, onSave, onDismiss }: Props)
 
   return (
     <Portal>
-      <Dialog
-        visible={visible}
-        onDismiss={onDismiss}
-        style={{
-          borderRadius: 16,
-          backgroundColor: '#141414',
-          margin: 16,
-        }}
-      >
+      <Dialog visible={visible} onDismiss={onDismiss} style={modalStyle}>
         <Dialog.Title>{t('habits.config.title')}</Dialog.Title>
         <Dialog.Content style={{ backgroundColor: 'transparent' }}>
           <View style={styles.contentFullBleed}>
-            <ScrollView keyboardShouldPersistTaps="handled">
+            <ScrollView keyboardShouldPersistTaps="handled" style={styles.scrollView}>
               {editing.map((habit) => (
                 <View key={habit.id} style={styles.row}>
                   <Text style={styles.emoji}>{habit.emoji}</Text>
@@ -166,14 +159,7 @@ export function HabitConfigModal({ visible, configs, onSave, onDismiss }: Props)
             </ScrollView>
           </View>
         </Dialog.Content>
-        <Dialog.Actions
-          style={{
-            backgroundColor: '#141414',
-            borderBottomLeftRadius: 16,
-            borderBottomRightRadius: 16,
-            paddingBottom: 8,
-          }}
-        >
+        <Dialog.Actions style={dialogActionsStyle}>
           <Button onPress={onDismiss}>{t('common.cancel')}</Button>
           <Button mode="contained" onPress={handleSave}>
             {t('common.save')}
@@ -188,6 +174,10 @@ const styles = StyleSheet.create({
   contentFullBleed: {
     marginHorizontal: -24,
     marginBottom: -24,
+    backgroundColor: 'transparent',
+  },
+  scrollView: {
+    backgroundColor: 'transparent',
   },
   row: {
     flexDirection: 'row',

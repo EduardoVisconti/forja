@@ -4,6 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { dialogActionsStyle, modalStyle } from '@/core/theme/tokens';
 import { templateSchema, type TemplateFormValues } from '../schemas/workoutSchemas';
 import type { WorkoutTemplate } from '../types';
 
@@ -46,11 +47,11 @@ export function TemplateFormModal({
 
   return (
     <Portal>
-      <Dialog visible={visible} onDismiss={onDismiss} style={styles.dialog}>
+      <Dialog visible={visible} onDismiss={onDismiss} style={modalStyle}>
         <Dialog.Title>
           {isEditing ? t('workout.editTemplate') : t('workout.newTemplate')}
         </Dialog.Title>
-        <Dialog.Content>
+        <Dialog.Content style={styles.content}>
           <Controller
             control={control}
             name="name"
@@ -94,7 +95,7 @@ export function TemplateFormModal({
           </View>
         </Dialog.Content>
 
-        <Dialog.Actions>
+        <Dialog.Actions style={dialogActionsStyle}>
           <Button onPress={onDismiss}>{t('common.cancel')}</Button>
           <Button
             mode="contained"
@@ -111,13 +112,15 @@ export function TemplateFormModal({
 }
 
 const styles = StyleSheet.create({
-  dialog: {
-    borderRadius: 16,
+  content: {
+    backgroundColor: 'transparent',
   },
   typeRow: {
     marginTop: 16,
+    backgroundColor: 'transparent',
   },
   errorRow: {
     marginTop: 2,
+    backgroundColor: 'transparent',
   },
 });
