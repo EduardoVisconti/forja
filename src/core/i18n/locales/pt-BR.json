@@ -81,7 +81,25 @@
     "weekStreak": "Sequência",
     "today": "hoje",
     "yesterday": "ontem",
-    "daysAgo": "há {{count}} dias"
+    "daysAgo": "há {{count}} dias",
+    "profile": {
+      "open": "Perfil",
+      "title": "Perfil",
+      "nameLabel": "Nome",
+      "emailLabel": "E-mail",
+      "changeName": "Alterar nome",
+      "changePassword": "Alterar senha",
+      "close": "Fechar",
+      "nameUpdated": "Nome alterado com sucesso.",
+      "passwordResetSent": "Enviamos um e-mail para redefinir sua senha.",
+      "errors": {
+        "invalidName": "Digite pelo menos 2 caracteres",
+        "missingEmail": "Não foi encontrado um e-mail para esta conta.",
+        "notAuthenticated": "Usuário não autenticado.",
+        "updateNameFailed": "Não foi possível alterar seu nome. Tente novamente.",
+        "resetPasswordFailed": "Não foi possível enviar o e-mail de redefinição. Tente novamente."
+      }
+    }
   },
   "tabs": {
     "home": "Início",

@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Card, IconButton, ProgressBar, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/core/auth/useAuth';
 import { SyncStatusIndicator } from '@/core/sync/SyncStatusIndicator';
 import { WeeklyStreakCard } from '@/features/history/components/WeeklyStreakCard';
+import { ProfileModal } from '@/features/home/components/ProfileModal';
 import { useHomeOverview } from '@/features/home/hooks/useHomeOverview';
 
 function capitalize(text: string): string {
@@ -53,7 +56,16 @@ function formatWorkoutDateLabel(finishedAtISO: string, t: (key: string, options?
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { signOut, isLoading } = useAuth();
-  const { isLoading: isOverviewLoading, weeklyStreak, lastWorkout, todayHabits, error, displayName } =
+  const [profileVisible, setProfileVisible] = useState(false);
+  const {
+    isLoading: isOverviewLoading,
+    weeklyStreak,
+    lastWorkout,
+    todayHabits,
+    error,
+    displayName,
+    reloadOverview,
+  } =
     useHomeOverview();
   const greetingKey = getGreetingKey(new Date().getHours());
   const habitsTotal = todayHabits?.totalActive ?? 0;
@@ -66,6 +78,12 @@ export default function HomeScreen() {
         <Image source={require('../../../assets/icon.png')} style={styles.logo} resizeMode="contain" />
         <View style={styles.headerRight}>
           <SyncStatusIndicator />
+          <IconButton
+            icon={({ color, size }) => <Ionicons name="person-circle" size={size} color={color} />}
+            size={22}
+            onPress={() => setProfileVisible(true)}
+            accessibilityLabel={t('home.profile.open')}
+          />
           <IconButton
             icon="logout-variant"
             size={20}
@@ -129,6 +147,12 @@ export default function HomeScreen() {
 
         {error ? <Text style={styles.errorText}>{t('common.error')}</Text> : null}
       </ScrollView>
+
+      <ProfileModal
+        visible={profileVisible}
+        onDismiss={() => setProfileVisible(false)}
+        onNameUpdated={reloadOverview}
+      />
     </SafeAreaView>
   );
 }

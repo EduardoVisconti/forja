@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/core/auth/authStore';
 import { getAllSessions } from '@/features/workout/services/sessionStorage';
@@ -39,6 +39,11 @@ export function useHomeOverview() {
   const user = useAuthStore((s) => s.user);
   const userId = user?.id ?? '';
   const [state, setState] = useState<HomeOverviewState>(initialState);
+  const [refreshToken, setRefreshToken] = useState(0);
+
+  const reloadOverview = useCallback(() => {
+    setRefreshToken((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -94,11 +99,12 @@ export function useHomeOverview() {
     return () => {
       isMounted = false;
     };
-  }, [userId, user?.email, user?.user_metadata?.full_name]);
+  }, [refreshToken, userId, user?.email, user?.user_metadata?.full_name]);
 
   return {
     user,
     userId,
+    reloadOverview,
     ...state,
   };
 }
