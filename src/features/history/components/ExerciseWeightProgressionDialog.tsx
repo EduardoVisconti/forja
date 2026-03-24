@@ -68,7 +68,7 @@ export function ExerciseWeightProgressionDialog({ visible, exercise, onDismiss }
 }
 
 const styles = StyleSheet.create({
-  dialog: { maxWidth: 520 },
+  dialog: { maxWidth: 520, backgroundColor: '#141414' },
   content: { gap: 12 },
   bestLine: { fontWeight: '700' },
 });

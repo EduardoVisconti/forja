@@ -101,7 +101,7 @@ export function DaySummaryDialog({ visible, summary, onDismiss }: Props) {
 }
 
 const styles = StyleSheet.create({
-  dialog: { maxWidth: 420 },
+  dialog: { maxWidth: 420, backgroundColor: '#141414' },
   dateText: { fontWeight: '700', marginBottom: 10, textAlign: 'center' },
   sections: { gap: 14 },
   section: { gap: 6 },
