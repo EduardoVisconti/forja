@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, FAB, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, FAB, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CardioCategoryFilter } from '@/features/cardio/components/CardioCategoryFilter';
@@ -14,8 +14,17 @@ import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences'
 export default function CardioScreen() {
   const { t } = useTranslation();
   const { unit } = useUserPreferences();
-  const { logs, isLoading, activeFilter, setActiveFilter, createLog, updateLog, deleteLog } =
-    useCardioLog();
+  const {
+    logs,
+    isLoading,
+    error,
+    activeFilter,
+    setActiveFilter,
+    createLog,
+    updateLog,
+    deleteLog,
+    reload,
+  } = useCardioLog();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingLog, setEditingLog] = useState<CardioLog | null>(null);
@@ -74,6 +83,13 @@ export default function CardioScreen() {
 
       {isLoading ? (
         <ActivityIndicator style={styles.center} />
+      ) : error ? (
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{t('cardio.loadError')}</Text>
+          <Button mode="contained-tonal" onPress={reload}>
+            {t('common.retry')}
+          </Button>
+        </View>
       ) : (
         <FlatList
           data={logs}
@@ -81,7 +97,11 @@ export default function CardioScreen() {
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <View style={styles.empty}>
+              <Text style={styles.emptyIcon}>🏃</Text>
               <Text style={styles.emptyText}>{t('cardio.emptyHint')}</Text>
+              <Button mode="contained" onPress={handleOpenNew} style={styles.emptyAction}>
+                {t('cardio.emptyAction')}
+              </Button>
             </View>
           }
           renderItem={({ item }) => (
@@ -121,7 +141,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   list: { padding: 16, paddingBottom: 100 },
-  empty: { alignItems: 'center', paddingTop: 80 },
+  empty: { alignItems: 'center', paddingTop: 80, paddingHorizontal: 20, gap: 12 },
+  emptyIcon: { fontSize: 30 },
   emptyText: { fontSize: 15, color: '#9ca3af', textAlign: 'center' },
+  emptyAction: { marginTop: 4 },
+  errorText: { color: '#ef4444', textAlign: 'center', marginBottom: 12 },
   fab: { position: 'absolute', right: 16, bottom: 24 },
 });

@@ -41,32 +41,30 @@ export function useHistoryProgress() {
   const [exerciseDialogVisible, setExerciseDialogVisible] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!userId) return;
+  const load = useCallback(async () => {
+    if (!userId) {
+      setSources(null);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
 
-    let mounted = true;
     setIsLoading(true);
     setError(null);
 
-    historyService
-      .getHistorySources(userId)
-      .then((data) => {
-        if (!mounted) return;
-        setSources(data);
-      })
-      .catch((e: unknown) => {
-        if (!mounted) return;
-        setError(e instanceof Error ? e.message : 'Unknown error');
-      })
-      .finally(() => {
-        if (!mounted) return;
-        setIsLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
+    try {
+      const data = await historyService.getHistorySources(userId);
+      setSources(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
   }, [userId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const calendarMonth: CalendarMonthVM = useMemo(() => {
     const daily = sources?.daily;
@@ -161,6 +159,7 @@ export function useHistoryProgress() {
   return {
     isLoading,
     error,
+    reload: load,
 
     calendarMonth,
     goToPreviousMonth,

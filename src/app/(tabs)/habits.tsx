@@ -31,7 +31,9 @@ export default function HabitsScreen() {
     totalActive,
     streak,
     isLoading,
+    error,
     toggleHabit,
+    reload,
     saveConfig,
   } = useHabitCheck();
 
@@ -75,6 +77,21 @@ export default function HabitsScreen() {
 
       {isLoading ? (
         <ActivityIndicator style={styles.center} />
+      ) : error ? (
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{t('habits.loadError')}</Text>
+          <Button mode="contained-tonal" onPress={reload}>
+            {t('common.retry')}
+          </Button>
+        </View>
+      ) : habitConfigs.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.emptyIcon}>🧭</Text>
+          <Text style={styles.emptyText}>{t('habits.emptyHint')}</Text>
+          <Button mode="contained" onPress={() => setConfigModalVisible(true)}>
+            {t('habits.emptyAction')}
+          </Button>
+        </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
           <HabitScoreCard score={score} totalActive={totalActive} streak={streak} />
@@ -130,6 +147,9 @@ const styles = StyleSheet.create({
   dateText: { flex: 1, fontSize: 16, textAlign: 'center', color: '#111827' },
   todayButton: { alignSelf: 'center', marginTop: 4 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyIcon: { fontSize: 30, marginBottom: 8 },
+  emptyText: { color: '#6b7280', textAlign: 'center', marginBottom: 12, paddingHorizontal: 24 },
+  errorText: { color: '#ef4444', textAlign: 'center', marginBottom: 12, paddingHorizontal: 24 },
   scroll: { flexGrow: 1, paddingBottom: 40 },
   list: {
     borderTopWidth: 1,

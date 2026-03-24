@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, FAB, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, FAB, Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,7 +15,7 @@ import { useExerciseCounts } from '@/features/workout/hooks/useExerciseCounts';
 export default function WorkoutScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { templates, isLoading, createTemplate, updateTemplate, deleteTemplate } =
+  const { templates, isLoading, error, createTemplate, updateTemplate, deleteTemplate, reload } =
     useWorkoutTemplates();
   const exerciseCounts = useExerciseCounts(templates);
   const { startSession } = useActiveSession();
@@ -68,6 +68,13 @@ export default function WorkoutScreen() {
 
       {isLoading ? (
         <ActivityIndicator style={styles.center} />
+      ) : error ? (
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{t('workout.loadError')}</Text>
+          <Button mode="contained-tonal" onPress={reload}>
+            {t('common.retry')}
+          </Button>
+        </View>
       ) : (
         <FlatList
           data={templates}
@@ -75,7 +82,11 @@ export default function WorkoutScreen() {
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <View style={styles.empty}>
+              <Text style={styles.emptyIcon}>🔥</Text>
               <Text style={styles.emptyText}>{t('workout.emptyHint')}</Text>
+              <Button mode="contained" onPress={handleOpenCreate} style={styles.emptyAction}>
+                {t('workout.emptyAction')}
+              </Button>
             </View>
           }
           renderItem={({ item }) => (
@@ -133,11 +144,24 @@ const styles = StyleSheet.create({
   empty: {
     alignItems: 'center',
     paddingTop: 80,
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  emptyIcon: {
+    fontSize: 32,
   },
   emptyText: {
     fontSize: 15,
     color: '#9ca3af',
     textAlign: 'center',
+  },
+  emptyAction: {
+    marginTop: 4,
+  },
+  errorText: {
+    color: '#ef4444',
+    textAlign: 'center',
+    marginBottom: 12,
   },
   fab: {
     position: 'absolute',

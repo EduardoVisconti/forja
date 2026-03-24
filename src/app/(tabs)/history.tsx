@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, IconButton, Text } from 'react-native-paper';
+import { ActivityIndicator, Button, IconButton, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { CalendarView } from '@/features/history/components/CalendarView';
@@ -16,6 +16,7 @@ export default function HistoryScreen() {
   const {
     isLoading,
     error,
+    reload,
     calendarMonth,
     goToPreviousMonth,
     goToNextMonth,
@@ -39,6 +40,13 @@ export default function HistoryScreen() {
     return `${String(mm).padStart(2, '0')}/${year}`;
   }, [calendarMonth.monthIndex, calendarMonth.year]);
 
+  const hasAnyHistoryData = useMemo(
+    () =>
+      calendarMonth.days.some((day) => day.dots.workout || day.dots.cardio || day.dots.habit) ||
+      prExercises.length > 0,
+    [calendarMonth.days, prExercises.length],
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -57,7 +65,15 @@ export default function HistoryScreen() {
         </View>
       ) : error ? (
         <View style={styles.loading}>
-          <Text style={styles.errorText}>{t('common.error')}</Text>
+          <Text style={styles.errorText}>{t('history.loadError')}</Text>
+          <Button mode="contained-tonal" onPress={reload}>
+            {t('common.retry')}
+          </Button>
+        </View>
+      ) : !hasAnyHistoryData ? (
+        <View style={styles.loading}>
+          <Text style={styles.emptyIcon}>📆</Text>
+          <Text style={styles.loadingText}>{t('history.emptyHint')}</Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -93,6 +109,7 @@ const styles = StyleSheet.create({
   monthLabel: { flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '700', color: '#111827' },
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, padding: 16 },
   loadingText: { color: '#6b7280' },
+  emptyIcon: { fontSize: 30 },
   errorText: { color: '#ef4444', textAlign: 'center' },
   scroll: { flexGrow: 1, paddingBottom: 40 },
 });

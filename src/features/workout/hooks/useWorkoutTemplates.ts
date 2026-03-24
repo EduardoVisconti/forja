@@ -8,14 +8,25 @@ export function useWorkoutTemplates() {
   const userId = useAuthStore((s) => s.user?.id ?? '');
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setTemplates([]);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
+    setError(null);
+
     try {
       await storage.seedDefaultTemplates(userId);
       const data = await storage.getTemplates(userId);
       setTemplates(data.sort((a, b) => a.orderIndex - b.orderIndex));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setIsLoading(false);
     }
@@ -53,5 +64,5 @@ export function useWorkoutTemplates() {
     [userId],
   );
 
-  return { templates, isLoading, createTemplate, updateTemplate, deleteTemplate, reload: load };
+  return { templates, isLoading, error, createTemplate, updateTemplate, deleteTemplate, reload: load };
 }

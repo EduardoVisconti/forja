@@ -2,6 +2,7 @@
   "common": {
     "loading": "Carregando...",
     "error": "Ocorreu um erro. Tente novamente.",
+    "retry": "Tentar novamente",
     "back": "Voltar",
     "or": "ou",
     "cancel": "Cancelar",
@@ -79,7 +80,9 @@
     },
     "exerciseCount_one": "{{count}} exercício",
     "exerciseCount_other": "{{count}} exercícios",
-    "emptyHint": "Nenhum treino ainda.\nToque no + para criar o primeiro.",
+    "emptyHint": "Nenhum treino criado. Crie seu primeiro treino!",
+    "emptyAction": "Criar treino",
+    "loadError": "Não foi possível carregar os treinos.",
     "deleteTitle": "Excluir treino",
     "deleteMessage": "Deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita.",
     "errors": {
@@ -147,7 +150,9 @@
     "newEntry": "Novo registro",
     "editEntry": "Editar registro",
     "filterAll": "Todos",
-    "emptyHint": "Nenhum registro de cardio.\nToque no + para adicionar o primeiro.",
+    "emptyHint": "Nenhum cardio registrado ainda.",
+    "emptyAction": "Registrar cardio",
+    "loadError": "Não foi possível carregar os registros de cardio.",
     "deleteTitle": "Excluir registro",
     "deleteMessage": "Deseja excluir este registro de cardio?",
     "date": "Data",
@@ -191,6 +196,9 @@
     "todaySubtitle": "Marque os hábitos de hoje",
     "pastDaySubtitle": "Hábitos do dia {{date}}",
     "today": "Hoje",
+    "emptyHint": "Nenhum hábito ativo. Configure seus hábitos para começar.",
+    "emptyAction": "Configurar hábitos",
+    "loadError": "Não foi possível carregar os hábitos.",
     "scoreLabel": "hoje",
     "streakLabel": "dias seguidos",
     "sun_exposure": "Sol matinal",
@@ -216,6 +224,8 @@
     }
   },
   "history": {
+    "emptyHint": "Nenhum histórico ainda. Comece a treinar!",
+    "loadError": "Não foi possível carregar o histórico.",
     "weekdays": {
       "mon": "Seg",
       "tue": "Ter",

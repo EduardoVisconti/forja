@@ -79,6 +79,7 @@ export function useHabitCheck() {
   const [selectedCheck, setSelectedCheck] = useState<HabitCheck | null>(null);
   const [streak, setStreak] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const today = todayISO();
   const minDate = yesterdayISO();
@@ -102,10 +103,19 @@ export function useHabitCheck() {
     setSelectedDate(today);
   }, [today]);
 
-  useEffect(() => {
-    if (!userId) return;
+  const load = useCallback(async () => {
+    if (!userId) {
+      setHabitConfigs([]);
+      setSelectedCheck(null);
+      setStreak(0);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
 
-    const load = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
       let config = await getConfig(userId);
       if (!config || config.length === 0) {
         config = await seedDefaultHabits(userId);
@@ -118,12 +128,16 @@ export function useHabitCheck() {
       ]);
       setSelectedCheck(check);
       setStreak(computeStreak(all));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
       setIsLoading(false);
-    };
-
-    setIsLoading(true);
-    load();
+    }
   }, [userId, selectedDate]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const toggleHabit = useCallback(
     async (habitId: string, value: boolean) => {
@@ -174,7 +188,9 @@ export function useHabitCheck() {
     totalActive,
     streak,
     isLoading,
+    error,
     toggleHabit,
+    reload: load,
     refreshConfigs,
     saveConfig: useCallback(
       async (configs: HabitConfig[]) => {

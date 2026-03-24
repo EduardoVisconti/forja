@@ -9,15 +9,33 @@ export function useCardioLog() {
   const userId = useAuthStore((s) => s.user?.id ?? '');
   const [logs, setLogs] = useState<CardioLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<CardioFilterValue>(null);
 
-  useEffect(() => {
-    if (!userId) return;
-    storage.getLogs(userId).then((data) => {
-      setLogs(data);
+  const load = useCallback(async () => {
+    if (!userId) {
+      setLogs([]);
+      setError(null);
       setIsLoading(false);
-    });
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await storage.getLogs(userId);
+      setLogs(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
   }, [userId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filteredLogs = useMemo(
     () =>
@@ -57,10 +75,12 @@ export function useCardioLog() {
   return {
     logs: filteredLogs,
     isLoading,
+    error,
     activeFilter,
     setActiveFilter,
     createLog,
     updateLog,
     deleteLog,
+    reload: load,
   };
 }

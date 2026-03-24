@@ -1,0 +1,14 @@
+- [ ] Register new account
+- [ ] Login / logout / login again
+- [ ] Create workout template
+- [ ] Add exercises to template
+- [ ] Start workout → complete all sets → see summary
+- [ ] Start workout → abandon with confirmation
+- [ ] Log cardio with type + zone
+- [ ] Edit and delete cardio entry
+- [ ] Check daily habits → view yesterday → verify streak
+- [ ] View history calendar with dots
+- [ ] View habit score chart
+- [ ] View PR list
+- [ ] Verify sync indicator shows synced
+- [ ] Open Supabase and confirm data is there
