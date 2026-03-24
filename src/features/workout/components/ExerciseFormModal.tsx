@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Dialog, HelperText, Portal, TextInput, useTheme } from 'react-native-paper';
+import { Button, Dialog, HelperText, Portal, TextInput } from 'react-native-paper';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
@@ -37,7 +37,6 @@ export function ExerciseFormModal({
   onDismiss,
 }: ExerciseFormModalProps) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const styles = createStyles();
   const isEditing = !!initial;
 
@@ -85,16 +84,16 @@ export function ExerciseFormModal({
       <Dialog
         visible={visible}
         onDismiss={onDismiss}
-        style={{ borderRadius: 16, backgroundColor: theme.colors.surface, maxHeight: '85%' }}
+        style={{ borderRadius: 16, backgroundColor: '#141414' }}
       >
         <Dialog.Title>
           {isEditing ? t('exercise.editExercise') : t('exercise.newExercise')}
         </Dialog.Title>
 
-        <Dialog.Content style={styles.dialogContent}>
+        <Dialog.Content style={[styles.dialogContent, { backgroundColor: 'transparent' }]}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            style={styles.scrollView}
+            style={[styles.scrollView, { backgroundColor: 'transparent' }]}
             contentContainerStyle={styles.fields}
           >
             <Controller
@@ -230,7 +229,14 @@ export function ExerciseFormModal({
           </ScrollView>
         </Dialog.Content>
 
-        <Dialog.Actions style={styles.actions}>
+        <Dialog.Actions
+          style={{
+            backgroundColor: '#141414',
+            borderBottomLeftRadius: 16,
+            borderBottomRightRadius: 16,
+            paddingBottom: 8,
+          }}
+        >
           <Button onPress={onDismiss}>{t('common.cancel')}</Button>
           <Button
             mode="contained"
@@ -264,9 +270,5 @@ const createStyles = () =>
     },
     half: {
       flex: 1,
-    },
-    actions: {
-      paddingBottom: 0,
-      marginBottom: 0,
     },
   });

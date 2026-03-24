@@ -105,15 +105,15 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
       <Dialog
         visible={visible}
         onDismiss={onDismiss}
-        style={{ borderRadius: 16, backgroundColor: theme.colors.surface, maxHeight: '90%' }}
+        style={{ borderRadius: 16, backgroundColor: '#141414' }}
       >
         <Dialog.Title style={styles.title}>
           {initial ? t('cardio.editEntry') : t('cardio.newEntry')}
         </Dialog.Title>
-        <Dialog.Content style={styles.dialogContent}>
+        <Dialog.Content style={[styles.dialogContent, { backgroundColor: 'transparent' }]}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            style={styles.scrollView}
+            style={[styles.scrollView, { backgroundColor: 'transparent' }]}
             contentContainerStyle={styles.content}
           >
             {/* Date */}
@@ -326,7 +326,14 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
             />
           </ScrollView>
         </Dialog.Content>
-        <Dialog.Actions style={styles.actions}>
+        <Dialog.Actions
+          style={{
+            backgroundColor: '#141414',
+            borderBottomLeftRadius: 16,
+            borderBottomRightRadius: 16,
+            paddingBottom: 8,
+          }}
+        >
           <Button onPress={onDismiss}>{t('common.cancel')}</Button>
           <Button mode="contained" onPress={handleSubmit(handleSave)}>
             {t('common.save')}
@@ -343,7 +350,6 @@ const createStyles = (theme: MD3Theme) =>
     dialogContent: { paddingHorizontal: 16, paddingBottom: 8 },
     scrollView: { backgroundColor: 'transparent' },
     content: { paddingVertical: 4 },
-    actions: { paddingHorizontal: 16, paddingBottom: 0, marginBottom: 0 },
     input: { marginBottom: 8 },
     sectionLabel: { marginTop: 8, marginBottom: 4, color: theme.colors.onSurfaceVariant },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
