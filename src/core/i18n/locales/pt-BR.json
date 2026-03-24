@@ -265,6 +265,7 @@
     }
   },
   "history": {
+    "empty": "Nenhum histórico ainda. Comece a treinar!",
     "emptyHint": "Nenhum histórico ainda. Comece a treinar!",
     "loadError": "Não foi possível carregar o histórico.",
     "weekdays": {
@@ -310,6 +311,7 @@
       "dialogTitleFallback": "PR",
       "dialogBestLine": "Melhor: {{weight}} kg em {{date}}",
       "dialogEmpty": "Sem dados suficientes para exibir a progressão."
-    }
+    },
+    "prEmpty": "Faça pelo menos 2 treinos para ver seus PRs"
   }
 }
