@@ -60,11 +60,11 @@
   "onboarding": {
     "title": "Como podemos te chamar?",
     "subtitle": "Apenas seu primeiro nome",
-    "placeholder": "Eduardo",
+    "placeholder": "",
     "confirm": "Começar",
     "errors": {
       "invalidName": "Digite pelo menos 2 caracteres",
-      "submitFailed": "Nao foi possivel salvar seu nome. Tente novamente."
+      "submitFailed": "Não foi possível salvar seu nome. Tente novamente."
     }
   },
   "home": {
