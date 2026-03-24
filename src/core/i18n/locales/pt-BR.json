@@ -168,6 +168,7 @@
     "deleteMessage": "Deseja excluir este registro de cardio?",
     "date": "Data",
     "duration": "Duração (min)",
+    "distance": "Distância",
     "distanceKm": "Distância (km)",
     "distanceMi": "Distância (mi)",
     "avgPace": "Pace médio",
