@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/core/auth/authStore';
 import { getAllSessions } from '@/features/workout/services/sessionStorage';
 import { getTodayCheck } from '@/features/habits/services/habitStorage';
@@ -10,6 +11,7 @@ import type { WeeklyStreakVM } from '@/features/history/types/historyTypes';
 interface HomeOverviewState {
   isLoading: boolean;
   error: string | null;
+  displayName: string;
   lastWorkout: WorkoutSession | null;
   todayHabits: HabitCheck | null;
   weeklyStreak: WeeklyStreakVM | null;
@@ -18,10 +20,20 @@ interface HomeOverviewState {
 const initialState: HomeOverviewState = {
   isLoading: true,
   error: null,
+  displayName: '',
   lastWorkout: null,
   todayHabits: null,
   weeklyStreak: null,
 };
+
+const userNameKey = (userId: string) => `user:name:${userId}`;
+
+function resolveDisplayName(storedName: string | null, metadataName?: string, email?: string | null): string {
+  if (storedName && storedName.trim().length > 0) return storedName.trim();
+  if (metadataName && metadataName.trim().length > 0) return metadataName.trim();
+  if (email && email.includes('@')) return email.split('@')[0];
+  return '';
+}
 
 export function useHomeOverview() {
   const user = useAuthStore((s) => s.user);
@@ -41,10 +53,11 @@ export function useHomeOverview() {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
-        const [sessions, todayHabits, historySources] = await Promise.all([
+        const [sessions, todayHabits, historySources, storedName] = await Promise.all([
           getAllSessions(userId),
           getTodayCheck(userId),
           getHistorySources(userId),
+          AsyncStorage.getItem(userNameKey(userId)),
         ]);
 
         const lastWorkout =
@@ -57,6 +70,11 @@ export function useHomeOverview() {
         setState({
           isLoading: false,
           error: null,
+          displayName: resolveDisplayName(
+            storedName,
+            user?.user_metadata?.full_name as string | undefined,
+            user?.email,
+          ),
           lastWorkout,
           todayHabits,
           weeklyStreak: historySources.weeklyStreak,
@@ -76,7 +94,7 @@ export function useHomeOverview() {
     return () => {
       isMounted = false;
     };
-  }, [userId]);
+  }, [userId, user?.email, user?.user_metadata?.full_name]);
 
   return {
     user,

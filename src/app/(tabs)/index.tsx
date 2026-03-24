@@ -27,12 +27,6 @@ function getGreetingKey(hour: number): 'home.goodMorning' | 'home.goodAfternoon'
   return 'home.goodEvening';
 }
 
-function getDisplayName(email?: string | null, fullName?: string | null): string {
-  if (fullName && fullName.trim().length > 0) return fullName.trim();
-  if (email && email.includes('@')) return email.split('@')[0];
-  return '';
-}
-
 function formatWorkoutDateLabel(finishedAtISO: string, t: (key: string, options?: Record<string, unknown>) => string) {
   const now = new Date();
   const finishedAt = new Date(finishedAtISO);
@@ -58,10 +52,10 @@ function formatWorkoutDateLabel(finishedAtISO: string, t: (key: string, options?
 
 export default function HomeScreen() {
   const { t } = useTranslation();
-  const { user, signOut, isLoading } = useAuth();
-  const { isLoading: isOverviewLoading, weeklyStreak, lastWorkout, todayHabits, error } = useHomeOverview();
+  const { signOut, isLoading } = useAuth();
+  const { isLoading: isOverviewLoading, weeklyStreak, lastWorkout, todayHabits, error, displayName } =
+    useHomeOverview();
   const greetingKey = getGreetingKey(new Date().getHours());
-  const userName = getDisplayName(user?.email, user?.user_metadata?.full_name as string | undefined);
   const habitsTotal = todayHabits?.totalActive ?? 0;
   const habitsScore = todayHabits?.score ?? 0;
   const progress = habitsTotal > 0 ? habitsScore / habitsTotal : 0;
@@ -86,7 +80,7 @@ export default function HomeScreen() {
         <Card style={styles.card}>
           <Card.Content>
             <Text style={styles.greeting}>
-              {t(greetingKey)}, {userName}
+              {t(greetingKey)}, {displayName}
             </Text>
             <Text style={styles.subtitle}>{formatTodayDate()}</Text>
           </Card.Content>
