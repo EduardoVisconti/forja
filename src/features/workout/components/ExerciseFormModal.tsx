@@ -1,6 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, HelperText, Portal, TextInput, useTheme } from 'react-native-paper';
-import type { MD3Theme } from 'react-native-paper';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
@@ -39,7 +38,7 @@ export function ExerciseFormModal({
 }: ExerciseFormModalProps) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = createStyles();
   const isEditing = !!initial;
 
   const {
@@ -83,13 +82,21 @@ export function ExerciseFormModal({
 
   return (
     <Portal>
-      <Dialog visible={visible} onDismiss={onDismiss} style={styles.dialog}>
+      <Dialog
+        visible={visible}
+        onDismiss={onDismiss}
+        style={{ borderRadius: 16, backgroundColor: theme.colors.surface, maxHeight: '85%' }}
+      >
         <Dialog.Title>
           {isEditing ? t('exercise.editExercise') : t('exercise.newExercise')}
         </Dialog.Title>
 
-        <Dialog.Content style={styles.content}>
-          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.fields}>
+        <Dialog.Content style={styles.dialogContent}>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            style={styles.scrollView}
+            contentContainerStyle={styles.fields}
+          >
             <Controller
               control={control}
               name="name"
@@ -239,16 +246,14 @@ export function ExerciseFormModal({
   );
 }
 
-const createStyles = (theme: MD3Theme) =>
+const createStyles = () =>
   StyleSheet.create({
-    dialog: {
-      borderRadius: 16,
-      backgroundColor: theme.colors.surface,
-      maxHeight: '85%',
-    },
-    content: {
+    dialogContent: {
       paddingHorizontal: 16,
       paddingBottom: 8,
+    },
+    scrollView: {
+      backgroundColor: 'transparent',
     },
     fields: {
       paddingTop: 4,
