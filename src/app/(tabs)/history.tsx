@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, IconButton, Text, useTheme } from 'react-native-paper';
+import { ActivityIndicator, IconButton, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -18,8 +18,6 @@ export default function HistoryScreen() {
   const styles = createStyles(theme);
   const {
     isLoading,
-    error,
-    reload,
     calendarMonth,
     goToPreviousMonth,
     goToNextMonth,
@@ -43,13 +41,6 @@ export default function HistoryScreen() {
     return `${String(mm).padStart(2, '0')}/${year}`;
   }, [calendarMonth.monthIndex, calendarMonth.year]);
 
-  const hasAnyHistoryData = useMemo(
-    () =>
-      calendarMonth.days.some((day) => day.dots.workout || day.dots.cardio || day.dots.habit) ||
-      prExercises.length > 0,
-    [calendarMonth.days, prExercises.length],
-  );
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -65,18 +56,6 @@ export default function HistoryScreen() {
         <View style={styles.loading}>
           <ActivityIndicator />
           <Text style={styles.loadingText}>{t('common.loading')}</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.loading}>
-          <Text style={styles.errorText}>{t('history.loadError')}</Text>
-          <Button mode="contained-tonal" onPress={reload}>
-            {t('common.retry')}
-          </Button>
-        </View>
-      ) : !hasAnyHistoryData ? (
-        <View style={styles.loading}>
-          <Text style={styles.emptyIcon}>📆</Text>
-          <Text style={styles.loadingText}>{t('history.emptyHint')}</Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -126,7 +105,5 @@ const createStyles = (theme: MD3Theme) =>
     },
     loading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, padding: 16 },
     loadingText: { color: theme.colors.onSurfaceVariant },
-    emptyIcon: { fontSize: 30 },
-    errorText: { color: theme.colors.primary, textAlign: 'center' },
     scroll: { flexGrow: 1, paddingBottom: 40 },
   });
