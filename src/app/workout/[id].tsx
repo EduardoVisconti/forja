@@ -1,5 +1,5 @@
 import { useNavigation } from 'expo-router';
-import { useEffect, useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -22,6 +22,7 @@ export default function ActiveSessionScreen() {
   const store = useWorkoutSessionStore();
   const { completeSet, finishSession } = useActiveSession();
   const { restSecondsRemaining, timerRunning, skipRestTimer, addThirtySeconds } = useRestTimer();
+  const hasAdvanced = useRef(false);
 
   const currentExercise = store.exercises[store.currentExerciseIndex];
 
@@ -33,9 +34,14 @@ export default function ActiveSessionScreen() {
 
   useEffect(() => {
     if (store.restSecondsRemaining === 0 && !store.timerRunning) {
-      store.advanceSet();
+      if (!hasAdvanced.current) {
+        hasAdvanced.current = true;
+        store.advanceSet();
+      }
+    } else {
+      hasAdvanced.current = false;
     }
-  }, [store.restSecondsRemaining, store.timerRunning, store]);
+  }, [store.restSecondsRemaining, store.timerRunning]);
 
   if (!store.sessionId) {
     return (
