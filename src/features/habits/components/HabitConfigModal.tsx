@@ -86,77 +86,94 @@ export function HabitConfigModal({ visible, configs, onSave, onDismiss }: Props)
 
   return (
     <Portal>
-      <Dialog visible={visible} onDismiss={onDismiss} style={styles.dialog}>
+      <Dialog
+        visible={visible}
+        onDismiss={onDismiss}
+        style={{
+          borderRadius: 16,
+          backgroundColor: '#141414',
+          margin: 16,
+        }}
+      >
         <Dialog.Title>{t('habits.config.title')}</Dialog.Title>
-        <Dialog.ScrollArea style={styles.scrollArea}>
-          <ScrollView keyboardShouldPersistTaps="handled">
-            {editing.map((habit) => (
-              <View key={habit.id} style={styles.row}>
-                <Text style={styles.emoji}>{habit.emoji}</Text>
-                <TextInput
-                  value={habit.label}
-                  onChangeText={(text) => updateHabit(habit.id, { label: text })}
-                  placeholder={t('habits.config.labelPlaceholder')}
-                  mode="outlined"
-                  dense
-                  style={styles.input}
-                />
-                <Switch
-                  value={habit.active}
-                  onValueChange={(v) => updateHabit(habit.id, { active: v })}
-                />
-                <IconButton
-                  icon="trash-can-outline"
-                  size={18}
-                  onPress={() => handleDeleteHabit(habit.id, habit.label)}
-                  style={styles.deleteBtn}
-                  accessibilityLabel={t('habits.config.deleteTitle')}
-                />
-              </View>
-            ))}
-
-            <View style={styles.addSection}>
-              {!showAddForm ? (
-                <Button mode="outlined" icon="plus" onPress={handleOpenAddForm} style={styles.addBtn}>
-                  {t('habits.config.addHabit')}
-                </Button>
-              ) : (
-                <View style={styles.addForm}>
-                  <View style={styles.emojiPicker}>
-                    {EMOJI_PRESETS.map((emoji) => (
-                      <Pressable
-                        key={emoji}
-                        onPress={() => setNewEmoji(emoji)}
-                        style={[styles.emojiOption, newEmoji === emoji && styles.emojiOptionSelected]}
-                        accessibilityRole="button"
-                        accessibilityLabel={emoji}
-                      >
-                        <Text style={styles.emojiOptionText}>{emoji}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-
+        <Dialog.Content style={{ backgroundColor: 'transparent' }}>
+          <View style={styles.contentFullBleed}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {editing.map((habit) => (
+                <View key={habit.id} style={styles.row}>
+                  <Text style={styles.emoji}>{habit.emoji}</Text>
                   <TextInput
-                    value={newLabel}
-                    onChangeText={setNewLabel}
+                    value={habit.label}
+                    onChangeText={(text) => updateHabit(habit.id, { label: text })}
                     placeholder={t('habits.config.labelPlaceholder')}
                     mode="outlined"
                     dense
-                    style={styles.addInput}
+                    style={styles.input}
                   />
-
-                  <View style={styles.addFormActions}>
-                    <Button onPress={handleCancelAdd}>{t('common.cancel')}</Button>
-                    <Button mode="contained" onPress={handleSaveAdd} disabled={!newLabel.trim()}>
-                      {t('common.save')}
-                    </Button>
-                  </View>
+                  <Switch
+                    value={habit.active}
+                    onValueChange={(v) => updateHabit(habit.id, { active: v })}
+                  />
+                  <IconButton
+                    icon="trash-can-outline"
+                    size={18}
+                    onPress={() => handleDeleteHabit(habit.id, habit.label)}
+                    style={styles.deleteBtn}
+                    accessibilityLabel={t('habits.config.deleteTitle')}
+                  />
                 </View>
-              )}
-            </View>
-          </ScrollView>
-        </Dialog.ScrollArea>
-        <Dialog.Actions>
+              ))}
+
+              <View style={styles.addSection}>
+                {!showAddForm ? (
+                  <Button mode="outlined" icon="plus" onPress={handleOpenAddForm} style={styles.addBtn}>
+                    {t('habits.config.addHabit')}
+                  </Button>
+                ) : (
+                  <View style={styles.addForm}>
+                    <View style={styles.emojiPicker}>
+                      {EMOJI_PRESETS.map((emoji) => (
+                        <Pressable
+                          key={emoji}
+                          onPress={() => setNewEmoji(emoji)}
+                          style={[styles.emojiOption, newEmoji === emoji && styles.emojiOptionSelected]}
+                          accessibilityRole="button"
+                          accessibilityLabel={emoji}
+                        >
+                          <Text style={styles.emojiOptionText}>{emoji}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    <TextInput
+                      value={newLabel}
+                      onChangeText={setNewLabel}
+                      placeholder={t('habits.config.labelPlaceholder')}
+                      mode="outlined"
+                      dense
+                      style={styles.addInput}
+                    />
+
+                    <View style={styles.addFormActions}>
+                      <Button onPress={handleCancelAdd}>{t('common.cancel')}</Button>
+                      <Button mode="contained" onPress={handleSaveAdd} disabled={!newLabel.trim()}>
+                        {t('common.save')}
+                      </Button>
+                    </View>
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        </Dialog.Content>
+        <Dialog.Actions
+          style={{
+            backgroundColor: '#141414',
+            borderBottomLeftRadius: 16,
+            borderBottomRightRadius: 16,
+            paddingBottom: 8,
+          }}
+        >
           <Button onPress={onDismiss}>{t('common.cancel')}</Button>
           <Button mode="contained" onPress={handleSave}>
             {t('common.save')}
@@ -168,8 +185,10 @@ export function HabitConfigModal({ visible, configs, onSave, onDismiss }: Props)
 }
 
 const styles = StyleSheet.create({
-  dialog: { maxHeight: '90%' },
-  scrollArea: { paddingHorizontal: 0 },
+  contentFullBleed: {
+    marginHorizontal: -24,
+    marginBottom: -24,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
