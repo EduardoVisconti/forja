@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 import { registerSchema, type RegisterFormValues } from '@/features/auth/schemas/authSchemas';
 import { useAuth } from '@/core/auth/useAuth';
-import { GoogleSignInButton } from './GoogleSignInButton';
 
 export function RegisterForm() {
   const { t } = useTranslation();
@@ -134,14 +133,6 @@ export function RegisterForm() {
         {t('auth.register.submitButton')}
       </Button>
 
-      <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>{t('common.or')}</Text>
-        <View style={styles.dividerLine} />
-      </View>
-
-      <GoogleSignInButton disabled={isLoading} />
-
       <View style={styles.footer}>
         <Text style={styles.footerText}>{t('auth.register.alreadyHaveAccount')}</Text>
         <Text style={styles.footerLink} onPress={() => router.back()}>
@@ -168,21 +159,6 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 8,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginVertical: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#e5e7eb',
-  },
-  dividerText: {
-    fontSize: 14,
-    color: '#9ca3af',
   },
   footer: {
     flexDirection: 'row',

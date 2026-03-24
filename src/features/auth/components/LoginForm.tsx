@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, HelperText, TextInput } from 'react-native-paper';
 import { loginSchema, type LoginFormValues } from '@/features/auth/schemas/authSchemas';
 import { useAuth } from '@/core/auth/useAuth';
-import { GoogleSignInButton } from './GoogleSignInButton';
 
 export function LoginForm() {
   const { t } = useTranslation();
@@ -97,14 +96,6 @@ export function LoginForm() {
         {t('auth.login.submitButton')}
       </Button>
 
-      <View style={styles.divider}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>{t('common.or')}</Text>
-        <View style={styles.dividerLine} />
-      </View>
-
-      <GoogleSignInButton disabled={isLoading} />
-
       <View style={styles.footer}>
         <Text style={styles.footerText}>{t('auth.login.noAccount')}</Text>
         <Text style={styles.footerLink} onPress={() => router.push('/(auth)/register')}>
@@ -127,21 +118,6 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 8,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginVertical: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#e5e7eb',
-  },
-  dividerText: {
-    fontSize: 14,
-    color: '#9ca3af',
   },
   footer: {
     flexDirection: 'row',
