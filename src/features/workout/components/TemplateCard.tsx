@@ -13,6 +13,14 @@ interface TemplateCardProps {
   onStart: () => void;
 }
 
+const typeLabelKey: Record<WorkoutTemplate['type'], string> = {
+  gym: 'workout.type.gym',
+  cardio: 'workout.type.cardio',
+  stability: 'workout.type.stability',
+  flexibility: 'workout.type.flexibility',
+  warmup: 'workout.type.warmup',
+};
+
 export function TemplateCard({
   template,
   exerciseCount,
@@ -24,15 +32,22 @@ export function TemplateCard({
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = createStyles(theme);
+  const badgeStyleByType = {
+    gym: styles.badgeGym,
+    cardio: styles.badgeCardio,
+    stability: styles.badgeStability,
+    flexibility: styles.badgeFlexibility,
+    warmup: styles.badgeWarmup,
+  };
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.left}>
         <Text style={styles.name}>{template.name}</Text>
         <View style={styles.meta}>
-          <View style={[styles.badge, template.type === 'gym' ? styles.badgeGym : styles.badgeCardio]}>
+          <View style={[styles.badge, badgeStyleByType[template.type]]}>
             <Text style={styles.badgeText}>
-              {t(`workout.type.${template.type}`)}
+              {t(typeLabelKey[template.type])}
             </Text>
           </View>
           <Text style={styles.count}>
@@ -85,6 +100,15 @@ const createStyles = (theme: MD3Theme) =>
     },
     badgeCardio: {
       backgroundColor: theme.colors.surfaceVariant,
+    },
+    badgeStability: {
+      backgroundColor: theme.colors.tertiaryContainer,
+    },
+    badgeFlexibility: {
+      backgroundColor: theme.colors.secondaryContainer,
+    },
+    badgeWarmup: {
+      backgroundColor: theme.colors.errorContainer,
     },
     badgeText: {
       fontSize: 12,

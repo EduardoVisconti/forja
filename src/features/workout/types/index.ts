@@ -1,8 +1,10 @@
+export type TemplateType = 'gym' | 'cardio' | 'stability' | 'flexibility' | 'warmup';
+
 export interface WorkoutTemplate {
   id: string;
   userId: string;
   name: string;
-  type: 'gym' | 'cardio';
+  type: TemplateType;
   orderIndex: number;
   createdAt: string;
 }

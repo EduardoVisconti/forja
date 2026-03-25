@@ -1,5 +1,5 @@
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
-import { Button, Dialog, Portal, SegmentedButtons, TextInput } from 'react-native-paper';
+import { Button, Chip, Dialog, Portal, TextInput } from 'react-native-paper';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
@@ -89,14 +89,26 @@ export function TemplateFormModal({
                 control={control}
                 name="type"
                 render={({ field: { onChange, value } }) => (
-                  <SegmentedButtons
-                    value={value}
-                    onValueChange={onChange}
-                    buttons={[
-                      { value: 'gym', label: t('workout.type.gym') },
-                      { value: 'cardio', label: t('workout.type.cardio') },
-                    ]}
-                  />
+                  <View style={styles.typeChipList}>
+                    <Chip selected={value === 'gym'} onPress={() => onChange('gym')}>
+                      {t('workout.type.gym')}
+                    </Chip>
+                    <Chip selected={value === 'stability'} onPress={() => onChange('stability')}>
+                      {t('workout.type.stability')}
+                    </Chip>
+                    <Chip
+                      selected={value === 'flexibility'}
+                      onPress={() => onChange('flexibility')}
+                    >
+                      {t('workout.type.flexibility')}
+                    </Chip>
+                    <Chip selected={value === 'warmup'} onPress={() => onChange('warmup')}>
+                      {t('workout.type.warmup')}
+                    </Chip>
+                    <Chip selected={value === 'cardio'} onPress={() => onChange('cardio')}>
+                      {t('workout.type.cardio')}
+                    </Chip>
+                  </View>
                 )}
               />
             </View>
@@ -126,6 +138,11 @@ const styles = StyleSheet.create({
   typeRow: {
     marginTop: 16,
     backgroundColor: 'transparent',
+  },
+  typeChipList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   errorRow: {
     marginTop: 2,

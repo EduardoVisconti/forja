@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const templateSchema = z.object({
   name: z.string().min(1, 'workout.errors.nameRequired').max(50, 'workout.errors.nameTooLong'),
-  type: z.enum(['gym', 'cardio']),
+  type: z.enum(['gym', 'cardio', 'stability', 'flexibility', 'warmup']),
 });
 
 export const exerciseSchema = z.object({
