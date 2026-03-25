@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Chip, Dialog, Portal, TextInput } from 'react-native-paper';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,9 +52,10 @@ export function TemplateFormModal({
           {isEditing ? t('workout.editTemplate') : t('workout.newTemplate')}
         </Dialog.Title>
         <Dialog.Content style={styles.content}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={80}
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.fields}
           >
             <Controller
               control={control}
@@ -112,7 +113,7 @@ export function TemplateFormModal({
                 )}
               />
             </View>
-          </KeyboardAvoidingView>
+          </ScrollView>
         </Dialog.Content>
 
         <Dialog.Actions style={dialogActionsStyle}>
@@ -134,6 +135,9 @@ export function TemplateFormModal({
 const styles = StyleSheet.create({
   content: {
     backgroundColor: 'transparent',
+  },
+  fields: {
+    paddingBottom: 16,
   },
   typeRow: {
     marginTop: 16,

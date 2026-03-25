@@ -6,7 +6,14 @@ import { Button, Chip, Dialog, HelperText, Portal, Text, TextInput, useTheme } f
 import type { MD3Theme } from 'react-native-paper';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
-import { TRAINING_TYPES, CARDIO_ZONES, cardioSchema, type CardioFormValues } from '../schemas/cardioSchemas';
+import {
+  TRAINING_TYPES,
+  CARDIO_ZONES,
+  cardioSchema,
+  parseDurationToMinutes,
+  type CardioFormValues,
+  type CardioSchemaValues,
+} from '../schemas/cardioSchemas';
 import type { CardioLog } from '../types';
 
 interface Props {
@@ -17,7 +24,7 @@ interface Props {
   onDismiss: () => void;
 }
 
-type CardioFormModalValues = Omit<CardioFormValues, 'distance'> & {
+type CardioFormModalValues = Omit<CardioSchemaValues, 'distance'> & {
   distance: string;
 };
 
@@ -78,7 +85,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
       date: todayISO(),
       trainingType: null,
       zone: null,
-      durationMinutes: 30,
+      duration: '30',
       distance: '0',
       avgPace: '',
       avgHr: null,
@@ -88,6 +95,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
 
   useEffect(() => {
     if (!visible) return;
+    setShowDatePicker(false);
 
     if (initial) {
       const displayDistance = isImperial
@@ -98,7 +106,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
         date: initial.date,
         trainingType: initial.trainingType,
         zone: initial.zone,
-        durationMinutes: initial.durationMinutes,
+        duration: String(initial.durationMinutes),
         distance: String(displayDistance),
         avgPace: initial.avgPace,
         avgHr: initial.avgHr,
@@ -109,7 +117,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
         date: todayISO(),
         trainingType: null,
         zone: null,
-        durationMinutes: 30,
+        duration: '30',
         distance: '0',
         avgPace: '',
         avgHr: null,
@@ -119,10 +127,12 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
   }, [visible, initial, isImperial, reset]);
 
   const handleSave = (data: CardioFormModalValues) => {
+    const durationMinutes = parseDurationToMinutes(data.duration);
     const distance = parseFloat(String(data.distance));
     const normalizedDistance = Number.isFinite(distance) ? distance : 0;
     const distanceKm = isImperial ? normalizedDistance / KM_TO_MILES : normalizedDistance;
-    onSubmit({ ...data, distance: distanceKm });
+    const { duration, ...rest } = data;
+    onSubmit({ ...rest, durationMinutes, distance: distanceKm });
   };
 
   const distanceLabel = isImperial ? t('cardio.distanceMi') : t('cardio.distanceKm');
@@ -246,19 +256,22 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
                 <View style={styles.half}>
                   <Controller
                     control={control}
-                    name="durationMinutes"
+                    name="duration"
                     render={({ field: { value, onChange } }) => (
                       <>
                         <TextInput
                           label={t('cardio.duration')}
-                          value={String(value)}
-                          onChangeText={(v) => onChange(parseInt(v, 10) || 0)}
-                          keyboardType="numeric"
+                          value={value}
+                          onChangeText={onChange}
+                          keyboardType="default"
                           mode="outlined"
                         />
-                        {errors.durationMinutes && (
+                        <Text variant="bodySmall" style={styles.durationHint}>
+                          {t('cardio.durationHint')}
+                        </Text>
+                        {errors.duration && (
                           <HelperText type="error">
-                            {t(errors.durationMinutes.message ?? '')}
+                            {t(errors.duration.message ?? '')}
                           </HelperText>
                         )}
                       </>
@@ -392,6 +405,7 @@ const createStyles = (theme: MD3Theme) =>
     scrollView: { backgroundColor: 'transparent' },
     content: { paddingVertical: 4 },
     input: { marginBottom: 8 },
+    durationHint: { marginTop: 4, color: theme.colors.onSurfaceVariant },
     sectionLabel: { marginTop: 8, marginBottom: 4, color: theme.colors.onSurfaceVariant },
     fieldLabel: { marginBottom: 4, color: theme.colors.onSurfaceVariant },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },

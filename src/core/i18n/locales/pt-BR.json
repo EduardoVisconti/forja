@@ -202,6 +202,7 @@
     "deleteMessage": "Deseja excluir este registro de cardio?",
     "date": "Data",
     "duration": "Duração (min)",
+    "durationHint": "Ex: 35 ou 35:30 (min:seg)",
     "distance": "Distância",
     "distanceKm": "Distância (km)",
     "distanceMi": "Distância (mi)",
@@ -228,6 +229,7 @@
     },
     "errors": {
       "invalidDate": "Formato inválido. Use AAAA-MM-DD",
+      "invalidDuration": "Formato inválido. Use 35, 35:30 ou 1:05:30",
       "invalidPace": "Formato inválido. Use M:SS (ex: 5:30)",
       "minOne": "Valor mínimo: 1",
       "minZero": "Valor mínimo: 0",
