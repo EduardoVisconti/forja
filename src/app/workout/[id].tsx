@@ -140,15 +140,6 @@ export default function ActiveSessionScreen() {
     onAdd30: addThirtySeconds,
   };
 
-  if (timerRunning && restSecondsRemaining !== null) {
-    console.log('[workout/[id]] RestTimerCard props:', {
-      secondsRemaining: restTimerCardProps.secondsRemaining,
-      nextExerciseName: restTimerCardProps.nextExerciseName,
-      onSkip: 'function',
-      onAdd30: 'function',
-    });
-  }
-
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <ActiveExerciseCard

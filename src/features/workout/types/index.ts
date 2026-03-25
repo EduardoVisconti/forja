@@ -17,8 +17,9 @@ export interface Exercise {
   name: string;
   sets: number;
   reps: string;
-  /** Always stored in kg */
   weight: number;
+  /** Unit used when weight was last saved */
+  weightUnit: 'kg' | 'lbs';
   restSeconds: number;
   notes: string;
   orderIndex: number;

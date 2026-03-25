@@ -46,6 +46,11 @@ function minutesToDurationText(input: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
+function inFilter(ids: string[]): string {
+  const escaped = ids.map((id) => `"${id.replace(/"/g, '\\"')}"`);
+  return `(${escaped.join(',')})`;
+}
+
 export async function syncAll(userId: string): Promise<void> {
   const now = new Date().toISOString();
 
@@ -62,6 +67,15 @@ export async function syncAll(userId: string): Promise<void> {
     }));
     await supabase.from('workout_templates').upsert(rows, { onConflict: 'id' });
   }
+  if (templates.length === 0) {
+    await supabase.from('workout_templates').delete().eq('user_id', userId);
+  } else {
+    await supabase
+      .from('workout_templates')
+      .delete()
+      .eq('user_id', userId)
+      .not('id', 'in', inFilter(templates.map((template) => template.id)));
+  }
 
   for (const t of templates) {
     const exercises = await workoutStorage.getExercises(t.id);
@@ -74,6 +88,7 @@ export async function syncAll(userId: string): Promise<void> {
         sets: e.sets,
         reps: e.reps,
         weight: e.weight,
+        weight_unit: e.weightUnit,
         rest_seconds: e.restSeconds,
         notes: e.notes ?? '',
         order_index: e.orderIndex,
@@ -81,6 +96,27 @@ export async function syncAll(userId: string): Promise<void> {
       }));
       await supabase.from('exercises').upsert(rows, { onConflict: 'id' });
     }
+
+    if (exercises.length === 0) {
+      await supabase.from('exercises').delete().eq('user_id', userId).eq('template_id', t.id);
+    } else {
+      await supabase
+        .from('exercises')
+        .delete()
+        .eq('user_id', userId)
+        .eq('template_id', t.id)
+        .not('id', 'in', inFilter(exercises.map((exercise) => exercise.id)));
+    }
+  }
+
+  if (templates.length === 0) {
+    await supabase.from('exercises').delete().eq('user_id', userId);
+  } else {
+    await supabase
+      .from('exercises')
+      .delete()
+      .eq('user_id', userId)
+      .not('template_id', 'in', inFilter(templates.map((template) => template.id)));
   }
 
   const sessions = await sessionStorage.getAllSessions(userId);
@@ -135,6 +171,15 @@ export async function syncAll(userId: string): Promise<void> {
     }));
     await supabase.from('cardio_logs').upsert(rows, { onConflict: 'id' });
   }
+  if (cardioLogs.length === 0) {
+    await supabase.from('cardio_logs').delete().eq('user_id', userId);
+  } else {
+    await supabase
+      .from('cardio_logs')
+      .delete()
+      .eq('user_id', userId)
+      .not('id', 'in', inFilter(cardioLogs.map((log) => log.id)));
+  }
 
   const habitChecks = await habitStorage.getChecks(userId);
   if (habitChecks.length > 0) {
@@ -149,6 +194,15 @@ export async function syncAll(userId: string): Promise<void> {
       updated_at: now,
     }));
     await supabase.from('habit_checks').upsert(rows, { onConflict: 'id' });
+  }
+  if (habitChecks.length === 0) {
+    await supabase.from('habit_checks').delete().eq('user_id', userId);
+  } else {
+    await supabase
+      .from('habit_checks')
+      .delete()
+      .eq('user_id', userId)
+      .not('id', 'in', inFilter(habitChecks.map((check) => check.id)));
   }
 
   const configRaw = await AsyncStorage.getItem(habitConfigKey(userId));
@@ -170,6 +224,18 @@ export async function syncAll(userId: string): Promise<void> {
       }));
       await supabase.from('habit_configs').upsert(rows, { onConflict: 'id' });
     }
+
+    if (configs.length === 0) {
+      await supabase.from('habit_configs').delete().eq('user_id', userId);
+    } else {
+      await supabase
+        .from('habit_configs')
+        .delete()
+        .eq('user_id', userId)
+        .not('id', 'in', inFilter(configs.map((config) => config.id)));
+    }
+  } else {
+    await supabase.from('habit_configs').delete().eq('user_id', userId);
   }
 }
 
@@ -207,7 +273,7 @@ export async function pullAll(userId: string): Promise<void> {
   if (allTemplateIds.length > 0) {
     const { data: exercisesData, error: exercisesError } = await supabase
       .from('exercises')
-      .select('id, template_id, name, sets, reps, weight, rest_seconds, notes, order_index')
+      .select('id, template_id, name, sets, reps, weight, weight_unit, rest_seconds, notes, order_index')
       .eq('user_id', userId)
       .in('template_id', allTemplateIds);
     if (exercisesError) throw exercisesError;
@@ -221,6 +287,7 @@ export async function pullAll(userId: string): Promise<void> {
         sets: number;
         reps: string;
         weight: number;
+        weight_unit: 'kg' | 'lbs' | null;
         rest_seconds: number;
         notes: string | null;
         order_index: number;
@@ -245,6 +312,7 @@ export async function pullAll(userId: string): Promise<void> {
           sets: exercise.sets,
           reps: exercise.reps,
           weight: exercise.weight,
+          weightUnit: exercise.weight_unit ?? 'kg',
           restSeconds: exercise.rest_seconds,
           notes: exercise.notes ?? '',
           orderIndex: exercise.order_index,

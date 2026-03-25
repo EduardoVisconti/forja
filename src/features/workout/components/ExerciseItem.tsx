@@ -4,13 +4,27 @@ import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { Exercise, UserPreferences } from '../types';
 
-const KG_TO_LBS = 2.205;
+const KG_TO_LBS = 2.20462;
 
-function formatWeight(weightKg: number, unit: UserPreferences['unit']): string {
-  if (unit === 'lbs') {
-    return `${(weightKg * KG_TO_LBS).toFixed(1)} lbs`;
+function convertWeight(
+  value: number,
+  fromUnit: Exercise['weightUnit'],
+  toUnit: UserPreferences['unit'],
+): number {
+  if (fromUnit === toUnit) return value;
+  return fromUnit === 'kg' ? value * KG_TO_LBS : value / KG_TO_LBS;
+}
+
+function formatWeight(
+  weight: number,
+  storedUnit: Exercise['weightUnit'],
+  displayUnit: UserPreferences['unit'],
+): string {
+  if (storedUnit === displayUnit) {
+    return `${weight} ${displayUnit}`;
   }
-  return `${weightKg} kg`;
+  const converted = convertWeight(weight, storedUnit, displayUnit);
+  return `${(Math.round(converted * 10) / 10).toFixed(1)} ${displayUnit}`;
 }
 
 function formatRest(seconds: number): string {
@@ -68,7 +82,9 @@ export function ExerciseItem({
         <Text style={styles.name}>{exercise.name}</Text>
         <Text style={styles.details}>
           {t('exercise.setsReps', { sets: exercise.sets, reps: exercise.reps })}
-          {exercise.weight > 0 ? ` · ${formatWeight(exercise.weight, unit)}` : ''}
+          {exercise.weight > 0
+            ? ` · ${formatWeight(exercise.weight, exercise.weightUnit, unit)}`
+            : ''}
           {` · ${formatRest(exercise.restSeconds)}`}
         </Text>
         {exercise.notes ? <Text style={styles.notes}>{exercise.notes}</Text> : null}

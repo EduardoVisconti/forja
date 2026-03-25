@@ -18,6 +18,25 @@ interface Props {
 
 const KG_TO_LBS = 2.20462;
 
+function convertWeight(
+  value: number,
+  fromUnit: SessionExercise['weightUnit'],
+  toUnit: UserPreferences['unit'],
+): number {
+  if (fromUnit === toUnit) return value;
+  return fromUnit === 'kg' ? value * KG_TO_LBS : value / KG_TO_LBS;
+}
+
+function toDisplayWeight(
+  weight: number,
+  storedUnit: SessionExercise['weightUnit'],
+  displayUnit: UserPreferences['unit'],
+): string {
+  if (storedUnit === displayUnit) return String(weight);
+  const converted = convertWeight(weight, storedUnit, displayUnit);
+  return (Math.round(converted * 10) / 10).toFixed(1);
+}
+
 export function ActiveExerciseCard({
   exercise,
   currentSet,
@@ -31,12 +50,10 @@ export function ActiveExerciseCard({
   const styles = createStyles(theme);
   const isLbs = preferences.unit === 'lbs';
 
-  const defaultWeightDisplay = isLbs
-    ? parseFloat((exercise.weight * KG_TO_LBS).toFixed(1))
-    : exercise.weight;
-
   const [reps, setReps] = useState(String(exercise.reps));
-  const [weight, setWeight] = useState(String(defaultWeightDisplay));
+  const [weight, setWeight] = useState(
+    toDisplayWeight(exercise.weight, exercise.weightUnit, preferences.unit),
+  );
 
   const handleCompleteSet = () => {
     const repsNum = parseInt(reps, 10);

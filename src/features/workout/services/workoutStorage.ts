@@ -130,7 +130,13 @@ export async function deleteTemplate(userId: string, id: string): Promise<void> 
 
 export async function getExercises(templateId: string): Promise<Exercise[]> {
   const raw = await AsyncStorage.getItem(keys.exercises(templateId));
-  return raw ? (JSON.parse(raw) as Exercise[]) : [];
+  if (!raw) return [];
+
+  const parsed = JSON.parse(raw) as Array<Exercise & { weightUnit?: Exercise['weightUnit'] }>;
+  return parsed.map((exercise) => ({
+    ...exercise,
+    weightUnit: exercise.weightUnit ?? 'kg',
+  }));
 }
 
 export async function saveExercises(templateId: string, exercises: Exercise[]): Promise<void> {
@@ -203,7 +209,9 @@ export async function saveUserPreferences(
 
 // ─── Seed data ───────────────────────────────────────────────────────────────
 
-type SeedExercise = Omit<Exercise, 'id' | 'templateId' | 'orderIndex'>;
+type SeedExercise = Omit<Exercise, 'id' | 'templateId' | 'orderIndex' | 'weightUnit'> & {
+  weightUnit?: Exercise['weightUnit'];
+};
 
 const SEED_TEMPLATES: Array<{
   name: string;
@@ -269,6 +277,7 @@ export async function seedDefaultTemplates(userId: string): Promise<void> {
       templateId: template.id,
       orderIndex: ei,
       ...ex,
+      weightUnit: ex.weightUnit ?? 'kg',
     }));
     await saveExercises(template.id, exercises);
   }

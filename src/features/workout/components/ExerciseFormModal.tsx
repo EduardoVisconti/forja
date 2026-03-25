@@ -7,18 +7,25 @@ import { useTranslation } from 'react-i18next';
 import { exerciseSchema, type ExerciseFormValues } from '../schemas/workoutSchemas';
 import type { Exercise, UserPreferences } from '../types';
 
-const KG_TO_LBS = 2.205;
+const KG_TO_LBS = 2.20462;
 
-/** Convert kg → display unit for form pre-fill */
-function toDisplayWeight(kg: number, unit: UserPreferences['unit']): string {
-  if (unit === 'lbs') return (kg * KG_TO_LBS).toFixed(1);
-  return String(kg);
+function convertWeight(
+  value: number,
+  fromUnit: Exercise['weightUnit'],
+  toUnit: UserPreferences['unit'],
+): number {
+  if (fromUnit === toUnit) return value;
+  return fromUnit === 'kg' ? value * KG_TO_LBS : value / KG_TO_LBS;
 }
 
-/** Convert display unit → kg for storage */
-function toStorageKg(displayValue: number, unit: UserPreferences['unit']): number {
-  if (unit === 'lbs') return Math.round((displayValue / KG_TO_LBS) * 10) / 10;
-  return displayValue;
+function toDisplayWeight(
+  weight: number,
+  storedUnit: Exercise['weightUnit'],
+  displayUnit: UserPreferences['unit'],
+): string {
+  if (storedUnit === displayUnit) return String(weight);
+  const converted = convertWeight(weight, storedUnit, displayUnit);
+  return (Math.round(converted * 10) / 10).toFixed(1);
 }
 
 interface ExerciseFormModalProps {
@@ -57,7 +64,7 @@ export function ExerciseFormModal({
           name: initial.name,
           sets: initial.sets,
           reps: initial.reps,
-          weight: parseFloat(toDisplayWeight(initial.weight, unit)),
+          weight: parseFloat(toDisplayWeight(initial.weight, initial.weightUnit, unit)),
           restSeconds: initial.restSeconds,
           notes: initial.notes,
         });
@@ -72,7 +79,8 @@ export function ExerciseFormModal({
       name: values.name,
       sets: values.sets,
       reps: values.reps,
-      weight: toStorageKg(values.weight, unit),
+      weight: values.weight,
+      weightUnit: unit,
       restSeconds: values.restSeconds,
       notes: values.notes ?? '',
     });
