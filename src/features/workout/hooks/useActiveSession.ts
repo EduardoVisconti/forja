@@ -74,11 +74,14 @@ export function useActiveSession() {
 
   const completeSet = useCallback(
     (repsDone: number, weightKg: number) => {
-      const { sessionId, currentExerciseIndex, currentSetNumber, exercises } = store;
+      const { sessionId, currentExerciseIndex, exercises, completedSets, completedExercises } =
+        store;
       if (!sessionId) return;
 
       const exercise = exercises[currentExerciseIndex];
       if (!exercise) return;
+      const currentSetNumber = Math.min((completedSets[exercise.id] ?? 0) + 1, exercise.sets);
+      if ((completedSets[exercise.id] ?? 0) >= exercise.sets) return;
 
       const log: SetLog = {
         id: Crypto.randomUUID(),
@@ -94,12 +97,14 @@ export function useActiveSession() {
       store.logSet(log);
       store.startRestTimer(exercise.restSeconds || 60);
 
-      const isLastSet = currentSetNumber === exercise.sets;
-      const hasRemaining = exercises.some(
-        (ex, i) => i > currentExerciseIndex && !ex.skipped,
-      );
+      const willCompleteCurrentExercise = currentSetNumber >= exercise.sets;
+      const allDone = exercises.every((ex) => {
+        if (ex.skipped) return true;
+        if (ex.id === exercise.id) return willCompleteCurrentExercise;
+        return Boolean(completedExercises[ex.id]);
+      });
 
-      if (isLastSet && !hasRemaining) {
+      if (willCompleteCurrentExercise && allDone) {
         setTimeout(() => {
           Alert.alert(
             t('session.workoutComplete'),

@@ -9,7 +9,8 @@ export interface ActiveSessionState {
   startedAt: string | null;
   exercises: SessionExercise[];
   currentExerciseIndex: number;
-  currentSetNumber: number;
+  completedSets: Record<string, number>;
+  completedExercises: Record<string, boolean>;
   setLogs: SetLog[];
   /** null = no rest timer running */
   restSecondsRemaining: number | null;
@@ -46,7 +47,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
   startedAt: null,
   exercises: [],
   currentExerciseIndex: 0,
-  currentSetNumber: 1,
+  completedSets: {},
+  completedExercises: {},
   setLogs: [],
   restSecondsRemaining: null,
   timerRunning: false,
@@ -60,7 +62,8 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       startedAt: new Date().toISOString(),
       exercises,
       currentExerciseIndex: 0,
-      currentSetNumber: 1,
+      completedSets: {},
+      completedExercises: {},
       setLogs: [],
       restSecondsRemaining: null,
       timerRunning: false,
@@ -75,14 +78,14 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       startedAt: null,
       exercises: [],
       currentExerciseIndex: 0,
-      currentSetNumber: 1,
+      completedSets: {},
+      completedExercises: {},
       setLogs: [],
       restSecondsRemaining: null,
       timerRunning: false,
     }),
 
-  setCurrentExerciseIndex: (index) =>
-    set({ currentExerciseIndex: index, currentSetNumber: 1 }),
+  setCurrentExerciseIndex: (index) => set({ currentExerciseIndex: index }),
 
   skipExercise: (index) =>
     set((state) => {
@@ -94,28 +97,48 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
 
   reorderExercises: (exercises) => set({ exercises }),
 
-  logSet: (log) => set((state) => ({ setLogs: [...state.setLogs, log] })),
+  logSet: (log) =>
+    set((state) => {
+      const setLogs = [...state.setLogs, log];
+      const currentCompleted = state.completedSets[log.exerciseId] ?? 0;
+      const completedSets = {
+        ...state.completedSets,
+        [log.exerciseId]: Math.max(currentCompleted, log.setNumber),
+      };
+
+      const exercise = state.exercises.find((item) => item.id === log.exerciseId);
+      const isExerciseCompleted = exercise
+        ? completedSets[log.exerciseId] >= exercise.sets
+        : false;
+      const completedExercises = isExerciseCompleted
+        ? { ...state.completedExercises, [log.exerciseId]: true }
+        : state.completedExercises;
+
+      return { setLogs, completedSets, completedExercises };
+    }),
 
   advanceSet: () =>
     set((state) => {
       const currentExercise = state.exercises[state.currentExerciseIndex];
       if (!currentExercise) return {};
-
-      if (state.currentSetNumber < currentExercise.sets) {
-        return { currentSetNumber: state.currentSetNumber + 1 };
-      }
+      const currentCompleted = state.completedSets[currentExercise.id] ?? 0;
+      if (currentCompleted < currentExercise.sets) return {};
 
       // Find next non-skipped exercise
       let nextIndex = state.currentExerciseIndex + 1;
-      while (nextIndex < state.exercises.length && state.exercises[nextIndex].skipped) {
+      while (nextIndex < state.exercises.length) {
+        const nextExercise = state.exercises[nextIndex];
+        if (!nextExercise.skipped && !state.completedExercises[nextExercise.id]) {
+          break;
+        }
         nextIndex++;
       }
 
       if (nextIndex >= state.exercises.length) {
-        return { currentSetNumber: state.currentSetNumber };
+        return {};
       }
 
-      return { currentExerciseIndex: nextIndex, currentSetNumber: 1 };
+      return { currentExerciseIndex: nextIndex };
     }),
 
   startRestTimer: (seconds) =>

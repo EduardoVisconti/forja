@@ -25,6 +25,9 @@ export default function ActiveSessionScreen() {
   const hasAdvanced = useRef(false);
 
   const currentExercise = store.exercises[store.currentExerciseIndex];
+  const currentSetNumber = currentExercise
+    ? Math.min((store.completedSets[currentExercise.id] ?? 0) + 1, currentExercise.sets)
+    : 1;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -72,6 +75,33 @@ export default function ActiveSessionScreen() {
     ]);
   };
 
+  const handleSelectExercise = (index: number) => {
+    if (index === store.currentExerciseIndex) return;
+    const selectedExercise = store.exercises[index];
+    if (!selectedExercise || selectedExercise.skipped) return;
+
+    if (store.completedExercises[selectedExercise.id]) {
+      Alert.alert('Este exerc\u00edcio j\u00e1 foi conclu\u00eddo. Deseja revisitar?', '', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Revisit',
+          style: 'default',
+          onPress: () => store.setCurrentExerciseIndex(index),
+        },
+      ]);
+      return;
+    }
+
+    Alert.alert(`Ir para ${selectedExercise.name}?`, '', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Go',
+        style: 'default',
+        onPress: () => store.setCurrentExerciseIndex(index),
+      },
+    ]);
+  };
+
   if (!currentExercise || store.exercises.every((ex) => ex.skipped)) {
     return (
       <View style={styles.center}>
@@ -97,7 +127,7 @@ export default function ActiveSessionScreen() {
       ) : (
         <ActiveExerciseCard
           exercise={currentExercise}
-          currentSet={store.currentSetNumber}
+          currentSet={currentSetNumber}
           preferences={{ unit }}
           onCompleteSet={(reps, weightKg) => {
             completeSet(reps, weightKg);
@@ -113,7 +143,8 @@ export default function ActiveSessionScreen() {
       <ExerciseQueuePanel
         exercises={store.exercises}
         currentIndex={store.currentExerciseIndex}
-        onSelect={(index) => store.setCurrentExerciseIndex(index)}
+        completedExercises={store.completedExercises}
+        onSelect={handleSelectExercise}
         onSkip={(index) => store.skipExercise(index)}
         onMoveUp={handleMoveUp}
         onMoveDown={handleMoveDown}
