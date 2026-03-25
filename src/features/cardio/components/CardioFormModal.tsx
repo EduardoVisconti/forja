@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Controller, type Resolver, useForm } from 'react-hook-form';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Chip, Dialog, HelperText, Portal, Text, TextInput, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
 import { TRAINING_TYPES, CARDIO_ZONES, cardioSchema, type CardioFormValues } from '../schemas/cardioSchemas';
 import type { CardioLog } from '../types';
@@ -17,7 +17,33 @@ interface Props {
   onDismiss: () => void;
 }
 
+type CardioFormModalValues = Omit<CardioFormValues, 'distance'> & {
+  distance: string;
+};
+
 const KM_TO_MILES = 0.621371;
+const cardioFormResolver = zodResolver(cardioSchema);
+const resolveCardioForm: Resolver<CardioFormModalValues> = async (values, context, options) => {
+  const parsedDistance = parseFloat(String(values.distance));
+  const result = await cardioFormResolver(
+    {
+      ...values,
+      distance: Number.isFinite(parsedDistance) ? parsedDistance : 0,
+    },
+    context,
+    options as unknown as Parameters<typeof cardioFormResolver>[2],
+  );
+
+  return {
+    values: result.values
+      ? {
+          ...result.values,
+          distance: String(result.values.distance),
+        }
+      : {},
+    errors: result.errors,
+  };
+};
 
 function todayISO(): string {
   return new Date().toISOString().split('T')[0];
@@ -45,15 +71,15 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CardioFormValues>({
-    resolver: zodResolver(cardioSchema),
+  } = useForm<CardioFormModalValues>({
+    resolver: resolveCardioForm,
     mode: 'onSubmit',
     defaultValues: {
       date: todayISO(),
       trainingType: null,
       zone: null,
       durationMinutes: 30,
-      distance: 0,
+      distance: '0',
       avgPace: '',
       avgHr: null,
       notes: '',
@@ -73,7 +99,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
         trainingType: initial.trainingType,
         zone: initial.zone,
         durationMinutes: initial.durationMinutes,
-        distance: displayDistance,
+        distance: String(displayDistance),
         avgPace: initial.avgPace,
         avgHr: initial.avgHr,
         notes: initial.notes,
@@ -84,7 +110,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
         trainingType: null,
         zone: null,
         durationMinutes: 30,
-        distance: 0,
+        distance: '0',
         avgPace: '',
         avgHr: null,
         notes: '',
@@ -92,9 +118,11 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
     }
   }, [visible, initial, isImperial, reset]);
 
-  const handleSave = (values: CardioFormValues) => {
-    const distanceKm = isImperial ? values.distance / KM_TO_MILES : values.distance;
-    onSubmit({ ...values, distance: distanceKm });
+  const handleSave = (data: CardioFormModalValues) => {
+    const distance = parseFloat(String(data.distance));
+    const normalizedDistance = Number.isFinite(distance) ? distance : 0;
+    const distanceKm = isImperial ? normalizedDistance / KM_TO_MILES : normalizedDistance;
+    onSubmit({ ...data, distance: distanceKm });
   };
 
   const distanceLabel = isImperial ? t('cardio.distanceMi') : t('cardio.distanceKm');
@@ -111,220 +139,233 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
           {initial ? t('cardio.editEntry') : t('cardio.newEntry')}
         </Dialog.Title>
         <Dialog.Content style={[styles.dialogContent, { backgroundColor: 'transparent' }]}>
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            style={[styles.scrollView, { backgroundColor: 'transparent' }]}
-            contentContainerStyle={styles.content}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={80}
           >
-            {/* Date */}
-            <Controller
-              control={control}
-              name="date"
-              render={({ field: { value, onChange } }) => (
-                <>
-                  <Pressable onPress={() => setShowDatePicker(true)}>
-                    <TextInput
-                      label={t('cardio.date')}
-                      value={formatDDMMYYYY(value)}
-                      mode="outlined"
-                      style={styles.input}
-                      editable={false}
-                      right={<TextInput.Icon icon="calendar" onPress={() => setShowDatePicker(true)} />}
-                    />
-                  </Pressable>
-                  {showDatePicker && (
-                    <DateTimePicker
-                      value={parseISODate(value)}
-                      mode="date"
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                      onChange={(_event, selectedDate) => {
-                        setShowDatePicker(Platform.OS === 'ios');
-                        if (selectedDate) {
-                          const iso = selectedDate.toISOString().split('T')[0];
-                          onChange(iso);
-                        }
-                      }}
-                    />
-                  )}
-                  {errors.date && (
-                    <HelperText type="error">{t(errors.date.message ?? '')}</HelperText>
-                  )}
-                </>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              style={[styles.scrollView, { backgroundColor: 'transparent' }]}
+              contentContainerStyle={styles.content}
+            >
+              {/* Date */}
+              <Controller
+                control={control}
+                name="date"
+                render={({ field }) => {
+                  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+                    setShowDatePicker(false);
+                    if (event.type === 'set' && selectedDate) {
+                      const iso = selectedDate.toISOString().split('T')[0];
+                      field.onChange(iso);
+                    }
+                  };
+
+                  return (
+                    <>
+                      <Pressable onPress={() => setShowDatePicker(true)}>
+                        <TextInput
+                          label={t('cardio.date')}
+                          value={formatDDMMYYYY(field.value)}
+                          mode="outlined"
+                          style={styles.input}
+                          editable={false}
+                          right={<TextInput.Icon icon="calendar" onPress={() => setShowDatePicker(true)} />}
+                        />
+                      </Pressable>
+                      {showDatePicker && (
+                        <DateTimePicker
+                          value={parseISODate(field.value)}
+                          mode="date"
+                          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                          onChange={onDateChange}
+                        />
+                      )}
+                      {errors.date && (
+                        <HelperText type="error">{t(errors.date.message ?? '')}</HelperText>
+                      )}
+                    </>
+                  );
+                }}
+              />
+
+              {/* Training Type */}
+              <Text variant="labelMedium" style={styles.sectionLabel}>
+                {t('cardio.trainingType.label')} ({t('cardio.optional')})
+              </Text>
+              <Controller
+                control={control}
+                name="trainingType"
+                render={({ field: { value, onChange } }) => (
+                  <View style={styles.chipRow}>
+                    {TRAINING_TYPES.map((type) => (
+                      <Chip
+                        key={type}
+                        selected={value === type}
+                        onPress={() => onChange(value === type ? null : type)}
+                        style={styles.chip}
+                        compact
+                      >
+                        {t(`cardio.trainingType.${type}`)}
+                      </Chip>
+                    ))}
+                  </View>
+                )}
+              />
+
+              {/* Zone */}
+              <Text variant="labelMedium" style={styles.sectionLabel}>
+                {t('cardio.zone.label')} ({t('cardio.optional')})
+              </Text>
+              <Controller
+                control={control}
+                name="zone"
+                render={({ field: { value, onChange } }) => (
+                  <View style={styles.chipRow}>
+                    {CARDIO_ZONES.map((z) => (
+                      <Chip
+                        key={z}
+                        selected={value === z}
+                        onPress={() => onChange(value === z ? null : z)}
+                        style={styles.chip}
+                        compact
+                      >
+                        {t(`cardio.zone.${z}`)}
+                      </Chip>
+                    ))}
+                  </View>
+                )}
+              />
+
+              {errors.trainingType && (
+                <HelperText type="error">{t(errors.trainingType.message ?? '')}</HelperText>
               )}
-            />
 
-            {/* Training Type */}
-            <Text variant="labelMedium" style={styles.sectionLabel}>
-              {t('cardio.trainingType.label')} ({t('cardio.optional')})
-            </Text>
-            <Controller
-              control={control}
-              name="trainingType"
-              render={({ field: { value, onChange } }) => (
-                <View style={styles.chipRow}>
-                  {TRAINING_TYPES.map((type) => (
-                    <Chip
-                      key={type}
-                      selected={value === type}
-                      onPress={() => onChange(value === type ? null : type)}
-                      style={styles.chip}
-                      compact
-                    >
-                      {t(`cardio.trainingType.${type}`)}
-                    </Chip>
-                  ))}
-                </View>
-              )}
-            />
-
-            {/* Zone */}
-            <Text variant="labelMedium" style={styles.sectionLabel}>
-              {t('cardio.zone.label')} ({t('cardio.optional')})
-            </Text>
-            <Controller
-              control={control}
-              name="zone"
-              render={({ field: { value, onChange } }) => (
-                <View style={styles.chipRow}>
-                  {CARDIO_ZONES.map((z) => (
-                    <Chip
-                      key={z}
-                      selected={value === z}
-                      onPress={() => onChange(value === z ? null : z)}
-                      style={styles.chip}
-                      compact
-                    >
-                      {t(`cardio.zone.${z}`)}
-                    </Chip>
-                  ))}
-                </View>
-              )}
-            />
-
-            {errors.trainingType && (
-              <HelperText type="error">{t(errors.trainingType.message ?? '')}</HelperText>
-            )}
-
-            {/* Duration + Distance */}
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <Controller
-                  control={control}
-                  name="durationMinutes"
-                  render={({ field: { value, onChange } }) => (
-                    <>
-                      <TextInput
-                        label={t('cardio.duration')}
-                        value={String(value)}
-                        onChangeText={(v) => onChange(parseInt(v, 10) || 0)}
-                        keyboardType="numeric"
-                        mode="outlined"
-                      />
-                      {errors.durationMinutes && (
-                        <HelperText type="error">
-                          {t(errors.durationMinutes.message ?? '')}
-                        </HelperText>
-                      )}
-                    </>
-                  )}
-                />
-              </View>
-              <View style={styles.half}>
-                <Controller
-                  control={control}
-                  name="distance"
-                  render={({ field: { value, onChange } }) => (
-                    <>
-                      <TextInput
-                        label={distanceLabel}
-                        value={String(value)}
-                        onChangeText={(v) => onChange(parseFloat(v) || 0)}
-                        keyboardType="decimal-pad"
-                        mode="outlined"
-                      />
-                      {errors.distance && (
-                        <HelperText type="error">
-                          {t(errors.distance.message ?? '')}
-                        </HelperText>
-                      )}
-                    </>
-                  )}
-                />
-              </View>
-            </View>
-
-            {/* Pace + HR */}
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <Controller
-                  control={control}
-                  name="avgPace"
-                  render={({ field: { value, onChange } }) => (
-                    <>
-                      <TextInput
-                        label={paceLabel}
-                        value={value}
-                        onChangeText={onChange}
-                        placeholder="5:30"
-                        mode="outlined"
-                      />
-                      {errors.avgPace && (
-                        <HelperText type="error">
-                          {t(errors.avgPace.message ?? '')}
-                        </HelperText>
-                      )}
-                    </>
-                  )}
-                />
-              </View>
-              <View style={styles.half}>
-                <Controller
-                  control={control}
-                  name="avgHr"
-                  render={({ field: { value, onChange } }) => (
-                    <>
-                      <TextInput
-                        label={t('cardio.avgHr')}
-                        value={value !== null ? String(value) : ''}
-                        onChangeText={(v) => onChange(v ? parseInt(v, 10) : null)}
-                        keyboardType="numeric"
-                        mode="outlined"
-                        placeholder={t('cardio.optional')}
-                      />
-                      {errors.avgHr && (
-                        <HelperText type="error">
-                          {t(errors.avgHr.message ?? '')}
-                        </HelperText>
-                      )}
-                    </>
-                  )}
-                />
-              </View>
-            </View>
-
-            {/* Notes */}
-            <Controller
-              control={control}
-              name="notes"
-              render={({ field: { value, onChange } }) => (
-                <>
-                  <TextInput
-                    label={t('cardio.notes')}
-                    value={value}
-                    onChangeText={onChange}
-                    mode="outlined"
-                    multiline
-                    numberOfLines={3}
-                    placeholder={t('cardio.optional')}
-                    style={styles.input}
+              {/* Duration + Distance */}
+              <View style={styles.row}>
+                <View style={styles.half}>
+                  <Controller
+                    control={control}
+                    name="durationMinutes"
+                    render={({ field: { value, onChange } }) => (
+                      <>
+                        <TextInput
+                          label={t('cardio.duration')}
+                          value={String(value)}
+                          onChangeText={(v) => onChange(parseInt(v, 10) || 0)}
+                          keyboardType="numeric"
+                          mode="outlined"
+                        />
+                        {errors.durationMinutes && (
+                          <HelperText type="error">
+                            {t(errors.durationMinutes.message ?? '')}
+                          </HelperText>
+                        )}
+                      </>
+                    )}
                   />
-                  {errors.notes && (
-                    <HelperText type="error">{t(errors.notes.message ?? '')}</HelperText>
-                  )}
-                </>
-              )}
-            />
-          </ScrollView>
+                </View>
+                <View style={styles.half}>
+                  <Controller
+                    control={control}
+                    name="distance"
+                    render={({ field: { value, onChange } }) => (
+                      <>
+                        <TextInput
+                          label={distanceLabel}
+                          value={value}
+                          onChangeText={onChange}
+                          keyboardType="decimal-pad"
+                          mode="outlined"
+                        />
+                        {errors.distance && (
+                          <HelperText type="error">
+                            {t(errors.distance.message ?? '')}
+                          </HelperText>
+                        )}
+                      </>
+                    )}
+                  />
+                </View>
+              </View>
+
+              {/* Pace + HR */}
+              <View style={styles.row}>
+                <View style={styles.half}>
+                  <Controller
+                    control={control}
+                    name="avgPace"
+                    render={({ field: { value, onChange } }) => (
+                      <>
+                        <Text variant="labelMedium" style={styles.fieldLabel}>
+                          {t('cardio.avgPace')}
+                        </Text>
+                        <TextInput
+                          value={value}
+                          onChangeText={onChange}
+                          placeholder={paceLabel}
+                          mode="outlined"
+                        />
+                        {errors.avgPace && (
+                          <HelperText type="error">
+                            {t(errors.avgPace.message ?? '')}
+                          </HelperText>
+                        )}
+                      </>
+                    )}
+                  />
+                </View>
+                <View style={styles.half}>
+                  <Controller
+                    control={control}
+                    name="avgHr"
+                    render={({ field: { value, onChange } }) => (
+                      <>
+                        <Text variant="labelMedium" style={styles.fieldLabel}>
+                          {t('cardio.avgHr')}
+                        </Text>
+                        <TextInput
+                          value={value !== null ? String(value) : ''}
+                          onChangeText={(v) => onChange(v ? parseInt(v, 10) : null)}
+                          keyboardType="numeric"
+                          mode="outlined"
+                          placeholder={t('cardio.optional')}
+                        />
+                        {errors.avgHr && (
+                          <HelperText type="error">
+                            {t(errors.avgHr.message ?? '')}
+                          </HelperText>
+                        )}
+                      </>
+                    )}
+                  />
+                </View>
+              </View>
+
+              {/* Notes */}
+              <Controller
+                control={control}
+                name="notes"
+                render={({ field: { value, onChange } }) => (
+                  <>
+                    <TextInput
+                      label={t('cardio.notes')}
+                      value={value}
+                      onChangeText={onChange}
+                      mode="outlined"
+                      multiline
+                      numberOfLines={3}
+                      placeholder={t('cardio.optional')}
+                      style={styles.input}
+                    />
+                    {errors.notes && (
+                      <HelperText type="error">{t(errors.notes.message ?? '')}</HelperText>
+                    )}
+                  </>
+                )}
+              />
+            </ScrollView>
+          </KeyboardAvoidingView>
         </Dialog.Content>
         <Dialog.Actions
           style={{
@@ -352,6 +393,7 @@ const createStyles = (theme: MD3Theme) =>
     content: { paddingVertical: 4 },
     input: { marginBottom: 8 },
     sectionLabel: { marginTop: 8, marginBottom: 4, color: theme.colors.onSurfaceVariant },
+    fieldLabel: { marginBottom: 4, color: theme.colors.onSurfaceVariant },
     chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
     chip: {},
     row: { flexDirection: 'row', gap: 12, marginBottom: 8 },

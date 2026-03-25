@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Dialog, HelperText, Portal, TextInput } from 'react-native-paper';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -91,142 +91,150 @@ export function ExerciseFormModal({
         </Dialog.Title>
 
         <Dialog.Content style={{ backgroundColor: 'transparent' }}>
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            style={{ backgroundColor: 'transparent' }}
-            contentContainerStyle={styles.fields}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={80}
           >
-            <Controller
-              control={control}
-              name="name"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  label={t('exercise.name')}
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  error={!!errors.name}
-                  mode="outlined"
-                  autoFocus
-                  returnKeyType="next"
-                />
-              )}
-            />
-            <HelperText type="error" visible={!!errors.name}>
-              {errors.name?.message ? t(errors.name.message) : ''}
-            </HelperText>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              style={{ backgroundColor: 'transparent' }}
+              contentContainerStyle={styles.fields}
+            >
+              <Controller
+                control={control}
+                name="name"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    label={t('exercise.name')}
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={!!errors.name}
+                    mode="outlined"
+                    autoFocus
+                    autoCorrect={true}
+                    autoCapitalize="words"
+                    spellCheck={true}
+                    returnKeyType="next"
+                  />
+                )}
+              />
+              <HelperText type="error" visible={!!errors.name}>
+                {errors.name?.message ? t(errors.name.message) : ''}
+              </HelperText>
 
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <Controller
-                  control={control}
-                  name="sets"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      label={t('exercise.sets')}
-                      value={String(value)}
-                      onChangeText={(text) => onChange(parseInt(text, 10) || 0)}
-                      onBlur={onBlur}
-                      error={!!errors.sets}
-                      keyboardType="number-pad"
-                      mode="outlined"
-                      returnKeyType="next"
-                    />
-                  )}
-                />
-                <HelperText type="error" visible={!!errors.sets}>
-                  {errors.sets?.message ? t(errors.sets.message) : ''}
-                </HelperText>
+              <View style={styles.row}>
+                <View style={styles.half}>
+                  <Controller
+                    control={control}
+                    name="sets"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        label={t('exercise.sets')}
+                        value={String(value)}
+                        onChangeText={(text) => onChange(parseInt(text, 10) || 0)}
+                        onBlur={onBlur}
+                        error={!!errors.sets}
+                        keyboardType="number-pad"
+                        mode="outlined"
+                        returnKeyType="next"
+                      />
+                    )}
+                  />
+                  <HelperText type="error" visible={!!errors.sets}>
+                    {errors.sets?.message ? t(errors.sets.message) : ''}
+                  </HelperText>
+                </View>
+
+                <View style={styles.half}>
+                  <Controller
+                    control={control}
+                    name="reps"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        label={t('exercise.reps')}
+                        value={String(value)}
+                        onChangeText={(text) => onChange(parseInt(text, 10) || 0)}
+                        onBlur={onBlur}
+                        error={!!errors.reps}
+                        keyboardType="number-pad"
+                        mode="outlined"
+                        returnKeyType="next"
+                      />
+                    )}
+                  />
+                  <HelperText type="error" visible={!!errors.reps}>
+                    {errors.reps?.message ? t(errors.reps.message) : ''}
+                  </HelperText>
+                </View>
               </View>
 
-              <View style={styles.half}>
-                <Controller
-                  control={control}
-                  name="reps"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      label={t('exercise.reps')}
-                      value={String(value)}
-                      onChangeText={(text) => onChange(parseInt(text, 10) || 0)}
-                      onBlur={onBlur}
-                      error={!!errors.reps}
-                      keyboardType="number-pad"
-                      mode="outlined"
-                      returnKeyType="next"
-                    />
-                  )}
-                />
-                <HelperText type="error" visible={!!errors.reps}>
-                  {errors.reps?.message ? t(errors.reps.message) : ''}
-                </HelperText>
-              </View>
-            </View>
+              <View style={styles.row}>
+                <View style={styles.half}>
+                  <Controller
+                    control={control}
+                    name="weight"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        label={`${t('exercise.weight')} (${unit})`}
+                        value={String(value)}
+                        onChangeText={(text) => onChange(parseFloat(text) || 0)}
+                        onBlur={onBlur}
+                        error={!!errors.weight}
+                        keyboardType="decimal-pad"
+                        mode="outlined"
+                        returnKeyType="next"
+                      />
+                    )}
+                  />
+                  <HelperText type="error" visible={!!errors.weight}>
+                    {errors.weight?.message ? t(errors.weight.message) : ''}
+                  </HelperText>
+                </View>
 
-            <View style={styles.row}>
-              <View style={styles.half}>
-                <Controller
-                  control={control}
-                  name="weight"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      label={`${t('exercise.weight')} (${unit})`}
-                      value={String(value)}
-                      onChangeText={(text) => onChange(parseFloat(text) || 0)}
-                      onBlur={onBlur}
-                      error={!!errors.weight}
-                      keyboardType="decimal-pad"
-                      mode="outlined"
-                      returnKeyType="next"
-                    />
-                  )}
-                />
-                <HelperText type="error" visible={!!errors.weight}>
-                  {errors.weight?.message ? t(errors.weight.message) : ''}
-                </HelperText>
+                <View style={styles.half}>
+                  <Controller
+                    control={control}
+                    name="restSeconds"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        label={t('exercise.restSeconds')}
+                        value={String(value)}
+                        onChangeText={(text) => onChange(parseInt(text, 10) || 0)}
+                        onBlur={onBlur}
+                        error={!!errors.restSeconds}
+                        keyboardType="number-pad"
+                        mode="outlined"
+                        returnKeyType="next"
+                      />
+                    )}
+                  />
+                  <HelperText type="error" visible={!!errors.restSeconds}>
+                    {errors.restSeconds?.message ? t(errors.restSeconds.message) : ''}
+                  </HelperText>
+                </View>
               </View>
 
-              <View style={styles.half}>
-                <Controller
-                  control={control}
-                  name="restSeconds"
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      label={t('exercise.restSeconds')}
-                      value={String(value)}
-                      onChangeText={(text) => onChange(parseInt(text, 10) || 0)}
-                      onBlur={onBlur}
-                      error={!!errors.restSeconds}
-                      keyboardType="number-pad"
-                      mode="outlined"
-                      returnKeyType="next"
-                    />
-                  )}
-                />
-                <HelperText type="error" visible={!!errors.restSeconds}>
-                  {errors.restSeconds?.message ? t(errors.restSeconds.message) : ''}
-                </HelperText>
-              </View>
-            </View>
-
-            <Controller
-              control={control}
-              name="notes"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  label={t('exercise.notes')}
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  error={!!errors.notes}
-                  mode="outlined"
-                  multiline
-                  numberOfLines={2}
-                  returnKeyType="done"
-                  onSubmitEditing={handleConfirm}
-                />
-              )}
-            />
-          </ScrollView>
+              <Controller
+                control={control}
+                name="notes"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    label={t('exercise.notes')}
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={!!errors.notes}
+                    mode="outlined"
+                    multiline
+                    numberOfLines={2}
+                    returnKeyType="done"
+                    onSubmitEditing={handleConfirm}
+                  />
+                )}
+              />
+            </ScrollView>
+          </KeyboardAvoidingView>
         </Dialog.Content>
 
         <Dialog.Actions

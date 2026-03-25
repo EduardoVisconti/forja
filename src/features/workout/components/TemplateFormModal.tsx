@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { Button, Dialog, Portal, SegmentedButtons, TextInput } from 'react-native-paper';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,47 +52,55 @@ export function TemplateFormModal({
           {isEditing ? t('workout.editTemplate') : t('workout.newTemplate')}
         </Dialog.Title>
         <Dialog.Content style={styles.content}>
-          <Controller
-            control={control}
-            name="name"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                label={t('workout.templateName')}
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                error={!!errors.name}
-                mode="outlined"
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={handleConfirm}
-              />
-            )}
-          />
-          {errors.name ? (
-            <View style={styles.errorRow}>
-              <Button textColor="#ef4444" compact>
-                {t(errors.name.message ?? 'workout.errors.nameRequired')}
-              </Button>
-            </View>
-          ) : null}
-
-          <View style={styles.typeRow}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={80}
+          >
             <Controller
               control={control}
-              name="type"
-              render={({ field: { onChange, value } }) => (
-                <SegmentedButtons
+              name="name"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  label={t('workout.templateName')}
                   value={value}
-                  onValueChange={onChange}
-                  buttons={[
-                    { value: 'gym', label: t('workout.type.gym') },
-                    { value: 'cardio', label: t('workout.type.cardio') },
-                  ]}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={!!errors.name}
+                  mode="outlined"
+                  autoFocus
+                  autoCorrect={true}
+                  autoCapitalize="words"
+                  spellCheck={true}
+                  returnKeyType="done"
+                  onSubmitEditing={handleConfirm}
                 />
               )}
             />
-          </View>
+            {errors.name ? (
+              <View style={styles.errorRow}>
+                <Button textColor="#ef4444" compact>
+                  {t(errors.name.message ?? 'workout.errors.nameRequired')}
+                </Button>
+              </View>
+            ) : null}
+
+            <View style={styles.typeRow}>
+              <Controller
+                control={control}
+                name="type"
+                render={({ field: { onChange, value } }) => (
+                  <SegmentedButtons
+                    value={value}
+                    onValueChange={onChange}
+                    buttons={[
+                      { value: 'gym', label: t('workout.type.gym') },
+                      { value: 'cardio', label: t('workout.type.cardio') },
+                    ]}
+                  />
+                )}
+              />
+            </View>
+          </KeyboardAvoidingView>
         </Dialog.Content>
 
         <Dialog.Actions style={dialogActionsStyle}>

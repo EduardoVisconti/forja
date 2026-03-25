@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { dialogActionsStyle, modalStyle } from '@/core/theme/tokens';
@@ -29,27 +29,33 @@ export function ProfileModal({ visible, onDismiss, onNameUpdated }: ProfileModal
       <Dialog visible={visible} onDismiss={onDismiss} style={[modalStyle, styles.dialog]}>
         <Dialog.Title>{t('home.profile.title')}</Dialog.Title>
         <Dialog.Content style={styles.content}>
-          <TextInput
-            mode="outlined"
-            label={t('home.profile.nameLabel')}
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
+          <KeyboardAvoidingView
+            style={styles.keyboardContent}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={80}
+          >
+            <TextInput
+              mode="outlined"
+              label={t('home.profile.nameLabel')}
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              autoCorrect={false}
+            />
 
-          <TextInput
-            mode="outlined"
-            label={t('home.profile.emailLabel')}
-            value={email}
-            disabled
-          />
+            <TextInput
+              mode="outlined"
+              label={t('home.profile.emailLabel')}
+              value={email}
+              disabled
+            />
 
-          {feedback ? (
-            <Text style={feedback.type === 'error' ? styles.errorText : styles.successText}>
-              {feedback.message}
-            </Text>
-          ) : null}
+            {feedback ? (
+              <Text style={feedback.type === 'error' ? styles.errorText : styles.successText}>
+                {feedback.message}
+              </Text>
+            ) : null}
+          </KeyboardAvoidingView>
         </Dialog.Content>
 
         <Dialog.Actions style={[dialogActionsStyle, styles.actions]}>
@@ -81,9 +87,11 @@ const styles = StyleSheet.create({
     maxWidth: 440,
   },
   content: {
-    gap: 12,
     paddingTop: 4,
     backgroundColor: 'transparent',
+  },
+  keyboardContent: {
+    gap: 12,
   },
   actions: {
     justifyContent: 'space-between',
