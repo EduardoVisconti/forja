@@ -9,7 +9,8 @@
     "save": "Salvar",
     "edit": "Editar",
     "delete": "Excluir",
-    "confirm": "Confirmar"
+    "confirm": "Confirmar",
+    "workoutStreak": "Streak de Treinos"
   },
   "auth": {
     "login": {

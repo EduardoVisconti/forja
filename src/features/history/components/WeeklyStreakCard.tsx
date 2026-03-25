@@ -30,7 +30,7 @@ export function WeeklyStreakCard({ data, title, style }: Props) {
   return (
     <Card style={[styles.card, style]}>
       <Card.Title
-        title={title ?? t('history.weekStreak')}
+        title={title ?? t('common.workoutStreak')}
         style={styles.titleContainer}
         titleStyle={styles.title}
       />

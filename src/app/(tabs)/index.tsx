@@ -156,7 +156,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <WeeklyStreakCard data={weeklyStreak} title={t('home.weekStreak')} style={styles.card} />
+        <WeeklyStreakCard data={weeklyStreak} title={t('common.workoutStreak')} style={styles.card} />
         {lastWorkout === null ? (
           <Text style={styles.motivationalEmpty}>{t('home.motivationalEmpty')}</Text>
         ) : null}
