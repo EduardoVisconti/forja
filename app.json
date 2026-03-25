@@ -30,9 +30,6 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "router": {
-      "root": "src"
-    },
     "plugins": [
       "expo-router",
       "expo-web-browser",
