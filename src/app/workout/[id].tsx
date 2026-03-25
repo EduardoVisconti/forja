@@ -47,7 +47,7 @@ export default function ActiveSessionScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerBackVisible: false,
-      headerLeft: () => <IconButton icon="arrow-left" onPress={handleBack} />,
+      headerLeft: () => <IconButton icon="arrow-left" onPress={handleBack} style={{ margin: 0 }}/>,
       title: store.templateName || t('session.activeWorkout'),
     });
   }, [handleBack, navigation, store.templateName, t]);
