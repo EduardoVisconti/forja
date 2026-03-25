@@ -47,7 +47,7 @@ export function ExerciseFormModal({
     formState: { errors, isSubmitting },
   } = useForm<ExerciseFormValues>({
     resolver: zodResolver(exerciseSchema),
-    defaultValues: { name: '', sets: 3, reps: 10, weight: 0, restSeconds: 60, notes: '' },
+    defaultValues: { name: '', sets: 3, reps: '10', weight: 0, restSeconds: 60, notes: '' },
   });
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export function ExerciseFormModal({
           notes: initial.notes,
         });
       } else {
-        reset({ name: '', sets: 3, reps: 10, weight: 0, restSeconds: 60, notes: '' });
+        reset({ name: '', sets: 3, reps: '10', weight: 0, restSeconds: 60, notes: '' });
       }
     }
   }, [visible, initial, unit, reset]);
@@ -153,11 +153,11 @@ export function ExerciseFormModal({
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
                         label={t('exercise.reps')}
-                        value={String(value)}
-                        onChangeText={(text) => onChange(parseInt(text, 10) || 0)}
+                        value={value}
+                        onChangeText={onChange}
                         onBlur={onBlur}
                         error={!!errors.reps}
-                        keyboardType="number-pad"
+                        keyboardType="default"
                         mode="outlined"
                         returnKeyType="next"
                       />

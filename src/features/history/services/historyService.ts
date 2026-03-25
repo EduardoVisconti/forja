@@ -1,4 +1,5 @@
 import { getAllSessions, getSetLogs } from '@/features/workout/services/sessionStorage';
+import { parseRepsForVolume } from '@/features/workout/services/workoutStorage';
 import type { SetLog, WorkoutSession } from '@/features/workout/types/session';
 import { getLogs as getCardioLogs } from '@/features/cardio/services/cardioStorage';
 import type { CardioLog } from '@/features/cardio/types';
@@ -64,7 +65,7 @@ function getHabitLabelEmoji(
 }
 
 function sumSessionVolumeKg(setLogs: SetLog[]): number {
-  return setLogs.reduce((acc, l) => acc + l.repsDone * l.weightKg, 0);
+  return setLogs.reduce((acc, l) => acc + parseRepsForVolume(String(l.repsDone)) * l.weightKg, 0);
 }
 
 function ensureWorkoutAgg(daily: HistoryDailyAgg, dateISO: string): WorkoutDayAgg {
@@ -377,4 +378,3 @@ function buildPrExercises(
 
   return results;
 }
-

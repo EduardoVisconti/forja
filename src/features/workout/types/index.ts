@@ -12,7 +12,7 @@ export interface Exercise {
   templateId: string;
   name: string;
   sets: number;
-  reps: number;
+  reps: string;
   /** Always stored in kg */
   weight: number;
   restSeconds: number;

@@ -16,6 +16,19 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+export function parseRepsForVolume(reps: string): number {
+  // "8-12" -> 12 (take higher number)
+  if (reps.includes('-')) {
+    const parts = reps.split('-').map((p) => parseFloat(p.trim()));
+    return Math.max(...parts.filter((n) => !isNaN(n)));
+  }
+  // "30s" or "30 seconds" -> 0 (ignore in volume)
+  if (reps.toLowerCase().includes('s')) return 0;
+  // "10" -> 10
+  const n = parseFloat(reps);
+  return isNaN(n) ? 0 : n;
+}
+
 // ─── Templates ───────────────────────────────────────────────────────────────
 
 export async function getTemplates(userId: string): Promise<WorkoutTemplate[]> {
@@ -152,33 +165,33 @@ const SEED_TEMPLATES: Array<{
     name: 'Push',
     type: 'gym',
     exercises: [
-      { name: 'Supino Reto', sets: 4, reps: 8, weight: 80, restSeconds: 90, notes: '' },
-      { name: 'Supino Inclinado', sets: 3, reps: 10, weight: 60, restSeconds: 75, notes: '' },
-      { name: 'Desenvolvimento', sets: 3, reps: 10, weight: 50, restSeconds: 90, notes: '' },
-      { name: 'Elevação Lateral', sets: 3, reps: 15, weight: 10, restSeconds: 60, notes: '' },
-      { name: 'Extensão Tríceps', sets: 3, reps: 12, weight: 30, restSeconds: 60, notes: '' },
+      { name: 'Supino Reto', sets: 4, reps: '8', weight: 80, restSeconds: 90, notes: '' },
+      { name: 'Supino Inclinado', sets: 3, reps: '10', weight: 60, restSeconds: 75, notes: '' },
+      { name: 'Desenvolvimento', sets: 3, reps: '10', weight: 50, restSeconds: 90, notes: '' },
+      { name: 'Elevação Lateral', sets: 3, reps: '15', weight: 10, restSeconds: 60, notes: '' },
+      { name: 'Extensão Tríceps', sets: 3, reps: '12', weight: 30, restSeconds: 60, notes: '' },
     ],
   },
   {
     name: 'Pull',
     type: 'gym',
     exercises: [
-      { name: 'Barra Fixa', sets: 4, reps: 8, weight: 0, restSeconds: 90, notes: 'Peso corporal' },
-      { name: 'Remada Curvada', sets: 4, reps: 8, weight: 70, restSeconds: 90, notes: '' },
-      { name: 'Puxada Frontal', sets: 3, reps: 10, weight: 60, restSeconds: 75, notes: '' },
-      { name: 'Rosca Direta', sets: 3, reps: 12, weight: 20, restSeconds: 60, notes: '' },
-      { name: 'Face Pull', sets: 3, reps: 15, weight: 15, restSeconds: 60, notes: '' },
+      { name: 'Barra Fixa', sets: 4, reps: '8', weight: 0, restSeconds: 90, notes: 'Peso corporal' },
+      { name: 'Remada Curvada', sets: 4, reps: '8', weight: 70, restSeconds: 90, notes: '' },
+      { name: 'Puxada Frontal', sets: 3, reps: '10', weight: 60, restSeconds: 75, notes: '' },
+      { name: 'Rosca Direta', sets: 3, reps: '12', weight: 20, restSeconds: 60, notes: '' },
+      { name: 'Face Pull', sets: 3, reps: '15', weight: 15, restSeconds: 60, notes: '' },
     ],
   },
   {
     name: 'Legs',
     type: 'gym',
     exercises: [
-      { name: 'Agachamento', sets: 4, reps: 8, weight: 100, restSeconds: 120, notes: '' },
-      { name: 'Leg Press', sets: 3, reps: 12, weight: 120, restSeconds: 90, notes: '' },
-      { name: 'Stiff', sets: 3, reps: 10, weight: 80, restSeconds: 90, notes: '' },
-      { name: 'Cadeira Flexora', sets: 3, reps: 12, weight: 40, restSeconds: 60, notes: '' },
-      { name: 'Panturrilha', sets: 4, reps: 20, weight: 60, restSeconds: 45, notes: '' },
+      { name: 'Agachamento', sets: 4, reps: '8', weight: 100, restSeconds: 120, notes: '' },
+      { name: 'Leg Press', sets: 3, reps: '12', weight: 120, restSeconds: 90, notes: '' },
+      { name: 'Stiff', sets: 3, reps: '10', weight: 80, restSeconds: 90, notes: '' },
+      { name: 'Cadeira Flexora', sets: 3, reps: '12', weight: 40, restSeconds: 60, notes: '' },
+      { name: 'Panturrilha', sets: 4, reps: '20', weight: 60, restSeconds: 45, notes: '' },
     ],
   },
 ];

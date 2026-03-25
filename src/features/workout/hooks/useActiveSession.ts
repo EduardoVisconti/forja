@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { triggerSync } from '@/core/sync/syncStore';
 import { saveSession, saveSetLogs } from '../services/sessionStorage';
-import { getExercises } from '../services/workoutStorage';
+import { getExercises, parseRepsForVolume } from '../services/workoutStorage';
 import { useWorkoutSessionStore } from '../store/workoutSessionStore';
 import type { SessionExercise, SetLog } from '../types/session';
 import type { WorkoutTemplate } from '../types/index';
@@ -48,7 +48,10 @@ export function useActiveSession() {
     const durationMinutes = Math.round(
       (new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 60000,
     );
-    const totalVolumeKg = setLogs.reduce((sum, l) => sum + l.repsDone * l.weightKg, 0);
+    const totalVolumeKg = setLogs.reduce(
+      (sum, l) => sum + parseRepsForVolume(String(l.repsDone)) * l.weightKg,
+      0,
+    );
 
     await saveSetLogs(sessionId, setLogs);
     await saveSession({
