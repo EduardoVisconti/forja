@@ -10,6 +10,11 @@ const keys = {
   seeded: (userId: string) => `workout:seeded:${userId}`,
 };
 
+type StoredWorkoutTemplate = Omit<WorkoutTemplate, 'order_index' | 'orderIndex'> & {
+  order_index?: number;
+  orderIndex?: number;
+};
+
 // ─── ID generator ────────────────────────────────────────────────────────────
 
 function generateId(): string {
@@ -33,11 +38,44 @@ export function parseRepsForVolume(reps: string): number {
 
 export async function getTemplates(userId: string): Promise<WorkoutTemplate[]> {
   const raw = await AsyncStorage.getItem(keys.templates(userId));
-  return raw ? (JSON.parse(raw) as WorkoutTemplate[]) : [];
+  if (!raw) return [];
+
+  const parsed = JSON.parse(raw) as StoredWorkoutTemplate[];
+  return parsed
+    .map((template, index) => {
+      const order =
+        typeof template.order_index === 'number'
+          ? template.order_index
+          : typeof template.orderIndex === 'number'
+            ? template.orderIndex
+            : index;
+
+      return {
+        ...template,
+        order_index: order,
+        orderIndex: order,
+      };
+    })
+    .sort((a, b) => a.order_index - b.order_index);
 }
 
 export async function saveTemplates(userId: string, templates: WorkoutTemplate[]): Promise<void> {
-  await AsyncStorage.setItem(keys.templates(userId), JSON.stringify(templates));
+  const normalized = templates.map((template, index) => {
+    const order =
+      typeof template.order_index === 'number'
+        ? template.order_index
+        : typeof template.orderIndex === 'number'
+          ? template.orderIndex
+          : index;
+
+    return {
+      ...template,
+      order_index: order,
+      orderIndex: order,
+    };
+  });
+
+  await AsyncStorage.setItem(keys.templates(userId), JSON.stringify(normalized));
 }
 
 export async function createTemplate(
@@ -50,6 +88,7 @@ export async function createTemplate(
     userId,
     name: data.name,
     type: data.type,
+    order_index: templates.length,
     orderIndex: templates.length,
     createdAt: new Date().toISOString(),
   };
@@ -70,8 +109,8 @@ export async function updateTemplate(
 export async function deleteTemplate(userId: string, id: string): Promise<void> {
   const templates = await getTemplates(userId);
   const filtered = templates.filter((t) => t.id !== id);
-  // Re-index orderIndex after deletion
-  const reindexed = filtered.map((t, i) => ({ ...t, orderIndex: i }));
+  // Re-index order after deletion
+  const reindexed = filtered.map((t, i) => ({ ...t, order_index: i, orderIndex: i }));
   await saveTemplates(userId, reindexed);
   // Clean up associated exercises
   await AsyncStorage.removeItem(keys.exercises(id));
@@ -207,6 +246,7 @@ export async function seedDefaultTemplates(userId: string): Promise<void> {
       userId,
       name: seed.name,
       type: seed.type,
+      order_index: ti,
       orderIndex: ti,
       createdAt: new Date().toISOString(),
     };

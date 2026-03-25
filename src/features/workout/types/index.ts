@@ -5,6 +5,8 @@ export interface WorkoutTemplate {
   userId: string;
   name: string;
   type: TemplateType;
+  order_index: number;
+  /** Backward-compatible alias for older local objects. */
   orderIndex: number;
   createdAt: string;
 }

@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Alert, FlatList, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator, Button, FAB, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useWorkoutTemplates } from '@/features/workout/hooks/useWorkoutTemplates';
 import { TemplateCard } from '@/features/workout/components/TemplateCard';
 import { TemplateFormModal } from '@/features/workout/components/TemplateFormModal';
@@ -18,8 +20,16 @@ export default function WorkoutScreen() {
   const router = useRouter();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { templates, isLoading, error, createTemplate, updateTemplate, deleteTemplate, reload } =
-    useWorkoutTemplates();
+  const {
+    templates,
+    isLoading,
+    error,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    reorderTemplates,
+    reload,
+  } = useWorkoutTemplates();
   const exerciseCounts = useExerciseCounts(templates);
   const { startSession } = useActiveSession();
 
@@ -79,8 +89,9 @@ export default function WorkoutScreen() {
           </Button>
         </View>
       ) : (
-        <FlatList
+        <DraggableFlatList
           data={templates}
+          onDragEnd={({ data }) => reorderTemplates(data)}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
@@ -92,15 +103,28 @@ export default function WorkoutScreen() {
               </Button>
             </View>
           }
-          renderItem={({ item }) => (
-            <TemplateCard
-              template={item}
-              exerciseCount={exerciseCounts[item.id] ?? 0}
-              onPress={() => handlePressCard(item)}
-              onEdit={() => handleOpenEdit(item)}
-              onDelete={() => handleDelete(item)}
-              onStart={() => startSession(item)}
-            />
+          renderItem={({ item, drag, isActive }) => (
+            <ScaleDecorator>
+              <View style={styles.draggableRow}>
+                <TouchableOpacity onLongPress={drag} style={styles.dragHandle} delayLongPress={120}>
+                  <MaterialCommunityIcons
+                    name="drag-horizontal-variant"
+                    size={20}
+                    color={isActive ? '#ef4444' : '#525252'}
+                  />
+                </TouchableOpacity>
+                <View style={styles.cardContainer}>
+                  <TemplateCard
+                    template={item}
+                    exerciseCount={exerciseCounts[item.id] ?? 0}
+                    onPress={() => handlePressCard(item)}
+                    onEdit={() => handleOpenEdit(item)}
+                    onDelete={() => handleDelete(item)}
+                    onStart={() => startSession(item)}
+                  />
+                </View>
+              </View>
+            </ScaleDecorator>
           )}
         />
       )}
@@ -144,6 +168,18 @@ const createStyles = (theme: MD3Theme) =>
     list: {
       padding: 16,
       paddingBottom: 100,
+    },
+    draggableRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    dragHandle: {
+      padding: 8,
+      marginRight: 4,
+      marginBottom: 12,
+    },
+    cardContainer: {
+      flex: 1,
     },
     empty: {
       alignItems: 'center',

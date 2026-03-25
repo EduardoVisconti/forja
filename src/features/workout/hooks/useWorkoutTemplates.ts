@@ -24,7 +24,7 @@ export function useWorkoutTemplates() {
     try {
       await storage.seedDefaultTemplates(userId);
       const data = await storage.getTemplates(userId);
-      setTemplates(data.sort((a, b) => a.orderIndex - b.orderIndex));
+      setTemplates(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
@@ -58,11 +58,39 @@ export function useWorkoutTemplates() {
   const deleteTemplate = useCallback(
     async (id: string) => {
       await storage.deleteTemplate(userId, id);
-      setTemplates((prev) => prev.filter((t) => t.id !== id));
+      setTemplates((prev) =>
+        prev
+          .filter((t) => t.id !== id)
+          .map((template, index) => ({ ...template, order_index: index, orderIndex: index })),
+      );
       triggerSync();
     },
     [userId],
   );
 
-  return { templates, isLoading, error, createTemplate, updateTemplate, deleteTemplate, reload: load };
+  const reorderTemplates = useCallback(
+    async (newOrder: WorkoutTemplate[]) => {
+      const reordered = newOrder.map((template, index) => ({
+        ...template,
+        order_index: index,
+        orderIndex: index,
+      }));
+
+      setTemplates(reordered);
+      await storage.saveTemplates(userId, reordered);
+      triggerSync();
+    },
+    [userId],
+  );
+
+  return {
+    templates,
+    isLoading,
+    error,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    reorderTemplates,
+    reload: load,
+  };
 }
