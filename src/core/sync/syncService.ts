@@ -47,7 +47,7 @@ export async function syncAll(userId: string): Promise<void> {
       user_id: t.userId,
       name: t.name,
       type: t.type,
-      order_index: t.orderIndex,
+      order_index: t.order_index,
       created_at: t.createdAt,
       updated_at: now,
     }));
@@ -179,10 +179,11 @@ export async function pullAll(userId: string): Promise<void> {
         userId: row.user_id,
         name: row.name,
         type: row.type,
+        order_index: row.order_index,
         orderIndex: row.order_index,
         createdAt: row.created_at,
       }))
-      .sort((a, b) => a.orderIndex - b.orderIndex);
+      .sort((a, b) => a.order_index - b.order_index);
 
     await saveIfMissingOrEmpty(templatesStorageKey, templates);
   }
