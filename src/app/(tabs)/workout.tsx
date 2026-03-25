@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { ActivityIndicator, Button, FAB, Text, useTheme } from 'react-native-paper';
+import { Alert, FlatList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, FAB, IconButton, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import DraggableFlatList from 'react-native-draggable-flatlist';
 import { useWorkoutTemplates } from '@/features/workout/hooks/useWorkoutTemplates';
 import { TemplateCard } from '@/features/workout/components/TemplateCard';
 import { TemplateFormModal } from '@/features/workout/components/TemplateFormModal';
@@ -27,7 +25,8 @@ export default function WorkoutScreen() {
     createTemplate,
     updateTemplate,
     deleteTemplate,
-    reorderTemplates,
+    moveTemplateUp,
+    moveTemplateDown,
     reload,
   } = useWorkoutTemplates();
   const exerciseCounts = useExerciseCounts(templates);
@@ -89,12 +88,9 @@ export default function WorkoutScreen() {
           </Button>
         </View>
       ) : (
-        <DraggableFlatList
+        <FlatList
           data={templates}
           keyExtractor={(item) => item.id}
-          onDragEnd={({ data }) => {
-            void reorderTemplates(data);
-          }}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -105,15 +101,28 @@ export default function WorkoutScreen() {
               </Button>
             </View>
           }
-          renderItem={({ item, drag, isActive }) => (
-            <View style={[styles.templateRow, isActive && styles.templateRowDragging]}>
-              <Pressable onLongPress={drag} delayLongPress={180} style={styles.dragHandle}>
-                <MaterialCommunityIcons
-                  name="drag-horizontal-variant"
-                  size={22}
-                  color={theme.colors.onSurfaceVariant}
+          renderItem={({ item, index }) => (
+            <View style={styles.templateRow}>
+              <View style={styles.reorder}>
+                <IconButton
+                  icon="chevron-up"
+                  size={18}
+                  disabled={index === 0}
+                  onPress={() => {
+                    void moveTemplateUp(item.id);
+                  }}
+                  style={styles.reorderBtn}
                 />
-              </Pressable>
+                <IconButton
+                  icon="chevron-down"
+                  size={18}
+                  disabled={index === templates.length - 1}
+                  onPress={() => {
+                    void moveTemplateDown(item.id);
+                  }}
+                  style={styles.reorderBtn}
+                />
+              </View>
               <View style={styles.templateCardContainer}>
                 <TemplateCard
                   template={item}
@@ -171,16 +180,18 @@ const createStyles = (theme: MD3Theme) =>
     },
     templateRow: {
       flexDirection: 'row',
-      alignItems: 'stretch',
+      alignItems: 'center',
     },
-    templateRowDragging: {
-      opacity: 0.95,
-    },
-    dragHandle: {
-      justifyContent: 'center',
+    reorder: {
+      flexDirection: 'column',
       alignItems: 'center',
       paddingRight: 4,
       paddingBottom: 12,
+    },
+    reorderBtn: {
+      margin: 0,
+      width: 28,
+      height: 28,
     },
     templateCardContainer: {
       flex: 1,

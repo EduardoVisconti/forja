@@ -83,6 +83,64 @@ export function useWorkoutTemplates() {
     [userId],
   );
 
+  const swapTemplateOrder = useCallback(
+    async (id: string, direction: -1 | 1) => {
+      if (!userId) return;
+
+      const ordered = [...templates].sort((a, b) => a.order_index - b.order_index);
+      const currentIndex = ordered.findIndex((template) => template.id === id);
+      const adjacentIndex = currentIndex + direction;
+
+      if (currentIndex < 0 || adjacentIndex < 0 || adjacentIndex >= ordered.length) {
+        return;
+      }
+
+      const current = ordered[currentIndex];
+      const adjacent = ordered[adjacentIndex];
+
+      const swapped = ordered
+        .map((template) => {
+          if (template.id === current.id) {
+            return {
+              ...template,
+              order_index: adjacent.order_index,
+              orderIndex: adjacent.order_index,
+            };
+          }
+
+          if (template.id === adjacent.id) {
+            return {
+              ...template,
+              order_index: current.order_index,
+              orderIndex: current.order_index,
+            };
+          }
+
+          return template;
+        })
+        .sort((a, b) => a.order_index - b.order_index);
+
+      setTemplates(swapped);
+      await storage.saveTemplates(userId, swapped);
+      triggerSync();
+    },
+    [templates, userId],
+  );
+
+  const moveTemplateUp = useCallback(
+    async (id: string) => {
+      await swapTemplateOrder(id, -1);
+    },
+    [swapTemplateOrder],
+  );
+
+  const moveTemplateDown = useCallback(
+    async (id: string) => {
+      await swapTemplateOrder(id, 1);
+    },
+    [swapTemplateOrder],
+  );
+
   return {
     templates,
     isLoading,
@@ -91,6 +149,8 @@ export function useWorkoutTemplates() {
     updateTemplate,
     deleteTemplate,
     reorderTemplates,
+    moveTemplateUp,
+    moveTemplateDown,
     reload: load,
   };
 }
