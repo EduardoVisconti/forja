@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useSyncStore } from './syncStore';
@@ -11,6 +11,27 @@ export function useSync() {
   const setIsOnline = useSyncStore((s) => s.setIsOnline);
   const triggerSync = useSyncStore((s) => s.triggerSync);
   const previousUserId = useRef<string | null>(userId);
+  const isBootstrapping = useRef(false);
+
+  const bootstrapSync = useCallback(
+    async (targetUserId: string) => {
+      if (isBootstrapping.current) return;
+      isBootstrapping.current = true;
+
+      try {
+        await pullAll(targetUserId);
+      } catch {
+        // Pull errors should not block the regular push attempt.
+      } finally {
+        const activeUserId = useAuthStore.getState().user?.id;
+        if (activeUserId === targetUserId) {
+          await triggerSync();
+        }
+        isBootstrapping.current = false;
+      }
+    },
+    [triggerSync],
+  );
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -27,39 +48,24 @@ export function useSync() {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
       if (nextState === 'active') {
-        triggerSync();
+        const activeUserId = useAuthStore.getState().user?.id;
+        if (!activeUserId) return;
+        void bootstrapSync(activeUserId);
       }
     });
 
     return () => subscription.remove();
-  }, [triggerSync]);
+  }, [bootstrapSync]);
 
   useEffect(() => {
-    const wasLoggedOut = previousUserId.current === null;
+    const previous = previousUserId.current;
     previousUserId.current = userId;
 
-    if (!wasLoggedOut || !userId) return;
+    if (!userId) return;
+    if (previous === userId) return;
 
-    let cancelled = false;
-
-    const bootstrapSync = async () => {
-      try {
-        await pullAll(userId);
-      } catch {
-        // Pull errors should not block the regular push attempt.
-      }
-
-      if (!cancelled) {
-        await triggerSync();
-      }
-    };
-
-    bootstrapSync();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [triggerSync, userId]);
+    void bootstrapSync(userId);
+  }, [bootstrapSync, userId]);
 
   return { syncStatus };
 }
