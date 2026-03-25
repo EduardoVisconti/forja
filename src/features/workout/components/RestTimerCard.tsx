@@ -1,7 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Button, Card, Text, useTheme } from 'react-native-paper';
-import type { MD3Theme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
+import { Button, Text } from 'react-native-paper';
 
 interface Props {
   secondsRemaining: number;
@@ -11,62 +9,51 @@ interface Props {
 }
 
 export function RestTimerCard({ secondsRemaining, nextExerciseName, onSkip, onAdd30 }: Props) {
-  const { t } = useTranslation();
-  const theme = useTheme();
-  const styles = createStyles(theme);
-
   return (
-    <Card style={styles.card}>
-      <Card.Content style={styles.content}>
-        <Text variant="labelMedium" style={styles.next}>
-          {t('session.nextExercise')}: {nextExerciseName ?? '-'}
-        </Text>
-        <Text variant="displaySmall" style={styles.time}>
-          {secondsRemaining}
-        </Text>
-        <View style={styles.actions}>
-          <Button mode="contained" onPress={onSkip} style={styles.button}>
-            {t('timer.skip')}
-          </Button>
-          <Button mode="outlined" onPress={onAdd30} style={styles.button}>
-            {t('timer.add30')}
-          </Button>
-        </View>
-      </Card.Content>
-    </Card>
+    <View style={styles.container}>
+      {nextExerciseName ? (
+        <Text style={styles.nextExercise}>A seguir: {nextExerciseName}</Text>
+      ) : null}
+      <Text style={styles.countdown}>{secondsRemaining}</Text>
+      <View style={styles.actions}>
+        <Button mode="contained" onPress={onSkip} style={styles.button}>
+          Pular descanso
+        </Button>
+        <Button mode="outlined" onPress={onAdd30} style={styles.button}>
+          +30s
+        </Button>
+      </View>
+    </View>
   );
 }
 
-const createStyles = (theme: MD3Theme) =>
-  StyleSheet.create({
-    card: {
-      marginHorizontal: 16,
-      marginTop: 0,
-      maxHeight: 140,
-      backgroundColor: theme.colors.surface,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-    },
-    content: {
-      flex: 1,
-      justifyContent: 'space-between',
-      gap: 8,
-      paddingVertical: 10,
-    },
-    next: {
-      color: theme.colors.onSurfaceVariant,
-    },
-    time: {
-      color: theme.colors.error,
-      fontWeight: '700',
-      textAlign: 'center',
-      lineHeight: 42,
-    },
-    actions: {
-      flexDirection: 'row',
-      gap: 8,
-    },
-    button: {
-      flex: 1,
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    minHeight: 140,
+    backgroundColor: '#1e1e1e',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+    marginHorizontal: 16,
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  nextExercise: {
+    fontSize: 13,
+    color: '#9ca3af',
+  },
+  countdown: {
+    color: '#ef4444',
+    fontSize: 48,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 52,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  button: {
+    flex: 1,
+  },
+});

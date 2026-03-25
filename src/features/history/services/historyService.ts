@@ -68,6 +68,20 @@ function sumSessionVolumeKg(setLogs: SetLog[]): number {
   return setLogs.reduce((acc, l) => acc + parseRepsForVolume(String(l.repsDone)) * l.weightKg, 0);
 }
 
+function durationTextToMinutes(input: string): number {
+  const value = input.trim();
+  if (!value) return 0;
+
+  const parts = value.split(':').map((part) => Number(part));
+  if (parts.some((part) => !Number.isFinite(part))) return 0;
+
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2) return parts[0] + parts[1] / 60;
+  if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
+
+  return 0;
+}
+
 function ensureWorkoutAgg(daily: HistoryDailyAgg, dateISO: string): WorkoutDayAgg {
   if (daily.workout[dateISO]) return daily.workout[dateISO];
   const initial: WorkoutDayAgg = {
@@ -183,7 +197,7 @@ export async function getHistorySources(userId: string): Promise<HistorySources>
     const dateISO = log.date;
     const agg = ensureCardioAgg(daily, dateISO);
     agg.logs.push(log);
-    agg.totalDurationMinutes += log.durationMinutes;
+    agg.totalDurationMinutes += durationTextToMinutes(log.duration);
   }
 
   // Habit aggregate + label mapping.

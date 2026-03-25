@@ -6,22 +6,50 @@ const logsKey = (userId: string) => `cardio:logs:${userId}`;
 const TRAINING_TYPE_VALUES = new Set(['regenerative', 'intervals', 'long', 'walk']);
 const ZONE_VALUES = new Set(['z1', 'z2', 'z3', 'z4', 'z5']);
 
-interface LegacyCardioLog extends Omit<CardioLog, 'trainingType' | 'zone'> {
+interface LegacyCardioLog extends Omit<CardioLog, 'trainingType' | 'zone' | 'duration'> {
   category?: string;
   trainingType?: CardioType;
   zone?: CardioZone;
+  duration?: string;
+  durationMinutes?: number;
+}
+
+function formatLegacyDuration(duration: string | undefined, durationMinutes: number | undefined): string {
+  if (typeof duration === 'string' && duration.trim().length > 0) {
+    return duration.trim();
+  }
+
+  if (!Number.isFinite(durationMinutes)) {
+    return '';
+  }
+
+  const totalSeconds = Math.max(0, Math.round((durationMinutes ?? 0) * 60));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  if (seconds === 0) {
+    return String(minutes);
+  }
+
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
 function migrateLog(raw: LegacyCardioLog): CardioLog {
-  if ('trainingType' in raw && 'zone' in raw && !('category' in raw)) {
-    return raw as CardioLog;
+  const migratedDuration = formatLegacyDuration(raw.duration, raw.durationMinutes);
+  if ('trainingType' in raw && 'zone' in raw && !('category' in raw) && 'duration' in raw) {
+    return { ...raw, duration: migratedDuration } as CardioLog;
   }
 
   const { category, ...rest } = raw;
   const trainingType = (category && TRAINING_TYPE_VALUES.has(category) ? category : null) as CardioType;
   const zone = (category && ZONE_VALUES.has(category) ? category : null) as CardioZone;
 
-  return { ...rest, trainingType, zone };
+  return { ...rest, duration: migratedDuration, trainingType, zone };
 }
 
 function generateId(): string {

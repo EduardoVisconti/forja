@@ -64,7 +64,7 @@ export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
       />
       <Card.Content style={styles.content}>
         <View style={styles.row}>
-          <Stat label={t('cardio.duration')} value={`${log.durationMinutes} min`} />
+          <Stat label={t('cardio.duration')} value={log.duration} />
           <Stat label={t('cardio.distance')} value={displayDistance} />
           <Stat label={t('cardio.avgPace')} value={`${log.avgPace} ${paceUnit}`} />
           {log.avgHr !== null && (

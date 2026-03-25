@@ -10,7 +10,6 @@ import {
   TRAINING_TYPES,
   CARDIO_ZONES,
   cardioSchema,
-  parseDurationToMinutes,
   type CardioFormValues,
   type CardioSchemaValues,
 } from '../schemas/cardioSchemas';
@@ -106,7 +105,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
         date: initial.date,
         trainingType: initial.trainingType,
         zone: initial.zone,
-        duration: String(initial.durationMinutes),
+        duration: initial.duration,
         distance: String(displayDistance),
         avgPace: initial.avgPace,
         avgHr: initial.avgHr,
@@ -127,12 +126,10 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
   }, [visible, initial, isImperial, reset]);
 
   const handleSave = (data: CardioFormModalValues) => {
-    const durationMinutes = parseDurationToMinutes(data.duration);
     const distance = parseFloat(String(data.distance));
     const normalizedDistance = Number.isFinite(distance) ? distance : 0;
     const distanceKm = isImperial ? normalizedDistance / KM_TO_MILES : normalizedDistance;
-    const { duration, ...rest } = data;
-    onSubmit({ ...rest, durationMinutes, distance: distanceKm });
+    onSubmit({ ...data, duration: data.duration.trim(), distance: distanceKm });
   };
 
   const distanceLabel = isImperial ? t('cardio.distanceMi') : t('cardio.distanceKm');

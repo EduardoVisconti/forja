@@ -130,6 +130,25 @@ export default function ActiveSessionScreen() {
     );
   }
 
+  const restTimerCardProps = {
+    secondsRemaining: restSecondsRemaining ?? 0,
+    nextExerciseName: store.nextExercise?.name ?? null,
+    onSkip: () => {
+      skipRestTimer();
+      store.advanceSet();
+    },
+    onAdd30: addThirtySeconds,
+  };
+
+  if (timerRunning && restSecondsRemaining !== null) {
+    console.log('[workout/[id]] RestTimerCard props:', {
+      secondsRemaining: restTimerCardProps.secondsRemaining,
+      nextExerciseName: restTimerCardProps.nextExerciseName,
+      onSkip: 'function',
+      onAdd30: 'function',
+    });
+  }
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <ActiveExerciseCard
@@ -144,15 +163,7 @@ export default function ActiveSessionScreen() {
       />
 
       {timerRunning && restSecondsRemaining !== null ? (
-        <RestTimerCard
-          secondsRemaining={restSecondsRemaining}
-          nextExerciseName={store.nextExercise?.name ?? null}
-          onSkip={() => {
-            skipRestTimer();
-            store.advanceSet();
-          }}
-          onAdd30={addThirtySeconds}
-        />
+        <RestTimerCard {...restTimerCardProps} />
       ) : null}
 
       <View style={styles.queueHeader}>

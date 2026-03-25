@@ -8,7 +8,7 @@ export interface CardioLog {
   date: string;
   trainingType: CardioType;
   zone: CardioZone;
-  durationMinutes: number;
+  duration: string;
   /** Always stored in km */
   distanceKm: number;
   /** User-entered string e.g. "5:30" — in their chosen unit's pace */
