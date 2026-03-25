@@ -161,6 +161,7 @@
     "skipExercise": "Pular exercício",
     "skipped": "Pulado",
     "setProgress": "Série {{current}} de {{total}}",
+    "nextExercise": "Próximo exercício",
     "exerciseQueue": "Fila de exercícios",
     "finishTitle": "Encerrar treino",
     "finishMessage": "Deseja encerrar o treino agora?",

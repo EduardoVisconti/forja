@@ -13,11 +13,19 @@ interface Props {
   preferences: UserPreferences;
   onCompleteSet: (reps: number, weightKg: number) => void;
   onSkip: () => void;
+  hideActions?: boolean;
 }
 
 const KG_TO_LBS = 2.20462;
 
-export function ActiveExerciseCard({ exercise, currentSet, preferences, onCompleteSet, onSkip }: Props) {
+export function ActiveExerciseCard({
+  exercise,
+  currentSet,
+  preferences,
+  onCompleteSet,
+  onSkip,
+  hideActions = false,
+}: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = createStyles(theme);
@@ -83,14 +91,16 @@ export function ActiveExerciseCard({ exercise, currentSet, preferences, onComple
           />
         </View>
       </Card.Content>
-      <Card.Actions>
-        <Button onPress={onSkip} textColor={theme.colors.onSurfaceVariant}>
-          {t('session.skipExercise')}
-        </Button>
-        <Button mode="contained" onPress={handleCompleteSet}>
-          {t('session.completeSet')}
-        </Button>
-      </Card.Actions>
+      {hideActions ? null : (
+        <Card.Actions>
+          <Button onPress={onSkip} textColor={theme.colors.onSurfaceVariant}>
+            {t('session.skipExercise')}
+          </Button>
+          <Button mode="contained" onPress={handleCompleteSet}>
+            {t('session.completeSet')}
+          </Button>
+        </Card.Actions>
+      )}
     </Card>
   );
 }

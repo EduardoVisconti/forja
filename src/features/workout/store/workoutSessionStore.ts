@@ -12,6 +12,7 @@ export interface ActiveSessionState {
   completedSets: Record<string, number>;
   completedExercises: Record<string, boolean>;
   setLogs: SetLog[];
+  nextExercise: SessionExercise | null;
   /** null = no rest timer running */
   restSecondsRemaining: number | null;
   timerRunning: boolean;
@@ -39,6 +40,17 @@ interface ActiveSessionActions {
 
 type WorkoutSessionStore = ActiveSessionState & ActiveSessionActions;
 
+function getNextExercise(
+  exercises: SessionExercise[],
+  currentExerciseIndex: number,
+  completedExercises: Record<string, boolean>,
+): SessionExercise | null {
+  const remaining = exercises
+    .slice(currentExerciseIndex + 1)
+    .filter((exercise) => !exercise.skipped && !completedExercises[exercise.id]);
+  return remaining[0] ?? null;
+}
+
 export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
   sessionId: null,
   templateId: null,
@@ -50,6 +62,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
   completedSets: {},
   completedExercises: {},
   setLogs: [],
+  nextExercise: null,
   restSecondsRemaining: null,
   timerRunning: false,
 
@@ -65,6 +78,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       completedSets: {},
       completedExercises: {},
       setLogs: [],
+      nextExercise: getNextExercise(exercises, 0, {}),
       restSecondsRemaining: null,
       timerRunning: false,
     }),
@@ -81,21 +95,37 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       completedSets: {},
       completedExercises: {},
       setLogs: [],
+      nextExercise: null,
       restSecondsRemaining: null,
       timerRunning: false,
     }),
 
-  setCurrentExerciseIndex: (index) => set({ currentExerciseIndex: index }),
+  setCurrentExerciseIndex: (index) =>
+    set((state) => ({
+      currentExerciseIndex: index,
+      nextExercise: getNextExercise(state.exercises, index, state.completedExercises),
+    })),
 
   skipExercise: (index) =>
     set((state) => {
       const exercises = state.exercises.map((ex, i) =>
         i === index ? { ...ex, skipped: true } : ex,
       );
-      return { exercises };
+      return {
+        exercises,
+        nextExercise: getNextExercise(
+          exercises,
+          state.currentExerciseIndex,
+          state.completedExercises,
+        ),
+      };
     }),
 
-  reorderExercises: (exercises) => set({ exercises }),
+  reorderExercises: (exercises) =>
+    set((state) => ({
+      exercises,
+      nextExercise: getNextExercise(exercises, state.currentExerciseIndex, state.completedExercises),
+    })),
 
   logSet: (log) =>
     set((state) => {
@@ -114,7 +144,16 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
         ? { ...state.completedExercises, [log.exerciseId]: true }
         : state.completedExercises;
 
-      return { setLogs, completedSets, completedExercises };
+      return {
+        setLogs,
+        completedSets,
+        completedExercises,
+        nextExercise: getNextExercise(
+          state.exercises,
+          state.currentExerciseIndex,
+          completedExercises,
+        ),
+      };
     }),
 
   advanceSet: () =>
@@ -135,10 +174,13 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       }
 
       if (nextIndex >= state.exercises.length) {
-        return {};
+        return { nextExercise: null };
       }
 
-      return { currentExerciseIndex: nextIndex };
+      return {
+        currentExerciseIndex: nextIndex,
+        nextExercise: getNextExercise(state.exercises, nextIndex, state.completedExercises),
+      };
     }),
 
   startRestTimer: (seconds) =>
