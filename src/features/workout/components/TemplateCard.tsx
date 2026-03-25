@@ -16,9 +16,7 @@ interface TemplateCardProps {
 const typeLabelKey: Record<WorkoutTemplate['type'], string> = {
   gym: 'workout.type.gym',
   cardio: 'workout.type.cardio',
-  stability: 'workout.type.stability',
-  flexibility: 'workout.type.flexibility',
-  warmup: 'workout.type.warmup',
+  functional: 'workout.type.functional',
 };
 
 export function TemplateCard({
@@ -35,9 +33,7 @@ export function TemplateCard({
   const badgeStyleByType = {
     gym: styles.badgeGym,
     cardio: styles.badgeCardio,
-    stability: styles.badgeStability,
-    flexibility: styles.badgeFlexibility,
-    warmup: styles.badgeWarmup,
+    functional: styles.badgeFunctional,
   };
 
   return (
@@ -101,14 +97,8 @@ const createStyles = (theme: MD3Theme) =>
     badgeCardio: {
       backgroundColor: theme.colors.surfaceVariant,
     },
-    badgeStability: {
+    badgeFunctional: {
       backgroundColor: theme.colors.tertiaryContainer,
-    },
-    badgeFlexibility: {
-      backgroundColor: theme.colors.secondaryContainer,
-    },
-    badgeWarmup: {
-      backgroundColor: theme.colors.errorContainer,
     },
     badgeText: {
       fontSize: 12,

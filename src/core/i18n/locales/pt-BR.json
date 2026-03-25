@@ -118,9 +118,7 @@
     "type": {
       "gym": "Musculação",
       "cardio": "Cardio",
-      "stability": "Estabilidade",
-      "flexibility": "Flexibilidade",
-      "warmup": "Aquecimento"
+      "functional": "Funcional"
     },
     "exerciseCount_one": "{{count}} exercício",
     "exerciseCount_other": "{{count}} exercícios",

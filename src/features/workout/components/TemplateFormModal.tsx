@@ -94,17 +94,8 @@ export function TemplateFormModal({
                     <Chip selected={value === 'gym'} onPress={() => onChange('gym')}>
                       {t('workout.type.gym')}
                     </Chip>
-                    <Chip selected={value === 'stability'} onPress={() => onChange('stability')}>
-                      {t('workout.type.stability')}
-                    </Chip>
-                    <Chip
-                      selected={value === 'flexibility'}
-                      onPress={() => onChange('flexibility')}
-                    >
-                      {t('workout.type.flexibility')}
-                    </Chip>
-                    <Chip selected={value === 'warmup'} onPress={() => onChange('warmup')}>
-                      {t('workout.type.warmup')}
+                    <Chip selected={value === 'functional'} onPress={() => onChange('functional')}>
+                      {t('workout.type.functional')}
                     </Chip>
                     <Chip selected={value === 'cardio'} onPress={() => onChange('cardio')}>
                       {t('workout.type.cardio')}

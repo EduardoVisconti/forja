@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Alert, FlatList, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ActivityIndicator, Button, FAB, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DraggableFlatList from 'react-native-draggable-flatlist';
 import { useWorkoutTemplates } from '@/features/workout/hooks/useWorkoutTemplates';
 import { TemplateCard } from '@/features/workout/components/TemplateCard';
 import { TemplateFormModal } from '@/features/workout/components/TemplateFormModal';
@@ -25,6 +27,7 @@ export default function WorkoutScreen() {
     createTemplate,
     updateTemplate,
     deleteTemplate,
+    reorderTemplates,
     reload,
   } = useWorkoutTemplates();
   const exerciseCounts = useExerciseCounts(templates);
@@ -86,9 +89,12 @@ export default function WorkoutScreen() {
           </Button>
         </View>
       ) : (
-        <FlatList
+        <DraggableFlatList
           data={templates}
           keyExtractor={(item) => item.id}
+          onDragEnd={({ data }) => {
+            void reorderTemplates(data);
+          }}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <View style={styles.empty}>
@@ -99,15 +105,26 @@ export default function WorkoutScreen() {
               </Button>
             </View>
           }
-          renderItem={({ item }) => (
-            <TemplateCard
-              template={item}
-              exerciseCount={exerciseCounts[item.id] ?? 0}
-              onPress={() => handlePressCard(item)}
-              onEdit={() => handleOpenEdit(item)}
-              onDelete={() => handleDelete(item)}
-              onStart={() => startSession(item)}
-            />
+          renderItem={({ item, drag, isActive }) => (
+            <View style={[styles.templateRow, isActive && styles.templateRowDragging]}>
+              <Pressable onLongPress={drag} delayLongPress={180} style={styles.dragHandle}>
+                <MaterialCommunityIcons
+                  name="drag-horizontal-variant"
+                  size={22}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              </Pressable>
+              <View style={styles.templateCardContainer}>
+                <TemplateCard
+                  template={item}
+                  exerciseCount={exerciseCounts[item.id] ?? 0}
+                  onPress={() => handlePressCard(item)}
+                  onEdit={() => handleOpenEdit(item)}
+                  onDelete={() => handleDelete(item)}
+                  onStart={() => startSession(item)}
+                />
+              </View>
+            </View>
           )}
         />
       )}
@@ -151,6 +168,22 @@ const createStyles = (theme: MD3Theme) =>
     list: {
       padding: 16,
       paddingBottom: 100,
+    },
+    templateRow: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+    },
+    templateRowDragging: {
+      opacity: 0.95,
+    },
+    dragHandle: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingRight: 4,
+      paddingBottom: 12,
+    },
+    templateCardContainer: {
+      flex: 1,
     },
     empty: {
       alignItems: 'center',

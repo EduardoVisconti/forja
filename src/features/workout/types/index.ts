@@ -1,4 +1,4 @@
-export type TemplateType = 'gym' | 'cardio' | 'stability' | 'flexibility' | 'warmup';
+export type TemplateType = 'gym' | 'cardio' | 'functional';
 
 export interface WorkoutTemplate {
   id: string;

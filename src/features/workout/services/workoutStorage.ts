@@ -10,10 +10,19 @@ const keys = {
   seeded: (userId: string) => `workout:seeded:${userId}`,
 };
 
-type StoredWorkoutTemplate = Omit<WorkoutTemplate, 'order_index' | 'orderIndex'> & {
+type StoredWorkoutTemplate = Omit<WorkoutTemplate, 'type' | 'order_index' | 'orderIndex'> & {
+  type: WorkoutTemplate['type'] | 'stability' | 'flexibility' | 'warmup';
   order_index?: number;
   orderIndex?: number;
 };
+
+function normalizeTemplateType(type: StoredWorkoutTemplate['type']): WorkoutTemplate['type'] {
+  if (type === 'stability' || type === 'flexibility' || type === 'warmup') {
+    return 'functional';
+  }
+
+  return type;
+}
 
 // ─── ID generator ────────────────────────────────────────────────────────────
 
@@ -42,16 +51,17 @@ export async function getTemplates(userId: string): Promise<WorkoutTemplate[]> {
 
   const parsed = JSON.parse(raw) as StoredWorkoutTemplate[];
   return parsed
-    .map((template, index) => {
+    .map((template) => {
       const order =
         typeof template.order_index === 'number'
           ? template.order_index
           : typeof template.orderIndex === 'number'
             ? template.orderIndex
-            : index;
+            : 0;
 
       return {
         ...template,
+        type: normalizeTemplateType(template.type),
         order_index: order,
         orderIndex: order,
       };
