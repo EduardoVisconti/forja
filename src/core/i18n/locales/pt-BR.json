@@ -199,7 +199,7 @@
     "deleteTitle": "Excluir registro",
     "deleteMessage": "Deseja excluir este registro de cardio?",
     "date": "Data",
-    "duration": "Duração (min)",
+    "duration": "Duração",
     "durationHint": "Ex: 35 ou 35:30 (min:seg)",
     "distance": "Distância",
     "distanceKm": "Distância (km)",

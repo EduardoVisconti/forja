@@ -132,7 +132,6 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
     onSubmit({ ...data, duration: data.duration.trim(), distance: distanceKm });
   };
 
-  const distanceLabel = isImperial ? t('cardio.distanceMi') : t('cardio.distanceKm');
   const paceLabel = isImperial ? t('cardio.pacePerMile') : t('cardio.pacePerKm');
 
   return (
@@ -153,7 +152,7 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
             <ScrollView
               keyboardShouldPersistTaps="handled"
               style={[styles.scrollView, { backgroundColor: 'transparent' }]}
-              contentContainerStyle={styles.content}
+              contentContainerStyle={[styles.content, { paddingBottom: 120 }]}
             >
               {/* Date */}
               <Controller
@@ -256,8 +255,10 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
                     name="duration"
                     render={({ field: { value, onChange } }) => (
                       <>
+                        <Text style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>
+                          {t('cardio.duration')}
+                        </Text>
                         <TextInput
-                          label={t('cardio.duration')}
                           value={value}
                           onChangeText={onChange}
                           keyboardType="default"
@@ -281,8 +282,10 @@ export function CardioFormModal({ visible, unit, initial, onSubmit, onDismiss }:
                     name="distance"
                     render={({ field: { value, onChange } }) => (
                       <>
+                        <Text style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>
+                          {t('cardio.distance')}
+                        </Text>
                         <TextInput
-                          label={distanceLabel}
                           value={value}
                           onChangeText={onChange}
                           keyboardType="decimal-pad"
