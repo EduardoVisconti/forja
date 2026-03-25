@@ -1,5 +1,5 @@
 import * as Linking from 'expo-linking';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { Button, Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
@@ -30,22 +30,32 @@ export function ActiveExerciseCard({
   const theme = useTheme();
   const styles = createStyles(theme);
   const isLbs = preferences.unit === 'lbs';
-  const displayWeight = useMemo(() => {
-    const stored = exercise.weight;
-    const storedUnit = exercise.weightUnit ?? 'kg';
-
-    if (storedUnit === preferences.unit) {
-      return String(stored);
-    }
-
-    if (preferences.unit === 'lbs') {
-      return String(Math.round(stored * 2.205 * 10) / 10);
-    }
-    return String(Math.round((stored / 2.205) * 10) / 10);
-  }, [exercise.weight, exercise.weightUnit, preferences.unit]);
-
   const [reps, setReps] = useState(String(exercise.reps));
-  const [weight, setWeight] = useState(displayWeight);
+  const [weight, setWeight] = useState(() => {
+    const stored = exercise.weight;
+    const storedUnit = (exercise as any).weightUnit ?? 'kg';
+    const displayUnit = preferences.unit;
+
+    if (storedUnit === displayUnit) return String(stored);
+    if (displayUnit === 'lbs') return String(Math.round(stored * 2.20462 * 10) / 10);
+    return String(Math.round((stored / 2.20462) * 10) / 10);
+  });
+
+  useEffect(() => {
+    const stored = exercise.weight;
+    const storedUnit = (exercise as any).weightUnit ?? 'kg';
+    const displayUnit = preferences.unit;
+
+    let converted: string;
+    if (storedUnit === displayUnit) {
+      converted = String(stored);
+    } else if (displayUnit === 'lbs') {
+      converted = String(Math.round(stored * 2.20462 * 10) / 10);
+    } else {
+      converted = String(Math.round((stored / 2.20462) * 10) / 10);
+    }
+    setWeight(converted);
+  }, [preferences.unit, exercise.weight, exercise.weightUnit]);
 
   const handleCompleteSet = () => {
     const repsNum = parseInt(reps, 10);
