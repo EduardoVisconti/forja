@@ -337,15 +337,19 @@ function buildWeeklyHabitScore(daily: HistoryDailyAgg): WeeklyHabitScoreVM {
   const today = new Date();
   const last7 = getLastNDaysISO(7, today);
 
-  const points = last7.map((dateISO) => ({
-    dateISO,
-    value: daily.habits[dateISO]?.check.score ?? 0,
-  }));
+  const points = last7.map((dateISO) => {
+    const check = daily.habits[dateISO]?.check;
+    const totalActive = check?.totalActive ?? 0;
+    const score = check?.score ?? 0;
+    const percentage = totalActive > 0 ? Math.round((score / totalActive) * 100) : 0;
 
-  const maxHabits = Math.max(
-    ...last7.map((dateISO) => daily.habits[dateISO]?.check.totalActive ?? 0),
-    8,
-  );
+    return {
+      dateISO,
+      value: Math.max(0, Math.min(100, percentage)),
+    };
+  });
+
+  const maxHabits = 100;
 
   return { points, maxHabits };
 }

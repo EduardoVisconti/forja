@@ -70,7 +70,7 @@ function createEmptyWeeklyHabitScore(baseDate = new Date()): WeeklyHabitScoreVM 
 
   return {
     points,
-    maxHabits: 8,
+    maxHabits: 100,
   };
 }
 
