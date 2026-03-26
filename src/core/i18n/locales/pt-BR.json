@@ -219,7 +219,8 @@
       "regenerative": "Regenerativo",
       "intervals": "Tiros",
       "long": "Longo",
-      "walk": "Caminhada"
+      "walk": "Caminhada",
+      "strong": "Forte"
     },
     "zone": {
       "label": "Zona",

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const TRAINING_TYPES = ['regenerative', 'intervals', 'long', 'walk'] as const;
+export const TRAINING_TYPES = ['regenerative', 'intervals', 'long', 'walk', 'strong'] as const;
 export const CARDIO_ZONES = ['z1', 'z2', 'z3', 'z4', 'z5'] as const;
 
 const baseCardioSchema = z.object({

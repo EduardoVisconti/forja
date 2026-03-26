@@ -1,4 +1,4 @@
-export type CardioType = 'regenerative' | 'intervals' | 'long' | 'walk' | null;
+export type CardioType = 'regenerative' | 'intervals' | 'long' | 'walk' | 'strong' | null;
 export type CardioZone = 'z1' | 'z2' | 'z3' | 'z4' | 'z5' | null;
 
 export interface CardioLog {
