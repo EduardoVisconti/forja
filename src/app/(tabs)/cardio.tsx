@@ -110,7 +110,6 @@ export default function CardioScreen() {
           renderItem={({ item }) => (
             <CardioLogItem
               log={item}
-              unit={unit}
               onEdit={() => handleOpenEdit(item)}
               onDelete={() => handleDelete(item)}
             />

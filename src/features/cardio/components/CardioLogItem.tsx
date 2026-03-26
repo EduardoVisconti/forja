@@ -2,11 +2,11 @@ import { StyleSheet, View } from 'react-native';
 import { Card, IconButton, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences';
 import type { CardioLog } from '../types';
 
 interface Props {
   log: CardioLog;
-  unit: 'kg' | 'lbs';
   onEdit: () => void;
   onDelete: () => void;
 }
@@ -24,21 +24,29 @@ function useLogTitle(log: CardioLog): string {
     parts.push(t(`cardio.zone.${log.zone}`));
   }
 
-  return parts.length > 0 ? parts.join(' — ') : t('cardio.title');
+  return parts.length > 0 ? parts.join(' \u2014 ') : t('cardio.title');
 }
 
-export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
+function formatDisplayDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+export function CardioLogItem({ log, onEdit, onDelete }: Props) {
   const { t } = useTranslation();
+  const { unit } = useUserPreferences();
   const theme = useTheme();
   const styles = createStyles(theme);
   const isImperial = unit === 'lbs';
   const title = useLogTitle(log);
-
-  const displayDistance = isImperial
-    ? `${(log.distanceKm * KM_TO_MILES).toFixed(2)} mi`
-    : `${log.distanceKm.toFixed(2)} km`;
-
-  const paceUnit = isImperial ? t('cardio.pacePerMile') : t('cardio.pacePerKm');
+  const displayDistance =
+    log.distanceKm != null
+      ? isImperial
+        ? `${(log.distanceKm * KM_TO_MILES).toFixed(2)} mi`
+        : `${log.distanceKm} km`
+      : null;
+  const paceUnit = isImperial ? 'min/mi' : 'min/km';
+  const displayPace = log.avgPace ? `${log.avgPace} ${paceUnit}` : null;
   const Stat = ({ label, value }: { label: string; value: string }) => (
     <View style={styles.stat}>
       <Text variant="labelSmall" style={styles.statLabel}>
@@ -54,7 +62,7 @@ export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
     <Card style={styles.card}>
       <Card.Title
         title={title}
-        subtitle={log.date}
+        subtitle={formatDisplayDate(log.date)}
         right={(props) => (
           <View style={styles.actions}>
             <IconButton {...props} icon="pencil-outline" onPress={onEdit} />
@@ -65,8 +73,8 @@ export function CardioLogItem({ log, unit, onEdit, onDelete }: Props) {
       <Card.Content style={styles.content}>
         <View style={styles.row}>
           <Stat label={t('cardio.duration')} value={log.duration} />
-          <Stat label={t('cardio.distance')} value={displayDistance} />
-          <Stat label={t('cardio.avgPace')} value={`${log.avgPace} ${paceUnit}`} />
+          <Stat label={t('cardio.distance')} value={displayDistance ?? '\u2014'} />
+          <Stat label={t('cardio.avgPace')} value={displayPace ?? '\u2014'} />
           {log.avgHr !== null && (
             <Stat label={t('cardio.avgHr')} value={`${log.avgHr} bpm`} />
           )}
@@ -97,3 +105,4 @@ const createStyles = (theme: MD3Theme) =>
     actions: { flexDirection: 'row' },
     notes: { color: theme.colors.onSurfaceVariant, fontStyle: 'italic', marginTop: 4 },
   });
+
