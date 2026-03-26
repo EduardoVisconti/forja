@@ -1,8 +1,9 @@
-import { StyleSheet, useWindowDimensions } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Card, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
-import Svg, { G, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { ClipPath, Defs, G, Rect, Text as SvgText } from 'react-native-svg';
 import type { WeeklyHabitScoreVM } from '../types/historyTypes';
 
 interface Props {
@@ -61,17 +62,17 @@ export function WeeklyHabitScoreLineChart({ data }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { width } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState(300);
 
-  const chartWidth = Math.max(width - 32, 280);
-  const chartHeight = 184;
-  const horizontalPadding = 8;
-  const maxBarHeight = 140;
+  const chartHeight = 160;
+  const paddingLeft = 8;
+  const paddingRight = 8;
+  const maxBarHeight = 116;
   const barTop = 18;
-  const dayLabelY = barTop + maxBarHeight + 14;
-  const barGap = 8;
-  const innerWidth = chartWidth - horizontalPadding * 2;
-  const barWidth = (innerWidth - barGap * 6) / 7;
+  const dayLabelY = barTop + maxBarHeight + 16;
+  const barGap = 4;
+  const chartWidth = Math.max(containerWidth, 1);
+  const barWidth = Math.max(0, (chartWidth - paddingLeft - paddingRight) / 7 - barGap);
 
   const pointsByDate = new Map((data?.points ?? []).map((p) => [p.dateISO, p.value]));
   const last7 = getLastNDaysISO(7, new Date());
@@ -89,36 +90,45 @@ export function WeeklyHabitScoreLineChart({ data }: Props) {
       <Card.Title title={t('history.weeklyHabitScore.title')} />
       <Card.Content>
         {data ? (
-          <Svg width={chartWidth} height={chartHeight}>
-            {bars.map((bar, index) => {
-              const x = horizontalPadding + index * (barWidth + barGap);
-              const filledHeight = Math.round((bar.percentage / 100) * maxBarHeight);
-              const y = barTop + (maxBarHeight - filledHeight);
+          <View style={styles.chartContainer} onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}>
+            <Svg width={chartWidth} height={chartHeight}>
+              <Defs>
+                <ClipPath id="weekly-habit-score-clip">
+                  <Rect x={0} y={0} width={chartWidth} height={chartHeight} />
+                </ClipPath>
+              </Defs>
+              <G clipPath="url(#weekly-habit-score-clip)">
+                {bars.map((bar, index) => {
+                  const x = paddingLeft + index * (barWidth + barGap);
+                  const filledHeight = Math.round((bar.percentage / 100) * maxBarHeight);
+                  const y = barTop + (maxBarHeight - filledHeight);
 
-              return (
-                <G key={bar.dateISO}>
-                  <Rect x={x} y={barTop} width={barWidth} height={maxBarHeight} fill="#1e1e1e" rx={4} />
-                  {bar.percentage > 0 ? (
-                    <>
-                      <Rect x={x} y={y} width={barWidth} height={filledHeight} fill={getBarColor(bar.percentage)} rx={4} />
-                      <SvgText
-                        x={x + barWidth / 2}
-                        y={Math.max(10, y - 4)}
-                        fill="#9ca3af"
-                        fontSize={10}
-                        textAnchor="middle"
-                      >
-                        {`${bar.percentage}%`}
+                  return (
+                    <G key={bar.dateISO}>
+                      <Rect x={x} y={barTop} width={barWidth} height={maxBarHeight} fill="#1e1e1e" rx={4} />
+                      {bar.percentage > 0 ? (
+                        <>
+                          <Rect x={x} y={y} width={barWidth} height={filledHeight} fill={getBarColor(bar.percentage)} rx={4} />
+                          <SvgText
+                            x={x + barWidth / 2}
+                            y={Math.max(10, y - 4)}
+                            fill="#9ca3af"
+                            fontSize={10}
+                            textAnchor="middle"
+                          >
+                            {`${bar.percentage}%`}
+                          </SvgText>
+                        </>
+                      ) : null}
+                      <SvgText x={x + barWidth / 2} y={dayLabelY} fill="#525252" fontSize={10} textAnchor="middle">
+                        {bar.label}
                       </SvgText>
-                    </>
-                  ) : null}
-                  <SvgText x={x + barWidth / 2} y={dayLabelY} fill="#525252" fontSize={10} textAnchor="middle">
-                    {bar.label}
-                  </SvgText>
-                </G>
-              );
-            })}
-          </Svg>
+                    </G>
+                  );
+                })}
+              </G>
+            </Svg>
+          </View>
         ) : (
           <Text>{t('common.loading')}</Text>
         )}
@@ -135,5 +145,8 @@ const createStyles = (theme: MD3Theme) =>
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.outline,
+    },
+    chartContainer: {
+      width: '100%',
     },
   });
