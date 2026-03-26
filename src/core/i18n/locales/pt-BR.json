@@ -139,6 +139,8 @@
     "history": "Histórico"
   },
   "workout": {
+    "screenTitle": "Treinos",
+    "screenSubtitle": "Sua planilha atual",
     "title": "Meus Treinos",
     "newTemplate": "Novo treino",
     "editTemplate": "Editar treino",
@@ -221,6 +223,8 @@
     "backToWorkouts": "Voltar aos treinos"
   },
   "cardio": {
+    "screenTitle": "Cardio",
+    "screenSubtitle": "Registre suas corridas e atividades",
     "title": "Cardio",
     "newEntry": "Novo registro",
     "editEntry": "Editar registro",
@@ -271,6 +275,8 @@
     }
   },
   "habits": {
+    "screenTitle": "Hábitos",
+    "screenSubtitle": "Acompanhe sua consistência diária",
     "title": "Hábitos",
     "todaySubtitle": "Marque os hábitos de hoje",
     "pastDaySubtitle": "Hábitos do dia {{date}}",
@@ -303,6 +309,8 @@
     }
   },
   "history": {
+    "screenTitle": "Histórico",
+    "screenSubtitle": "Treinos, cardio e hábitos registrados",
     "empty": "Nenhum histórico ainda. Comece a treinar!",
     "emptyHint": "Nenhum histórico ainda. Comece a treinar!",
     "loadError": "Não foi possível carregar o histórico.",

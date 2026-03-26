@@ -40,17 +40,27 @@ export default function HabitsScreen() {
     saveConfig,
   } = useHabitCheck();
 
-  const subtitle = isToday
+  const daySubtitle = isToday
     ? t('habits.todaySubtitle')
     : t('habits.pastDaySubtitle', { date: formatDDMMYYYY(selectedDate) });
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.topControls}>
-        <View style={styles.settingsRow}>
-          <IconButton icon="cog" size={24} onPress={() => setConfigModalVisible(true)} />
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <Text style={styles.title}>{t('habits.screenTitle')}</Text>
+          <Text style={styles.subtitle}>{t('habits.screenSubtitle')}</Text>
         </View>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <IconButton
+          icon="cog-outline"
+          size={22}
+          onPress={() => setConfigModalVisible(true)}
+          style={styles.headerIconButton}
+        />
+      </View>
+
+      <View style={styles.topControls}>
+        <Text style={styles.daySubtitle}>{daySubtitle}</Text>
         <View style={styles.dateNav}>
           <IconButton
             icon="chevron-left"
@@ -123,17 +133,31 @@ export default function HabitsScreen() {
 const createStyles = (theme: MD3Theme) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
+    header: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerText: { flex: 1 },
+    headerIconButton: { margin: 0 },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: '#ffffff',
+    },
+    subtitle: {
+      fontSize: 13,
+      color: '#525252',
+      marginTop: 2,
+    },
     topControls: {
       paddingHorizontal: 16,
       paddingTop: 16,
       paddingBottom: 12,
     },
-    settingsRow: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-    },
-    subtitle: { fontSize: 13, color: theme.colors.onSurfaceVariant, marginTop: 2 },
+    daySubtitle: { fontSize: 13, color: theme.colors.onSurfaceVariant, marginTop: 2 },
     dateNav: {
       flexDirection: 'row',
       alignItems: 'center',
