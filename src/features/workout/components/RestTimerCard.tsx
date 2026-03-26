@@ -1,16 +1,34 @@
 import { StyleSheet, View } from 'react-native';
-import { Button, Text } from 'react-native-paper';
+import { Button, IconButton, Text } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   secondsRemaining: number;
   nextExerciseName: string | null;
   onSkip: () => void;
   onAdd30: () => void;
+  onToggleRestTimer: () => void;
 }
 
-export function RestTimerCard({ secondsRemaining, nextExerciseName, onSkip, onAdd30 }: Props) {
+export function RestTimerCard({
+  secondsRemaining,
+  nextExerciseName,
+  onSkip,
+  onAdd30,
+  onToggleRestTimer,
+}: Props) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
+      <IconButton
+        icon="timer-off-outline"
+        size={18}
+        iconColor="#9ca3af"
+        accessibilityLabel={t('session.disableRest')}
+        onPress={onToggleRestTimer}
+        style={styles.toggleButton}
+      />
       {nextExerciseName ? (
         <Text style={styles.nextExercise}>A seguir: {nextExerciseName}</Text>
       ) : null}
@@ -29,6 +47,7 @@ export function RestTimerCard({ secondsRemaining, nextExerciseName, onSkip, onAd
 
 const styles = StyleSheet.create({
   container: {
+    position: 'relative',
     minHeight: 140,
     backgroundColor: '#1e1e1e',
     borderRadius: 12,
@@ -37,6 +56,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     justifyContent: 'space-between',
     gap: 8,
+  },
+  toggleButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    margin: 0,
   },
   nextExercise: {
     fontSize: 13,

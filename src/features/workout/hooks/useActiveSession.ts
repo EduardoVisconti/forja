@@ -73,7 +73,13 @@ export function useActiveSession() {
   finishRef.current = finishSession;
 
   const completeSet = useCallback(
-    (repsDone: number, weightKg: number) => {
+    (
+      repsDone: number,
+      weightKg: number,
+      options?: {
+        startRestTimer?: boolean;
+      },
+    ) => {
       const { sessionId, currentExerciseIndex, exercises, completedSets, completedExercises } =
         store;
       if (!sessionId) return;
@@ -95,7 +101,12 @@ export function useActiveSession() {
       };
 
       store.logSet(log);
-      store.startRestTimer(exercise.restSeconds || 60);
+      const shouldStartRestTimer = options?.startRestTimer ?? true;
+      if (shouldStartRestTimer) {
+        store.startRestTimer(exercise.restSeconds || 60);
+      } else {
+        store.advanceSet();
+      }
 
       const willCompleteCurrentExercise = currentSetNumber >= exercise.sets;
       const allDone = exercises.every((ex) => {

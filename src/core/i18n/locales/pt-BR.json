@@ -172,7 +172,10 @@
     "cannotOpenUrl": "Não foi possível abrir o link.",
     "abandonTitle": "Abandonar treino?",
     "abandonMessage": "O progresso será perdido.",
-    "abandonConfirm": "Abandonar"
+    "abandonConfirm": "Abandonar",
+    "restTimerOff": "Sem descanso",
+    "disableRest": "Desativar descanso",
+    "enableRest": "Ativar descanso"
   },
   "timer": {
     "resting": "Descansando...",

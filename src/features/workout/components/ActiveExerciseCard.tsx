@@ -10,6 +10,7 @@ import type { UserPreferences } from '../types/index';
 interface Props {
   exercise: SessionExercise;
   currentSet: number;
+  restTimerEnabled?: boolean;
   preferences: UserPreferences;
   onCompleteSet: (reps: number, weightKg: number) => void;
   onSkip: () => void;
@@ -21,6 +22,7 @@ const KG_TO_LBS = 2.20462;
 export function ActiveExerciseCard({
   exercise,
   currentSet,
+  restTimerEnabled = true,
   preferences,
   onCompleteSet,
   onSkip,
@@ -84,7 +86,18 @@ export function ActiveExerciseCard({
     <Card style={styles.card}>
       <Card.Title
         title={exercise.name}
-        subtitle={t('session.setProgress', { current: currentSet, total: exercise.sets })}
+        subtitle={
+          <View style={styles.subtitleRow}>
+            <Text style={styles.subtitleText}>
+              {t('session.setProgress', { current: currentSet, total: exercise.sets })}
+            </Text>
+            {restTimerEnabled ? null : (
+              <View style={styles.restOffChip}>
+                <Text style={styles.restOffText}>{t('session.restTimerOff')}</Text>
+              </View>
+            )}
+          </View>
+        }
         right={(props) => (
           <IconButton {...props} icon="information-outline" onPress={handleInfo} />
         )}
@@ -137,6 +150,26 @@ const createStyles = (theme: MD3Theme) =>
       borderColor: theme.colors.outlineVariant,
     },
     notes: { marginBottom: 12, color: theme.colors.onSurfaceVariant, fontStyle: 'italic' },
+    subtitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    subtitleText: {
+      color: theme.colors.onSurfaceVariant,
+    },
+    restOffChip: {
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 999,
+      backgroundColor: '#4b5563',
+    },
+    restOffText: {
+      fontSize: 11,
+      color: '#e5e7eb',
+      fontWeight: '600',
+    },
     inputs: { flexDirection: 'row', gap: 12 },
     input: { flex: 1 },
   });

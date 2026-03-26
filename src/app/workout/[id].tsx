@@ -63,6 +63,13 @@ export default function ActiveSessionScreen() {
     }
   }, [store.restSecondsRemaining, store.timerRunning]);
 
+  useEffect(() => {
+    if (!store.restTimerEnabled && timerRunning) {
+      skipRestTimer();
+      store.advanceSet();
+    }
+  }, [store.restTimerEnabled, timerRunning, skipRestTimer, store]);
+
   if (!store.sessionId) {
     return (
       <View style={styles.center}>
@@ -138,6 +145,7 @@ export default function ActiveSessionScreen() {
       store.advanceSet();
     },
     onAdd30: addThirtySeconds,
+    onToggleRestTimer: store.toggleRestTimer,
   };
 
   return (
@@ -145,15 +153,18 @@ export default function ActiveSessionScreen() {
       <ActiveExerciseCard
         exercise={currentExercise}
         currentSet={currentSetNumber}
+        restTimerEnabled={store.restTimerEnabled}
         preferences={{ unit }}
         onCompleteSet={(reps, weightKg) => {
-          completeSet(reps, weightKg);
+          completeSet(reps, weightKg, {
+            startRestTimer: store.restTimerEnabled,
+          });
         }}
         onSkip={() => store.skipExercise(store.currentExerciseIndex)}
-        hideActions={timerRunning}
+        hideActions={timerRunning && store.restTimerEnabled}
       />
 
-      {timerRunning && restSecondsRemaining !== null ? (
+      {store.restTimerEnabled && timerRunning && restSecondsRemaining !== null ? (
         <RestTimerCard {...restTimerCardProps} />
       ) : null}
 

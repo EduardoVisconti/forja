@@ -16,6 +16,7 @@ export interface ActiveSessionState {
   /** null = no rest timer running */
   restSecondsRemaining: number | null;
   timerRunning: boolean;
+  restTimerEnabled: boolean;
 }
 
 interface ActiveSessionActions {
@@ -36,6 +37,7 @@ interface ActiveSessionActions {
   tickRestTimer: () => void;
   skipRestTimer: () => void;
   addRestTime: (seconds: number) => void;
+  toggleRestTimer: () => void;
 }
 
 type WorkoutSessionStore = ActiveSessionState & ActiveSessionActions;
@@ -65,6 +67,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
   nextExercise: null,
   restSecondsRemaining: null,
   timerRunning: false,
+  restTimerEnabled: true,
 
   startSession: ({ sessionId, templateId, templateName, userId, exercises }) =>
     set({
@@ -81,6 +84,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       nextExercise: getNextExercise(exercises, 0, {}),
       restSecondsRemaining: null,
       timerRunning: false,
+      restTimerEnabled: true,
     }),
 
   endSession: () =>
@@ -98,6 +102,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       nextExercise: null,
       restSecondsRemaining: null,
       timerRunning: false,
+      restTimerEnabled: true,
     }),
 
   setCurrentExerciseIndex: (index) =>
@@ -200,5 +205,10 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
   addRestTime: (seconds) =>
     set((state) => ({
       restSecondsRemaining: (state.restSecondsRemaining ?? 0) + seconds,
+    })),
+
+  toggleRestTimer: () =>
+    set((state) => ({
+      restTimerEnabled: !state.restTimerEnabled,
     })),
 }));
