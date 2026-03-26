@@ -1,5 +1,5 @@
-import { FlatList, StyleSheet, View } from 'react-native';
-import { Card, List, Text } from 'react-native-paper';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Card, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { PrExerciseVM } from '../types/historyTypes';
 
@@ -23,26 +23,30 @@ export function PrExerciseList({ exercises, onPressExercise }: Props) {
         {exercises.length === 0 ? (
           <Text>{t('history.prEmpty', { defaultValue: t('history.pr.emptyHint') })}</Text>
         ) : (
-          <FlatList
-            data={exercises}
-            keyExtractor={(item) => item.exerciseId}
-            scrollEnabled={false}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            renderItem={({ item }) => {
+          <ScrollView
+            style={{ maxHeight: 280 }}
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
+          >
+            {exercises.map((item, index) => {
               const bestDate = formatDDMMYYYY(item.bestAtISO);
               const bestWeight = Math.round(item.bestWeightKg);
 
               return (
-                <List.Item
-                  title={item.exerciseName}
-                  description={t('history.pr.bestLine', { weight: bestWeight, date: bestDate })}
-                  onPress={() => onPressExercise(item.exerciseId)}
-                  titleStyle={styles.title}
-                  style={styles.listItem}
-                />
+                <View key={item.exerciseId}>
+                  <Pressable onPress={() => onPressExercise(item.exerciseId)} style={styles.listItem}>
+                    <View style={styles.row}>
+                      <Text style={styles.title}>{item.exerciseName}</Text>
+                      <Text style={styles.description}>
+                        {t('history.pr.bestLine', { weight: bestWeight, date: bestDate })}
+                      </Text>
+                    </View>
+                  </Pressable>
+                  {index < exercises.length - 1 ? <View style={styles.separator} /> : null}
+                </View>
               );
-            }}
-          />
+            })}
+          </ScrollView>
         )}
       </Card.Content>
     </Card>
@@ -51,7 +55,9 @@ export function PrExerciseList({ exercises, onPressExercise }: Props) {
 
 const styles = StyleSheet.create({
   separator: { height: 1, backgroundColor: '#e5e7eb' },
-  title: { fontWeight: '700' },
-  listItem: { backgroundColor: '#141414' },
+  title: { fontWeight: '600', fontSize: 13 },
+  description: { fontSize: 11 },
+  listItem: { backgroundColor: '#141414', paddingVertical: 4 },
+  row: { justifyContent: 'center' },
 });
 

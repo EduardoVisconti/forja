@@ -8,6 +8,7 @@ interface Props {
   exercises: SessionExercise[];
   currentIndex: number;
   completedExercises: Record<string, boolean>;
+  maxHeight?: number;
   onSelect: (index: number) => void;
   onSkip: (index: number) => void;
   onMoveUp: (index: number) => void;
@@ -18,6 +19,7 @@ export function ExerciseQueuePanel({
   exercises,
   currentIndex,
   completedExercises,
+  maxHeight = 220,
   onSelect,
   onSkip,
   onMoveUp,
@@ -25,7 +27,7 @@ export function ExerciseQueuePanel({
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = createStyles(theme, maxHeight);
 
   return (
     <View style={styles.container}>
@@ -47,7 +49,7 @@ export function ExerciseQueuePanel({
                 </View>
               )}
               description={`${item.sets}x${item.reps}`}
-              descriptionStyle={[isDone && styles.done, item.skipped && styles.skipped]}
+              descriptionStyle={[styles.descriptionText, isDone && styles.done, item.skipped && styles.skipped]}
               style={[styles.item, isCompleted && styles.completed, isCurrent && styles.current]}
               contentStyle={styles.itemContent}
               onPress={() => !item.skipped && onSelect(index)}
@@ -94,11 +96,11 @@ export function ExerciseQueuePanel({
   );
 }
 
-const createStyles = (theme: MD3Theme) =>
+const createStyles = (theme: MD3Theme, maxHeight: number) =>
   StyleSheet.create({
-    container: { maxHeight: 220 },
+    container: { maxHeight },
     item: {
-      height: 52,
+      height: 64,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.colors.outlineVariant,
     },
@@ -109,7 +111,8 @@ const createStyles = (theme: MD3Theme) =>
     skipped: { color: theme.colors.onSurfaceVariant, textDecorationLine: 'line-through' },
     skippedBadge: { alignSelf: 'center', color: theme.colors.onSurfaceVariant, fontSize: 12 },
     titleRow: { flexDirection: 'row', alignItems: 'center' },
-    titleText: { color: theme.colors.onSurface },
+    titleText: { color: theme.colors.onSurface, fontSize: 15 },
+    descriptionText: { fontSize: 13 },
     completedMark: { marginLeft: 6, color: '#ef4444', fontSize: 16, fontWeight: '700' },
     reorder: { flexDirection: 'column', justifyContent: 'center' },
     reorderButton: { margin: 0, width: 20, height: 20 },
