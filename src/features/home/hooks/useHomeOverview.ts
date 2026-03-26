@@ -155,7 +155,6 @@ function buildMonthlyStats({
   now: Date;
 }): MonthlyStats {
   const prefix = monthPrefix(now);
-  const daysElapsed = now.getDate();
 
   const workoutCount = sessions.filter((session) =>
     isDateInCurrentMonth(toLocalDayISO(new Date(session.finishedAt)), prefix),
@@ -170,7 +169,10 @@ function buildMonthlyStats({
     return sum + habitDay.check.score;
   }, 0);
 
-  const denominator = totalActiveHabits * daysElapsed;
+  const daysWithEntries = Object.keys(historySources.daily.habits).filter((dateISO) =>
+    isDateInCurrentMonth(dateISO, prefix),
+  ).length;
+  const denominator = totalActiveHabits * daysWithEntries;
   const rawPercentage = denominator > 0 ? (habitScoreSum / denominator) * 100 : 0;
   const habitPercentage = Math.max(0, Math.min(100, Math.round(rawPercentage)));
 
