@@ -42,6 +42,10 @@ export function ActiveExerciseCard({
   });
 
   useEffect(() => {
+    setReps(String(exercise.reps));
+  }, [exercise.id, exercise.reps]);
+
+  useEffect(() => {
     const stored = exercise.weight;
     const storedUnit = (exercise as any).weightUnit ?? 'kg';
     const displayUnit = preferences.unit;
@@ -55,7 +59,7 @@ export function ActiveExerciseCard({
       converted = String(Math.round((stored / 2.20462) * 10) / 10);
     }
     setWeight(converted);
-  }, [preferences.unit, exercise.weight, exercise.weightUnit]);
+  }, [exercise.id, exercise.weight, exercise.weightUnit, preferences.unit]);
 
   const handleCompleteSet = () => {
     const repsNum = parseInt(reps, 10);
