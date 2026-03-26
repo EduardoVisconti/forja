@@ -109,10 +109,10 @@ const createStyles = (theme: MD3Theme) =>
       textAlign: 'center',
       marginBottom: 6,
     },
-    row: { flexDirection: 'row' },
+    row: { flexDirection: 'row', paddingVertical: 2 },
     cell: {
       flex: 1,
-      height: 52,
+      height: 44,
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: 10,
@@ -122,7 +122,7 @@ const createStyles = (theme: MD3Theme) =>
     cellSelected: {
       backgroundColor: theme.colors.primaryContainer,
     },
-    dayNumber: { fontSize: 13, fontWeight: '700', color: '#d1d5db' },
+    dayNumber: { fontSize: 14, fontWeight: '700', color: '#d1d5db' },
     dayNumberOtherMonth: { fontWeight: '600', color: '#525252' },
     dotsRow: { flexDirection: 'row', gap: 4, marginTop: 2, height: 10, alignItems: 'center' },
     dot: { width: 7, height: 7, borderRadius: 99 },
