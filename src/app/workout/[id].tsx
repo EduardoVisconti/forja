@@ -177,6 +177,7 @@ export default function ActiveSessionScreen() {
         exercises={store.exercises}
         currentIndex={store.currentExerciseIndex}
         completedExercises={store.completedExercises}
+        maxHeight={420}
         onSelect={handleSelectExercise}
         onSkip={(index) => store.skipExercise(index)}
         onMoveUp={handleMoveUp}
