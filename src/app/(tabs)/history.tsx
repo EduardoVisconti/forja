@@ -50,9 +50,19 @@ export default function HistoryScreen() {
 
       <View style={styles.topControls}>
         <View style={styles.monthNav}>
-          <IconButton icon="chevron-left" size={24} onPress={goToPreviousMonth} />
+          <IconButton
+            icon="chevron-left"
+            size={20}
+            onPress={goToPreviousMonth}
+            style={styles.monthNavIconButton}
+          />
           <Text style={styles.monthLabel}>{monthLabel}</Text>
-          <IconButton icon="chevron-right" size={24} onPress={goToNextMonth} />
+          <IconButton
+            icon="chevron-right"
+            size={20}
+            onPress={goToNextMonth}
+            style={styles.monthNavIconButton}
+          />
         </View>
       </View>
 
@@ -107,15 +117,15 @@ const createStyles = (theme: MD3Theme) =>
     },
     topControls: {
       paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 12,
+      paddingVertical: 8,
     },
     monthNav: { flexDirection: 'row', alignItems: 'center' },
+    monthNavIconButton: { margin: 0 },
     monthLabel: {
       flex: 1,
       textAlign: 'center',
-      fontSize: 16,
-      fontWeight: '700',
+      fontSize: 15,
+      fontWeight: '600',
       color: theme.colors.onSurface,
     },
     loading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12, padding: 16 },
