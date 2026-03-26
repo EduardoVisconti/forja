@@ -2,7 +2,6 @@ import { StyleSheet, View } from 'react-native';
 import { Card, IconButton, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
-import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences';
 import type { CardioLog } from '../types';
 
 interface Props {
@@ -10,8 +9,6 @@ interface Props {
   onEdit: () => void;
   onDelete: () => void;
 }
-
-const KM_TO_MILES = 0.621371;
 
 function useLogTitle(log: CardioLog): string {
   const { t } = useTranslation();
@@ -34,19 +31,12 @@ function formatDisplayDate(isoDate: string): string {
 
 export function CardioLogItem({ log, onEdit, onDelete }: Props) {
   const { t } = useTranslation();
-  const { unit } = useUserPreferences();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const isImperial = unit === 'lbs';
   const title = useLogTitle(log);
   const displayDistance =
-    log.distanceKm != null
-      ? isImperial
-        ? `${(log.distanceKm * KM_TO_MILES).toFixed(2)} mi`
-        : `${log.distanceKm} km`
-      : null;
-  const paceUnit = isImperial ? 'min/mi' : 'min/km';
-  const displayPace = log.avgPace ? `${log.avgPace} ${paceUnit}` : null;
+    log.distanceKm != null ? `${log.distanceKm} km` : null;
+  const displayPace = log.avgPace ? `${log.avgPace} min/km` : null;
   const Stat = ({ label, value }: { label: string; value: string }) => (
     <View style={styles.stat}>
       <Text variant="labelSmall" style={styles.statLabel}>
