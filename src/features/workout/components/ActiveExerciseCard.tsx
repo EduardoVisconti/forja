@@ -1,6 +1,7 @@
 import * as Linking from 'expo-linking';
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +11,8 @@ import type { UserPreferences } from '../types/index';
 interface Props {
   exercise: SessionExercise;
   currentSet: number;
-  restTimerEnabled?: boolean;
+  restTimerEnabled: boolean;
+  onToggleRestTimer: () => void;
   preferences: UserPreferences;
   onCompleteSet: (reps: number, weightKg: number) => void;
   onSkip: () => void;
@@ -22,7 +24,8 @@ const KG_TO_LBS = 2.20462;
 export function ActiveExerciseCard({
   exercise,
   currentSet,
-  restTimerEnabled = true,
+  restTimerEnabled,
+  onToggleRestTimer,
   preferences,
   onCompleteSet,
   onSkip,
@@ -92,9 +95,20 @@ export function ActiveExerciseCard({
               {t('session.setProgress', { current: currentSet, total: exercise.sets })}
             </Text>
             {restTimerEnabled ? null : (
-              <View style={styles.restOffChip}>
-                <Text style={styles.restOffText}>{t('session.restTimerOff')}</Text>
-              </View>
+              <Pressable
+                onPress={onToggleRestTimer}
+                style={styles.restOffChip}
+                accessibilityRole="button"
+                accessibilityLabel={t('session.enableRest')}
+              >
+                <MaterialCommunityIcons
+                  name="timer-off-outline"
+                  size={14}
+                  color="#9ca3af"
+                  style={styles.restOffIcon}
+                />
+                <Text style={styles.restOffText}>{t('session.restDisabled')}</Text>
+              </Pressable>
             )}
           </View>
         }
@@ -161,13 +175,18 @@ const createStyles = (theme: MD3Theme) =>
     },
     restOffChip: {
       paddingHorizontal: 8,
-      paddingVertical: 2,
+      paddingVertical: 4,
       borderRadius: 999,
-      backgroundColor: '#4b5563',
+      backgroundColor: '#2a2a2a',
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    restOffIcon: {
+      marginRight: 4,
     },
     restOffText: {
       fontSize: 11,
-      color: '#e5e7eb',
+      color: '#9ca3af',
       fontWeight: '600',
     },
     inputs: { flexDirection: 'row', gap: 12 },

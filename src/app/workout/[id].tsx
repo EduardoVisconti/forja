@@ -154,6 +154,7 @@ export default function ActiveSessionScreen() {
         exercise={currentExercise}
         currentSet={currentSetNumber}
         restTimerEnabled={store.restTimerEnabled}
+        onToggleRestTimer={store.toggleRestTimer}
         preferences={{ unit }}
         onCompleteSet={(reps, weightKg) => {
           completeSet(reps, weightKg, {
