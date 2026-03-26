@@ -1,39 +1,83 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/core/auth/authStore';
+import { getLogs } from '@/features/cardio/services/cardioStorage';
+import type { CardioLog, CardioType, CardioZone } from '@/features/cardio/types';
+import { getConfig, getTodayCheck } from '@/features/habits/services/habitStorage';
+import { HABIT_KEYS, type HabitCheck, type HabitConfig } from '@/features/habits/types';
 import { getAllSessions } from '@/features/workout/services/sessionStorage';
-import { getTodayCheck } from '@/features/habits/services/habitStorage';
 import { getHistorySources } from '@/features/history/services/historyService';
 import type { WorkoutSession } from '@/features/workout/types/session';
-import type { HabitCheck } from '@/features/habits/types';
 import type { HistorySources } from '@/features/history/types/historyTypes';
 import type { WeeklyStreakVM } from '@/features/history/types/historyTypes';
+
+type HomeInsightType = 'streak' | 'habits' | 'noActivity' | 'motivational';
+
+interface TodayWorkout {
+  templateName: string;
+  durationMinutes: number;
+}
+
+interface TodayCardio {
+  trainingType: CardioType;
+  zone: CardioZone;
+  distanceKm: number;
+}
+
+interface MonthlyStats {
+  workoutCount: number;
+  totalKm: number;
+  habitPercentage: number;
+}
+
+interface TodayActivityState {
+  hasWorkout: boolean;
+  hasCardio: boolean;
+  hasAny: boolean;
+  count: number;
+}
+
+interface TodayHabitsSummary {
+  score: number;
+  totalActive: number;
+  remaining: number;
+  progress: number;
+  isComplete: boolean;
+}
+
+interface InsightMeta {
+  streakCount: number;
+  remainingHabits: number;
+}
 
 interface HomeOverviewState {
   isLoading: boolean;
   error: string | null;
   displayName: string;
-  lastWorkout: WorkoutSession | null;
   todayHabits: HabitCheck | null;
+  todayWorkout: TodayWorkout | null;
+  todayCardio: TodayCardio | null;
+  todayActivity: TodayActivityState;
+  todayHabitsSummary: TodayHabitsSummary;
   weeklyStreak: WeeklyStreakVM | null;
-  weeklyWorkoutCount: number;
-  weeklyKm: number;
-  weeklyHabitAvg: {
-    score: number;
-    total: number;
-  };
+  monthlyStats: MonthlyStats;
+  insightType: HomeInsightType;
+  insightMeta: InsightMeta;
 }
 
 const initialState: HomeOverviewState = {
   isLoading: true,
   error: null,
   displayName: '',
-  lastWorkout: null,
   todayHabits: null,
+  todayWorkout: null,
+  todayCardio: null,
+  todayActivity: { hasWorkout: false, hasCardio: false, hasAny: false, count: 0 },
+  todayHabitsSummary: { score: 0, totalActive: HABIT_KEYS.length, remaining: HABIT_KEYS.length, progress: 0, isComplete: false },
   weeklyStreak: null,
-  weeklyWorkoutCount: 0,
-  weeklyKm: 0,
-  weeklyHabitAvg: { score: 0, total: 8 },
+  monthlyStats: { workoutCount: 0, totalKm: 0, habitPercentage: 0 },
+  insightType: 'motivational',
+  insightMeta: { streakCount: 0, remainingHabits: HABIT_KEYS.length },
 };
 
 const userNameKey = (userId: string) => `user:name:${userId}`;
@@ -52,39 +96,139 @@ function toLocalDayISO(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function buildWeeklyMetrics(historySources: HistorySources): {
-  weeklyWorkoutCount: number;
-  weeklyKm: number;
-  weeklyHabitAvg: { score: number; total: number };
-} {
-  const todayISO = toLocalDayISO(new Date());
-  const weekDateISOs = historySources.weeklyStreak.weekDays.map((day) => day.dateISO);
-  const weekDateISOsUntilToday = weekDateISOs.filter((dateISO) => dateISO <= todayISO);
-  const habitDays = weekDateISOsUntilToday.length > 0 ? weekDateISOsUntilToday : weekDateISOs;
+function pickTodayWorkout(sessions: WorkoutSession[], todayISO: string): TodayWorkout | null {
+  const todaySessions = sessions
+    .filter((session) => toLocalDayISO(new Date(session.finishedAt)) === todayISO)
+    .sort((a, b) => new Date(b.finishedAt).getTime() - new Date(a.finishedAt).getTime());
 
-  const weeklyWorkoutCount = weekDateISOs.reduce((count, dateISO) => {
-    return count + (historySources.daily.workout[dateISO]?.sessionsCount ?? 0);
-  }, 0);
-
-  const weeklyKm = weekDateISOs.reduce((distance, dateISO) => {
-    const dayDistance =
-      historySources.daily.cardio[dateISO]?.logs.reduce((sum, log) => sum + log.distanceKm, 0) ?? 0;
-    return distance + dayDistance;
-  }, 0);
-
-  const weeklyHabitTotal = 8;
-  const weeklyHabitScoreSum = habitDays.reduce((score, dateISO) => {
-    return score + (historySources.daily.habits[dateISO]?.check.score ?? 0);
-  }, 0);
-  const weeklyHabitScoreAvg = habitDays.length > 0 ? weeklyHabitScoreSum / habitDays.length : 0;
+  const latest = todaySessions[0];
+  if (!latest) return null;
 
   return {
-    weeklyWorkoutCount,
-    weeklyKm,
-    weeklyHabitAvg: {
-      score: weeklyHabitScoreAvg,
-      total: weeklyHabitTotal,
-    },
+    templateName: latest.templateName,
+    durationMinutes: latest.durationMinutes,
+  };
+}
+
+function pickTodayCardio(cardioLogs: CardioLog[], todayISO: string): TodayCardio | null {
+  const todayLogs = cardioLogs
+    .filter((log) => log.date === todayISO)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const latest = todayLogs[0];
+  if (!latest) return null;
+
+  return {
+    trainingType: latest.trainingType,
+    zone: latest.zone,
+    distanceKm: latest.distanceKm,
+  };
+}
+
+function monthPrefix(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function isDateInCurrentMonth(dateISO: string, prefix: string): boolean {
+  return dateISO.startsWith(prefix);
+}
+
+function resolveTotalActiveHabits(todayHabits: HabitCheck | null, habitConfig: HabitConfig[] | null): number {
+  const activeFromConfig = habitConfig?.filter((habit) => habit.active).length ?? 0;
+  if (activeFromConfig > 0) return activeFromConfig;
+  const totalFromToday = todayHabits?.totalActive ?? 0;
+  if (totalFromToday > 0) return totalFromToday;
+  return HABIT_KEYS.length;
+}
+
+function buildMonthlyStats({
+  sessions,
+  cardioLogs,
+  historySources,
+  totalActiveHabits,
+  now,
+}: {
+  sessions: WorkoutSession[];
+  cardioLogs: CardioLog[];
+  historySources: HistorySources;
+  totalActiveHabits: number;
+  now: Date;
+}): MonthlyStats {
+  const prefix = monthPrefix(now);
+  const daysElapsed = now.getDate();
+
+  const workoutCount = sessions.filter((session) =>
+    isDateInCurrentMonth(toLocalDayISO(new Date(session.finishedAt)), prefix),
+  ).length;
+
+  const totalKm = cardioLogs
+    .filter((log) => isDateInCurrentMonth(log.date, prefix))
+    .reduce((sum, log) => sum + log.distanceKm, 0);
+
+  const habitScoreSum = Object.entries(historySources.daily.habits).reduce((sum, [dateISO, habitDay]) => {
+    if (!isDateInCurrentMonth(dateISO, prefix)) return sum;
+    return sum + habitDay.check.score;
+  }, 0);
+
+  const denominator = totalActiveHabits * daysElapsed;
+  const rawPercentage = denominator > 0 ? (habitScoreSum / denominator) * 100 : 0;
+  const habitPercentage = Math.max(0, Math.min(100, Math.round(rawPercentage)));
+
+  return {
+    workoutCount,
+    totalKm,
+    habitPercentage,
+  };
+}
+
+function resolveInsightType({
+  streakCount,
+  todayHabitsSummary,
+  todayActivity,
+  now,
+}: {
+  streakCount: number;
+  todayHabitsSummary: TodayHabitsSummary;
+  todayActivity: TodayActivityState;
+  now: Date;
+}): HomeInsightType {
+  if (streakCount >= 2) return 'streak';
+
+  if (todayHabitsSummary.score > 0 && !todayHabitsSummary.isComplete) {
+    return 'habits';
+  }
+
+  if (!todayActivity.hasAny && now.getHours() >= 14) {
+    return 'noActivity';
+  }
+
+  return 'motivational';
+}
+
+function buildTodayActivity(todayWorkout: TodayWorkout | null, todayCardio: TodayCardio | null): TodayActivityState {
+  const hasWorkout = Boolean(todayWorkout);
+  const hasCardio = Boolean(todayCardio);
+  return {
+    hasWorkout,
+    hasCardio,
+    hasAny: hasWorkout || hasCardio,
+    count: Number(hasWorkout) + Number(hasCardio),
+  };
+}
+
+function buildTodayHabitsSummary(todayHabits: HabitCheck | null, defaultTotalActive: number): TodayHabitsSummary {
+  const score = todayHabits?.score ?? 0;
+  const totalActive = todayHabits?.totalActive ?? defaultTotalActive;
+  const remaining = Math.max(0, totalActive - score);
+  const progress = totalActive > 0 ? score / totalActive : 0;
+  const isComplete = totalActive > 0 && score === totalActive;
+
+  return {
+    score,
+    totalActive,
+    remaining,
+    progress,
+    isComplete,
   };
 }
 
@@ -111,19 +255,34 @@ export function useHomeOverview() {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
-        const [sessions, todayHabits, historySources, storedName] = await Promise.all([
+        const [sessions, cardioLogs, todayHabits, habitConfig, historySources, storedName] = await Promise.all([
           getAllSessions(userId),
+          getLogs(userId),
           getTodayCheck(userId),
+          getConfig(userId),
           getHistorySources(userId),
           AsyncStorage.getItem(userNameKey(userId)),
         ]);
-        const weeklyMetrics = buildWeeklyMetrics(historySources);
-
-        const lastWorkout =
-          sessions
-            .slice()
-            .sort((a, b) => new Date(b.finishedAt).getTime() - new Date(a.finishedAt).getTime())[0] ??
-          null;
+        const now = new Date();
+        const todayISO = toLocalDayISO(now);
+        const todayWorkout = pickTodayWorkout(sessions, todayISO);
+        const todayCardio = pickTodayCardio(cardioLogs, todayISO);
+        const totalActiveHabits = resolveTotalActiveHabits(todayHabits, habitConfig);
+        const todayActivity = buildTodayActivity(todayWorkout, todayCardio);
+        const todayHabitsSummary = buildTodayHabitsSummary(todayHabits, totalActiveHabits);
+        const monthlyStats = buildMonthlyStats({
+          sessions,
+          cardioLogs,
+          historySources,
+          totalActiveHabits,
+          now,
+        });
+        const insightType = resolveInsightType({
+          streakCount: historySources.weeklyStreak.streakCount,
+          todayHabitsSummary,
+          todayActivity,
+          now,
+        });
 
         if (!isMounted) return;
         setState({
@@ -134,12 +293,18 @@ export function useHomeOverview() {
             user?.user_metadata?.full_name as string | undefined,
             user?.email,
           ),
-          lastWorkout,
           todayHabits,
+          todayWorkout,
+          todayCardio,
+          todayActivity,
+          todayHabitsSummary,
           weeklyStreak: historySources.weeklyStreak,
-          weeklyWorkoutCount: weeklyMetrics.weeklyWorkoutCount,
-          weeklyKm: weeklyMetrics.weeklyKm,
-          weeklyHabitAvg: weeklyMetrics.weeklyHabitAvg,
+          monthlyStats,
+          insightType,
+          insightMeta: {
+            streakCount: historySources.weeklyStreak.streakCount,
+            remainingHabits: todayHabitsSummary.remaining,
+          },
         });
       } catch (error) {
         if (!isMounted) return;

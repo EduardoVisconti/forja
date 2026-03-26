@@ -11,8 +11,6 @@ import { WeeklyStreakCard } from '@/features/history/components/WeeklyStreakCard
 import { ProfileModal } from '@/features/home/components/ProfileModal';
 import { useHomeOverview } from '@/features/home/hooks/useHomeOverview';
 
-const WEEK_ACTIVITY_LABELS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
-
 function capitalize(text: string): string {
   if (!text) return text;
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -33,10 +31,6 @@ function getGreetingKey(hour: number): 'home.goodMorning' | 'home.goodAfternoon'
   return 'home.goodEvening';
 }
 
-function formatHabitAverage(score: number): string {
-  return score.toFixed(1).replace(/\.0$/, '');
-}
-
 export default function HomeScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -44,19 +38,45 @@ export default function HomeScreen() {
   const { signOut, isLoading } = useAuth();
   const [profileVisible, setProfileVisible] = useState(false);
   const {
-    isLoading: isOverviewLoading,
     weeklyStreak,
+    todayWorkout,
+    todayCardio,
+    todayActivity,
+    todayHabitsSummary,
+    monthlyStats,
+    insightType,
+    insightMeta,
     error,
     displayName,
     reloadOverview,
-    weeklyWorkoutCount,
-    weeklyKm,
-    weeklyHabitAvg,
   } = useHomeOverview();
 
   const greetingKey = getGreetingKey(new Date().getHours());
   const motivationalIndex = new Date().getDate() % 10;
   const motivationalPhrase = t(`home.motivational.${motivationalIndex}`);
+  const progressWidth = `${Math.min(100, Math.max(0, todayHabitsSummary.progress * 100))}%` as `${number}%`;
+  const cardioTitle = todayCardio?.trainingType ? t(`cardio.trainingType.${todayCardio.trainingType}`) : t('cardio.title');
+  const cardioZoneLabel = todayCardio?.zone ? t(`cardio.zone.${todayCardio.zone}`) : null;
+  const habitsRemainingText = t(
+    insightMeta.remainingHabits > 1 ? 'home.habitsRemainingPlural' : 'home.habitsRemaining',
+    { count: insightMeta.remainingHabits },
+  );
+
+  const insightText = (() => {
+    if (insightType === 'streak') {
+      return `🔥 ${insightMeta.streakCount} ${t('home.streakInsight')}`;
+    }
+
+    if (insightType === 'habits') {
+      return `💪 ${habitsRemainingText}`;
+    }
+
+    if (insightType === 'noActivity') {
+      return `📅 ${t('home.noWorkoutInsight')}`;
+    }
+
+    return motivationalPhrase;
+  })();
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -92,50 +112,99 @@ export default function HomeScreen() {
 
         <Text style={styles.motivationalText}>{motivationalPhrase}</Text>
 
+        {todayActivity.hasAny ? (
+          <View style={styles.todayActivityRow}>
+            {todayWorkout ? (
+              <Card
+                style={[
+                  styles.card,
+                  styles.todayActivityCard,
+                  todayActivity.count === 1 && styles.todayActivityCardSingle,
+                ]}
+              >
+                <Card.Content>
+                  <Text style={styles.cardTitle}>{t('home.todayWorkout')}</Text>
+                  <Text style={styles.activityPrimary}>{todayWorkout.templateName}</Text>
+                  {todayWorkout.durationMinutes > 0 ? (
+                    <Text style={styles.activitySecondary}>
+                      {todayWorkout.durationMinutes} {t('summary.minutes')}
+                    </Text>
+                  ) : null}
+                </Card.Content>
+              </Card>
+            ) : null}
+
+            {todayCardio ? (
+              <Card
+                style={[
+                  styles.card,
+                  styles.todayActivityCard,
+                  todayActivity.count === 1 && styles.todayActivityCardSingle,
+                ]}
+              >
+                <Card.Content>
+                  <Text style={styles.cardTitle}>{t('home.todayCardio')}</Text>
+                  <Text style={styles.activityPrimary}>
+                    {cardioTitle}
+                    {cardioZoneLabel ? ` • ${cardioZoneLabel}` : ''}
+                  </Text>
+                  <Text style={styles.activitySecondary}>
+                    {todayCardio.distanceKm.toFixed(1)} {t('home.monthKm')}
+                  </Text>
+                </Card.Content>
+              </Card>
+            ) : null}
+          </View>
+        ) : (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text style={styles.mutedText}>{t('home.noActivityToday')}</Text>
+            </Card.Content>
+          </Card>
+        )}
+
         <Card style={styles.card}>
           <Card.Content>
-            <Text style={styles.cardTitle}>{t('home.weekActivity')}</Text>
-            {isOverviewLoading || !weeklyStreak ? (
-              <Text style={styles.mutedText}>{t('common.loading')}</Text>
-            ) : (
-              <View style={styles.weekActivityRow}>
-                {weeklyStreak.weekDays.map((day, index) => {
-                  const circleStyle = day.isActive
-                    ? styles.weekDayCircleActive
-                    : day.isToday
-                      ? styles.weekDayCircleToday
-                      : styles.weekDayCircleInactive;
-
-                  return (
-                    <View key={day.dateISO} style={styles.weekDayColumn}>
-                      <View style={[styles.weekDayCircle, circleStyle]} />
-                      <Text style={styles.weekDayLabel}>{WEEK_ACTIVITY_LABELS[index] ?? ''}</Text>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
+            <Text style={styles.cardTitle}>{t('home.habitsToday')}</Text>
+            <Text style={styles.habitScoreValue}>
+              {todayHabitsSummary.score}/{todayHabitsSummary.totalActive}
+            </Text>
+            <View style={styles.habitProgressTrack}>
+              <View style={[styles.habitProgressFill, { width: progressWidth }]} />
+            </View>
+            {todayHabitsSummary.isComplete ? (
+              <Text style={styles.habitInsightDone}>{t('home.allHabitsDone')}</Text>
+            ) : todayHabitsSummary.totalActive > 0 ? (
+              <Text style={styles.habitInsightPending}>{habitsRemainingText}</Text>
+            ) : null}
           </Card.Content>
         </Card>
 
-        <View style={styles.metricsRow}>
-          <View style={styles.metricPill}>
-            <Text style={styles.metricValue}>{weeklyWorkoutCount}</Text>
-            <Text style={styles.metricLabel}>{t('home.workoutsWeek')}</Text>
-          </View>
-          <View style={styles.metricPill}>
-            <Text style={styles.metricValue}>{weeklyKm.toFixed(1)}</Text>
-            <Text style={styles.metricLabel}>{t('home.kmWeek')}</Text>
-          </View>
-          <View style={styles.metricPill}>
-            <Text style={styles.metricValue}>
-              {formatHabitAverage(weeklyHabitAvg.score)}/{weeklyHabitAvg.total}
-            </Text>
-            <Text style={styles.metricLabel}>{t('home.habitsWeekAvg')}</Text>
-          </View>
-        </View>
+        <WeeklyStreakCard data={weeklyStreak} style={styles.weeklyCard} />
 
-        <WeeklyStreakCard data={weeklyStreak} title={t('common.workoutStreak')} style={styles.card} />
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text style={styles.cardTitle}>{t('home.thisMonth')}</Text>
+            <View style={styles.monthlyRow}>
+              <View style={styles.monthlyStat}>
+                <Text style={styles.monthlyValue}>{monthlyStats.workoutCount}</Text>
+                <Text style={styles.monthlyLabel}>{t('home.monthWorkouts')}</Text>
+              </View>
+              <View style={styles.monthlyStat}>
+                <Text style={styles.monthlyValue}>{monthlyStats.totalKm.toFixed(1)}</Text>
+                <Text style={styles.monthlyLabel}>{t('home.monthKm')}</Text>
+              </View>
+              <View style={styles.monthlyStat}>
+                <Text style={styles.monthlyValue}>{monthlyStats.habitPercentage}%</Text>
+                <Text style={styles.monthlyLabel}>{t('home.monthHabits')}</Text>
+              </View>
+            </View>
+          </Card.Content>
+        </Card>
+
+        <View style={styles.insightCard}>
+          <Text style={styles.insightText}>{insightText}</Text>
+        </View>
 
         {error ? <Text style={styles.errorText}>{t('common.error')}</Text> : null}
       </ScrollView>
@@ -197,71 +266,108 @@ const createStyles = (theme: MD3Theme) =>
     },
     motivationalText: {
       fontSize: 13,
-      color: '#525252',
+      color: '#9ca3af',
       fontStyle: 'italic',
       textAlign: 'center',
       paddingHorizontal: 24,
     },
     cardTitle: {
       fontSize: 13,
-      color: '#6b6b6b',
+      color: '#9ca3af',
       marginBottom: 10,
     },
-    weekActivityRow: {
+    todayActivityRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    todayActivityCard: {
+      flex: 1,
+    },
+    todayActivityCardSingle: {
+      width: '100%',
+    },
+    activityPrimary: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: '#f3f4f6',
+    },
+    activitySecondary: {
+      fontSize: 12,
+      color: '#9ca3af',
+      marginTop: 6,
+    },
+    habitScoreValue: {
+      fontSize: 28,
+      fontWeight: '700',
+      color: '#ffffff',
+      marginBottom: 8,
+    },
+    habitProgressTrack: {
+      width: '100%',
+      height: 4,
+      borderRadius: 99,
+      backgroundColor: '#262626',
+      overflow: 'hidden',
+      marginBottom: 8,
+    },
+    habitProgressFill: {
+      height: '100%',
+      borderRadius: 99,
+      backgroundColor: '#ef4444',
+    },
+    habitInsightPending: {
+      color: '#9ca3af',
+      fontSize: 12,
+    },
+    habitInsightDone: {
+      color: '#d1d5db',
+      fontSize: 12,
+    },
+    weeklyCard: {
+      marginHorizontal: 0,
+      marginTop: 0,
+    },
+    monthlyRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       gap: 8,
     },
-    weekDayColumn: {
-      flex: 1,
-      alignItems: 'center',
-    },
-    weekDayCircle: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
-    },
-    weekDayCircleActive: {
-      backgroundColor: '#ef4444',
-      borderWidth: 0,
-    },
-    weekDayCircleToday: {
-      backgroundColor: 'transparent',
-      borderWidth: 1,
-      borderColor: '#ef4444',
-    },
-    weekDayCircleInactive: {
-      backgroundColor: '#1e1e1e',
-      borderWidth: 0,
-    },
-    weekDayLabel: {
-      fontSize: 10,
-      color: '#525252',
-      marginTop: 6,
-    },
-    metricsRow: {
-      flexDirection: 'row',
-      gap: 8,
-    },
-    metricPill: {
+    monthlyStat: {
       flex: 1,
       backgroundColor: '#141414',
-      borderRadius: 12,
-      padding: 10,
+      borderRadius: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 8,
+      alignItems: 'center',
     },
-    metricValue: {
-      fontSize: 22,
+    monthlyValue: {
+      fontSize: 20,
       fontWeight: '700',
       color: '#ffffff',
     },
-    metricLabel: {
+    monthlyLabel: {
+      marginTop: 4,
       fontSize: 11,
-      color: '#525252',
-      marginTop: 2,
+      color: '#9ca3af',
     },
     mutedText: {
       fontSize: 14,
-      color: theme.colors.onSurfaceVariant,
+      color: '#9ca3af',
+    },
+    insightCard: {
+      backgroundColor: '#1a1a1a',
+      borderLeftWidth: 3,
+      borderLeftColor: '#ef4444',
+      borderTopLeftRadius: 0,
+      borderBottomLeftRadius: 0,
+      borderTopRightRadius: 8,
+      borderBottomRightRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+    },
+    insightText: {
+      fontSize: 13,
+      color: '#d1d5db',
     },
     errorText: {
       color: theme.colors.primary,
