@@ -78,10 +78,6 @@ export default function CardioScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('cardio.title')}</Text>
-      </View>
-
       <CardioCategoryFilter activeFilter={activeFilter} onSelect={setActiveFilter} />
 
       {isLoading ? (
@@ -133,15 +129,6 @@ export default function CardioScreen() {
 const createStyles = (theme: MD3Theme) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
-    header: {
-      paddingHorizontal: 16,
-      paddingTop: 20,
-      paddingBottom: 12,
-      backgroundColor: theme.colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outline,
-    },
-    title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.onSurface },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     list: { padding: 16, paddingBottom: 100 },
     empty: { alignItems: 'center', paddingTop: 80, paddingHorizontal: 20, gap: 12 },

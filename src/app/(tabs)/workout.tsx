@@ -74,10 +74,6 @@ export default function WorkoutScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('workout.title')}</Text>
-      </View>
-
       {isLoading ? (
         <ActivityIndicator style={styles.center} />
       ) : error ? (
@@ -155,19 +151,6 @@ const createStyles = (theme: MD3Theme) =>
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-    },
-    header: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 8,
-      backgroundColor: theme.colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outline,
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      color: theme.colors.onSurface,
     },
     center: {
       flex: 1,

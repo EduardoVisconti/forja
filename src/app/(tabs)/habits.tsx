@@ -46,14 +46,9 @@ export default function HabitsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Text style={styles.title}>{t('habits.title')}</Text>
-          <IconButton
-            icon="cog"
-            size={24}
-            onPress={() => setConfigModalVisible(true)}
-          />
+      <View style={styles.topControls}>
+        <View style={styles.settingsRow}>
+          <IconButton icon="cog" size={24} onPress={() => setConfigModalVisible(true)} />
         </View>
         <Text style={styles.subtitle}>{subtitle}</Text>
         <View style={styles.dateNav}>
@@ -128,20 +123,16 @@ export default function HabitsScreen() {
 const createStyles = (theme: MD3Theme) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
-    header: {
+    topControls: {
       paddingHorizontal: 16,
       paddingTop: 16,
       paddingBottom: 12,
-      backgroundColor: theme.colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outline,
     },
-    headerTop: {
+    settingsRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       alignItems: 'center',
     },
-    title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.onSurface },
     subtitle: { fontSize: 13, color: theme.colors.onSurfaceVariant, marginTop: 2 },
     dateNav: {
       flexDirection: 'row',

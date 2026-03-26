@@ -11,6 +11,8 @@ import { WeeklyStreakCard } from '@/features/history/components/WeeklyStreakCard
 import { ProfileModal } from '@/features/home/components/ProfileModal';
 import { useHomeOverview } from '@/features/home/hooks/useHomeOverview';
 
+const WEEK_ACTIVITY_LABELS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
+
 function capitalize(text: string): string {
   if (!text) return text;
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -31,27 +33,8 @@ function getGreetingKey(hour: number): 'home.goodMorning' | 'home.goodAfternoon'
   return 'home.goodEvening';
 }
 
-function formatWorkoutDateLabel(finishedAtISO: string, t: (key: string, options?: Record<string, unknown>) => string) {
-  const now = new Date();
-  const finishedAt = new Date(finishedAtISO);
-  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfFinished = new Date(
-    finishedAt.getFullYear(),
-    finishedAt.getMonth(),
-    finishedAt.getDate(),
-  );
-  const diffInDays = Math.floor(
-    (startOfNow.getTime() - startOfFinished.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (diffInDays <= 0) return t('home.today');
-  if (diffInDays === 1) return t('home.yesterday');
-  if (diffInDays <= 7) return t('home.daysAgo', { count: diffInDays });
-
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-  }).format(finishedAt);
+function formatHabitAverage(score: number): string {
+  return score.toFixed(1).replace(/\.0$/, '');
 }
 
 export default function HomeScreen() {
@@ -63,17 +46,17 @@ export default function HomeScreen() {
   const {
     isLoading: isOverviewLoading,
     weeklyStreak,
-    lastWorkout,
-    todayHabits,
     error,
     displayName,
     reloadOverview,
-  } =
-    useHomeOverview();
+    weeklyWorkoutCount,
+    weeklyKm,
+    weeklyHabitAvg,
+  } = useHomeOverview();
+
   const greetingKey = getGreetingKey(new Date().getHours());
-  const habitsTotal = todayHabits?.totalActive ?? 0;
-  const habitsScore = todayHabits?.score ?? 0;
-  const hasCheckedHabits = habitsScore > 0;
+  const motivationalIndex = new Date().getDate() % 10;
+  const motivationalPhrase = t(`home.motivational.${motivationalIndex}`);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -107,59 +90,52 @@ export default function HomeScreen() {
           </Card.Content>
         </Card>
 
-        <View style={styles.bottomRow}>
-          <View style={[styles.bottomRowCard, { flex: 1 }]}>
-            <View style={styles.bottomRowContent}>
-              <Text style={styles.cardTitle}>{t('home.lastWorkout')}</Text>
-              {isOverviewLoading ? (
-                <Text style={styles.mutedText}>{t('common.loading')}</Text>
-              ) : lastWorkout ? (
-                <>
-                  <Text style={styles.templateNameText}>{lastWorkout.templateName}</Text>
-                  <Text style={styles.mutedText}>
-                    {formatWorkoutDateLabel(lastWorkout.finishedAt, t)}
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.primaryText}>{t('home.noWorkoutYet')}</Text>
-                  <Text style={styles.mutedText}>{t('home.noWorkoutHint')}</Text>
-                </>
-              )}
-            </View>
-          </View>
+        <Text style={styles.motivationalText}>{motivationalPhrase}</Text>
 
-          <View style={[styles.bottomRowCard, { flex: 1 }]}>
-            <View style={styles.bottomRowContent}>
-              <Text style={styles.habitsCardTitle}>{t('home.habitsToday')}</Text>
-              {isOverviewLoading ? (
-                <Text style={styles.mutedText}>{t('common.loading')}</Text>
-              ) : todayHabits ? (
-                <>
-                  <View style={styles.habitsScoreRow}>
-                    <Text style={{ fontSize: 28, fontWeight: '700', color: '#ffffff' }}>
-                      {habitsScore}
-                    </Text>
-                    <Text style={{ fontSize: 16, color: '#525252' }}>/{habitsTotal}</Text>
-                  </View>
-                  {!hasCheckedHabits ? (
-                    <Text style={styles.secondarySmall}>Vamos lá?</Text>
-                  ) : null}
-                </>
-              ) : (
-                <>
-                  <Text style={styles.mutedText}>{t('home.habitsNotChecked')}</Text>
-                  <Text style={styles.secondarySmall}>Vamos lá?</Text>
-                </>
-              )}
-            </View>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text style={styles.cardTitle}>{t('home.weekActivity')}</Text>
+            {isOverviewLoading || !weeklyStreak ? (
+              <Text style={styles.mutedText}>{t('common.loading')}</Text>
+            ) : (
+              <View style={styles.weekActivityRow}>
+                {weeklyStreak.weekDays.map((day, index) => {
+                  const circleStyle = day.isActive
+                    ? styles.weekDayCircleActive
+                    : day.isToday
+                      ? styles.weekDayCircleToday
+                      : styles.weekDayCircleInactive;
+
+                  return (
+                    <View key={day.dateISO} style={styles.weekDayColumn}>
+                      <View style={[styles.weekDayCircle, circleStyle]} />
+                      <Text style={styles.weekDayLabel}>{WEEK_ACTIVITY_LABELS[index] ?? ''}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </Card.Content>
+        </Card>
+
+        <View style={styles.metricsRow}>
+          <View style={styles.metricPill}>
+            <Text style={styles.metricValue}>{weeklyWorkoutCount}</Text>
+            <Text style={styles.metricLabel}>{t('home.workoutsWeek')}</Text>
+          </View>
+          <View style={styles.metricPill}>
+            <Text style={styles.metricValue}>{weeklyKm.toFixed(1)}</Text>
+            <Text style={styles.metricLabel}>{t('home.kmWeek')}</Text>
+          </View>
+          <View style={styles.metricPill}>
+            <Text style={styles.metricValue}>
+              {formatHabitAverage(weeklyHabitAvg.score)}/{weeklyHabitAvg.total}
+            </Text>
+            <Text style={styles.metricLabel}>{t('home.habitsWeekAvg')}</Text>
           </View>
         </View>
 
         <WeeklyStreakCard data={weeklyStreak} title={t('common.workoutStreak')} style={styles.card} />
-        {lastWorkout === null ? (
-          <Text style={styles.motivationalEmpty}>{t('home.motivationalEmpty')}</Text>
-        ) : null}
 
         {error ? <Text style={styles.errorText}>{t('common.error')}</Text> : null}
       </ScrollView>
@@ -209,30 +185,6 @@ const createStyles = (theme: MD3Theme) =>
       borderWidth: 1,
       borderColor: theme.colors.outline,
     },
-    bottomRow: {
-      flexDirection: 'row',
-      gap: 12,
-    },
-    bottomRowCard: {
-      borderRadius: 12,
-      backgroundColor: '#141414',
-      borderWidth: 0.5,
-      borderColor: '#2a2a2a',
-    },
-    bottomRowContent: {
-      padding: 12,
-    },
-    cardTitle: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: theme.colors.onSurfaceVariant,
-      marginBottom: 8,
-    },
-    habitsCardTitle: {
-      fontSize: 12,
-      color: '#6b6b6b',
-      marginBottom: 8,
-    },
     greeting: {
       fontSize: 24,
       fontWeight: '700',
@@ -243,38 +195,77 @@ const createStyles = (theme: MD3Theme) =>
       color: theme.colors.onSurfaceVariant,
       marginTop: 6,
     },
-    primaryText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.colors.onSurface,
+    motivationalText: {
+      fontSize: 13,
+      color: '#525252',
+      fontStyle: 'italic',
+      textAlign: 'center',
+      paddingHorizontal: 24,
     },
-    templateNameText: {
-      fontSize: 16,
+    cardTitle: {
+      fontSize: 13,
+      color: '#6b6b6b',
+      marginBottom: 10,
+    },
+    weekActivityRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 8,
+    },
+    weekDayColumn: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    weekDayCircle: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+    },
+    weekDayCircleActive: {
+      backgroundColor: '#ef4444',
+      borderWidth: 0,
+    },
+    weekDayCircleToday: {
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: '#ef4444',
+    },
+    weekDayCircleInactive: {
+      backgroundColor: '#1e1e1e',
+      borderWidth: 0,
+    },
+    weekDayLabel: {
+      fontSize: 10,
+      color: '#525252',
+      marginTop: 6,
+    },
+    metricsRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    metricPill: {
+      flex: 1,
+      backgroundColor: '#141414',
+      borderRadius: 12,
+      padding: 10,
+    },
+    metricValue: {
+      fontSize: 22,
       fontWeight: '700',
       color: '#ffffff',
     },
-    habitsScoreRow: {
-      flexDirection: 'row',
-      alignItems: 'flex-end',
+    metricLabel: {
+      fontSize: 11,
+      color: '#525252',
+      marginTop: 2,
     },
     mutedText: {
       fontSize: 14,
       color: theme.colors.onSurfaceVariant,
     },
-    secondarySmall: {
-      fontSize: 12,
-      color: theme.colors.onSurfaceVariant,
-      marginTop: 4,
-    },
     errorText: {
       color: theme.colors.primary,
       fontSize: 13,
       paddingHorizontal: 4,
-    },
-    motivationalEmpty: {
-      fontSize: 13,
-      color: '#2a2a2a',
-      textAlign: 'center',
-      marginTop: 8,
     },
   });

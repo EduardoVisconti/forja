@@ -43,8 +43,7 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('tabs.history')}</Text>
+      <View style={styles.topControls}>
         <View style={styles.monthNav}>
           <IconButton icon="chevron-left" size={24} onPress={goToPreviousMonth} />
           <Text style={styles.monthLabel}>{monthLabel}</Text>
@@ -86,16 +85,12 @@ export default function HistoryScreen() {
 const createStyles = (theme: MD3Theme) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
-    header: {
+    topControls: {
       paddingHorizontal: 16,
       paddingTop: 16,
       paddingBottom: 12,
-      backgroundColor: theme.colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.outline,
     },
-    title: { fontSize: 24, fontWeight: 'bold', color: theme.colors.onSurface },
-    monthNav: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+    monthNav: { flexDirection: 'row', alignItems: 'center' },
     monthLabel: {
       flex: 1,
       textAlign: 'center',
