@@ -6,6 +6,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/core/supabase/client';
 import { useAuthStore } from '@/core/auth/authStore';
+import { colors } from '@/core/theme/tokens';
 import {
   requestPermissions,
   scheduleDailyReminder,
@@ -16,18 +17,18 @@ export const darkTheme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    background: '#0a0a0a',
-    surface: '#141414',
-    surfaceVariant: '#1e1e1e',
-    primary: '#ef4444',
-    primaryContainer: '#7f1d1d',
-    onPrimary: '#ffffff',
-    onPrimaryContainer: '#fecaca',
+    background: colors.background,
+    surface: colors.surface,
+    surfaceVariant: colors.surfaceVariant,
+    primary: colors.workout,
+    primaryContainer: colors.workoutDark,
+    onPrimary: colors.textPrimary,
+    onPrimaryContainer: colors.workoutLight,
     secondary: '#f87171',
     onBackground: '#f5f5f5',
     onSurface: '#f5f5f5',
-    onSurfaceVariant: '#a3a3a3',
-    outline: '#404040',
+    onSurfaceVariant: colors.textSecondary,
+    outline: colors.borderSubtle,
   },
 };
 
@@ -35,18 +36,18 @@ export const lightTheme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    background: '#0a0a0a',
-    surface: '#141414',
-    surfaceVariant: '#1e1e1e',
-    primary: '#ef4444',
-    primaryContainer: '#7f1d1d',
-    onPrimary: '#ffffff',
-    onPrimaryContainer: '#fecaca',
+    background: colors.background,
+    surface: colors.surface,
+    surfaceVariant: colors.surfaceVariant,
+    primary: colors.workout,
+    primaryContainer: colors.workoutDark,
+    onPrimary: colors.textPrimary,
+    onPrimaryContainer: colors.workoutLight,
     secondary: '#f87171',
     onBackground: '#f5f5f5',
     onSurface: '#f5f5f5',
-    onSurfaceVariant: '#a3a3a3',
-    outline: '#404040',
+    onSurfaceVariant: colors.textSecondary,
+    outline: colors.borderSubtle,
   },
 };
 
