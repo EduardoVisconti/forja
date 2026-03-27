@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Card, IconButton, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { colors } from '@/core/theme/tokens';
 import type { CardioLog } from '../types';
 
 interface Props {
@@ -86,6 +87,8 @@ const createStyles = (theme: MD3Theme) =>
       backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.outline,
+      borderLeftWidth: 3,
+      borderLeftColor: colors.cardio,
     },
     content: { gap: 8 },
     row: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },

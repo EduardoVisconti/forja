@@ -4,6 +4,7 @@ import { ActivityIndicator, Button, FAB, Text, useTheme } from 'react-native-pap
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '@/core/theme/tokens';
 import { CardioCategoryFilter } from '@/features/cardio/components/CardioCategoryFilter';
 import { CardioFormModal } from '@/features/cardio/components/CardioFormModal';
 import { CardioLogItem } from '@/features/cardio/components/CardioLogItem';
@@ -156,5 +157,5 @@ const createStyles = (theme: MD3Theme) =>
     emptyText: { fontSize: 15, color: theme.colors.onSurfaceVariant, textAlign: 'center' },
     emptyAction: { marginTop: 4 },
     errorText: { color: theme.colors.primary, textAlign: 'center', marginBottom: 12 },
-    fab: { position: 'absolute', right: 16, bottom: 24 },
+    fab: { position: 'absolute', right: 16, bottom: 24, backgroundColor: colors.cardio },
   });
