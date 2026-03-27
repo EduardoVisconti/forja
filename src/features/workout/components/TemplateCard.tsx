@@ -3,6 +3,7 @@ import { IconButton, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutTemplate } from '../types';
+import { colors } from '@/core/theme/tokens';
 
 interface TemplateCardProps {
   template: WorkoutTemplate;
@@ -19,6 +20,22 @@ const typeLabelKey: Record<WorkoutTemplate['type'], string> = {
   functional: 'workout.type.functional',
 };
 
+type BadgeVariant = 'gym' | 'cardio' | 'functional';
+
+function resolveBadgeVariant(type: string): BadgeVariant {
+  const normalized = type.toLowerCase();
+
+  if (normalized === 'gym' || normalized === 'musculacao') {
+    return 'gym';
+  }
+
+  if (normalized === 'functional' || normalized === 'funcional') {
+    return 'functional';
+  }
+
+  return 'cardio';
+}
+
 export function TemplateCard({
   template,
   exerciseCount,
@@ -30,10 +47,16 @@ export function TemplateCard({
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = createStyles(theme);
+  const badgeVariant = resolveBadgeVariant(template.type);
   const badgeStyleByType = {
     gym: styles.badgeGym,
     cardio: styles.badgeCardio,
     functional: styles.badgeFunctional,
+  };
+  const badgeTextStyleByType = {
+    gym: styles.badgeTextGym,
+    cardio: styles.badgeTextCardio,
+    functional: styles.badgeTextFunctional,
   };
 
   return (
@@ -41,8 +64,8 @@ export function TemplateCard({
       <View style={styles.left}>
         <Text style={styles.name}>{template.name}</Text>
         <View style={styles.meta}>
-          <View style={[styles.badge, badgeStyleByType[template.type]]}>
-            <Text style={styles.badgeText}>
+          <View style={[styles.badge, badgeStyleByType[badgeVariant]]}>
+            <Text style={[styles.badgeText, badgeTextStyleByType[badgeVariant]]}>
               {t(typeLabelKey[template.type])}
             </Text>
           </View>
@@ -92,18 +115,26 @@ const createStyles = (theme: MD3Theme) =>
       paddingVertical: 2,
     },
     badgeGym: {
-      backgroundColor: theme.colors.primaryContainer,
+      backgroundColor: colors.workoutDark,
     },
     badgeCardio: {
-      backgroundColor: theme.colors.surfaceVariant,
+      backgroundColor: colors.cardioDark,
     },
     badgeFunctional: {
-      backgroundColor: theme.colors.tertiaryContainer,
+      backgroundColor: colors.neutralSubtle,
     },
     badgeText: {
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.onSurface,
+    },
+    badgeTextGym: {
+      color: colors.workoutLight,
+    },
+    badgeTextCardio: {
+      color: colors.cardioLight,
+    },
+    badgeTextFunctional: {
+      color: colors.neutralLight,
     },
     count: {
       fontSize: 13,

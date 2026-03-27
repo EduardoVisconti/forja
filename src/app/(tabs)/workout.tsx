@@ -12,6 +12,7 @@ import { useActiveSession } from '@/features/workout/hooks/useActiveSession';
 import type { WorkoutTemplate } from '@/features/workout/types';
 import type { TemplateFormValues } from '@/features/workout/schemas/workoutSchemas';
 import { useExerciseCounts } from '@/features/workout/hooks/useExerciseCounts';
+import { colors } from '@/core/theme/tokens';
 
 export default function WorkoutScreen() {
   const { t } = useTranslation();
@@ -225,5 +226,6 @@ const createStyles = (theme: MD3Theme) =>
       position: 'absolute',
       right: 16,
       bottom: 24,
+      backgroundColor: colors.workout,
     },
   });

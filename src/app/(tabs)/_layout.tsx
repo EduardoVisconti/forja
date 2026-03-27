@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors } from '@/core/theme/tokens';
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -9,8 +10,8 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#16a34a',
-        tabBarInactiveTintColor: '#525252',
+        tabBarActiveTintColor: colors.complete,
+        tabBarInactiveTintColor: colors.neutral,
       }}
     >
       <Tabs.Screen
