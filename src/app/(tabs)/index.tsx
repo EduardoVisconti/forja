@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/core/auth/useAuth';
 import { SyncStatusIndicator } from '@/core/sync/SyncStatusIndicator';
+import { colors } from '@/core/theme/tokens';
 import { WeeklyStreakCard } from '@/features/history/components/WeeklyStreakCard';
 import { ProfileModal } from '@/features/home/components/ProfileModal';
 import { useHomeOverview } from '@/features/home/hooks/useHomeOverview';
@@ -101,14 +102,12 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text style={styles.greeting}>
-              {t(greetingKey)}, {displayName}
-            </Text>
-            <Text style={styles.subtitle}>{formatTodayDate()}</Text>
-          </Card.Content>
-        </Card>
+        <View style={styles.greetingHeader}>
+          <Text style={styles.greeting}>
+            {t(greetingKey)}, {displayName}
+          </Text>
+          <Text style={styles.subtitle}>{formatTodayDate()}</Text>
+        </View>
 
         <Text style={styles.motivationalText}>{motivationalPhrase}</Text>
 
@@ -119,6 +118,7 @@ export default function HomeScreen() {
                 style={[
                   styles.card,
                   styles.todayActivityCard,
+                  styles.todayWorkoutCard,
                   todayActivity.count === 1 && styles.todayActivityCardSingle,
                 ]}
               >
@@ -139,6 +139,7 @@ export default function HomeScreen() {
                 style={[
                   styles.card,
                   styles.todayActivityCard,
+                  styles.todayCardioCard,
                   todayActivity.count === 1 && styles.todayActivityCardSingle,
                 ]}
               >
@@ -156,11 +157,7 @@ export default function HomeScreen() {
             ) : null}
           </View>
         ) : (
-          <Card style={styles.card}>
-            <Card.Content>
-              <Text style={styles.mutedText}>{t('home.noActivityToday')}</Text>
-            </Card.Content>
-          </Card>
+          <Text style={styles.noActivityText}>{t('home.noActivityToday')}</Text>
         )}
 
         <Card style={styles.card}>
@@ -255,14 +252,17 @@ const createStyles = (theme: MD3Theme) =>
       borderColor: theme.colors.outline,
     },
     greeting: {
-      fontSize: 24,
+      fontSize: 20,
       fontWeight: '700',
       color: theme.colors.onSurface,
     },
     subtitle: {
-      fontSize: 14,
+      fontSize: 13,
       color: theme.colors.onSurfaceVariant,
       marginTop: 6,
+    },
+    greetingHeader: {
+      paddingVertical: 8,
     },
     motivationalText: {
       fontSize: 13,
@@ -282,6 +282,14 @@ const createStyles = (theme: MD3Theme) =>
     },
     todayActivityCard: {
       flex: 1,
+    },
+    todayWorkoutCard: {
+      borderLeftWidth: 3,
+      borderLeftColor: colors.workout,
+    },
+    todayCardioCard: {
+      borderLeftWidth: 3,
+      borderLeftColor: colors.cardio,
     },
     todayActivityCardSingle: {
       width: '100%',
@@ -313,14 +321,14 @@ const createStyles = (theme: MD3Theme) =>
     habitProgressFill: {
       height: '100%',
       borderRadius: 99,
-      backgroundColor: '#ef4444',
+      backgroundColor: colors.complete,
     },
     habitInsightPending: {
-      color: '#9ca3af',
+      color: colors.textMuted,
       fontSize: 12,
     },
     habitInsightDone: {
-      color: '#d1d5db',
+      color: colors.complete,
       fontSize: 12,
     },
     weeklyCard: {
@@ -334,7 +342,7 @@ const createStyles = (theme: MD3Theme) =>
     },
     monthlyStat: {
       flex: 1,
-      backgroundColor: '#141414',
+      backgroundColor: colors.surfaceVariant,
       borderRadius: 10,
       paddingVertical: 10,
       paddingHorizontal: 8,
@@ -343,21 +351,21 @@ const createStyles = (theme: MD3Theme) =>
     monthlyValue: {
       fontSize: 20,
       fontWeight: '700',
-      color: '#ffffff',
+      color: colors.textPrimary,
     },
     monthlyLabel: {
       marginTop: 4,
       fontSize: 11,
-      color: '#9ca3af',
+      color: colors.textMuted,
     },
-    mutedText: {
+    noActivityText: {
       fontSize: 14,
-      color: '#9ca3af',
+      color: colors.textMuted,
     },
     insightCard: {
       backgroundColor: '#1a1a1a',
       borderLeftWidth: 3,
-      borderLeftColor: '#ef4444',
+      borderLeftColor: colors.workout,
       borderTopLeftRadius: 0,
       borderBottomLeftRadius: 0,
       borderTopRightRadius: 8,
