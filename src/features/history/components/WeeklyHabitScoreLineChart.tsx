@@ -4,6 +4,7 @@ import { Card, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import Svg, { ClipPath, Defs, G, Rect, Text as SvgText } from 'react-native-svg';
+import { colors } from '@/core/theme/tokens';
 import type { WeeklyHabitScoreVM } from '../types/historyTypes';
 
 interface Props {
@@ -52,10 +53,10 @@ function weekdayKeyFromDateISO(dateISO: string): string {
 }
 
 function getBarColor(percentage: number): string {
-  if (percentage === 100) return '#22c55e';
-  if (percentage >= 75) return '#ef4444';
-  if (percentage >= 50) return '#f97316';
-  return '#525252';
+  if (percentage === 100) return colors.complete;
+  if (percentage >= 75) return colors.workout;
+  if (percentage >= 50) return colors.warning;
+  return colors.neutralSubtle;
 }
 
 export function WeeklyHabitScoreLineChart({ data }: Props) {

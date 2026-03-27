@@ -2,6 +2,7 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Card, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { colors } from '@/core/theme/tokens';
 import type { WeeklyStreakVM } from '../types/historyTypes';
 
 interface Props {
@@ -52,7 +53,13 @@ export function WeeklyStreakCard({ data, title, style }: Props) {
           </View>
           <View style={styles.dotsRow}>
             {data.weekDays.map((day) => (
-              <View key={day.dateISO} style={[styles.dot, day.isActive && styles.dotFilled]} />
+              <View
+                key={day.dateISO}
+                style={[
+                  styles.dot,
+                  day.isActive ? styles.dotActive : day.isToday ? styles.dotToday : styles.dotInactive,
+                ]}
+              />
             ))}
           </View>
         </View>
@@ -97,7 +104,7 @@ const createStyles = (theme: MD3Theme) =>
     count: {
       fontSize: 36,
       fontWeight: '700',
-      color: '#ffffff',
+      color: colors.textPrimary,
     },
     label: {
       fontSize: 11,
@@ -131,13 +138,20 @@ const createStyles = (theme: MD3Theme) =>
       width: 20,
       height: 20,
       borderRadius: 10,
-      backgroundColor: 'transparent',
-      borderWidth: 1,
-      borderColor: '#404040',
     },
-    dotFilled: {
-      backgroundColor: '#ef4444',
+    dotInactive: {
+      backgroundColor: colors.surfaceVariant,
       borderWidth: 0,
       borderColor: 'transparent',
+    },
+    dotActive: {
+      backgroundColor: colors.complete,
+      borderWidth: 0,
+      borderColor: 'transparent',
+    },
+    dotToday: {
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: colors.complete,
     },
   });

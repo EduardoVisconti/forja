@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import { colors } from '@/core/theme/tokens';
 import type { CalendarDayVM, CalendarMonthVM } from '../types/historyTypes';
 
 function chunkDays(days: CalendarDayVM[], size: number): CalendarDayVM[][] {
@@ -34,9 +35,9 @@ export function CalendarView({ month, selectedDateISO, onSelectDay }: Props) {
 
   const rows = useMemo(() => chunkDays(month.days, 7), [month.days]);
   const dots = {
-    workout: theme.colors.primary,
-    cardio: theme.colors.secondary,
-    habit: theme.colors.onSurfaceVariant,
+    workout: colors.workout,
+    cardio: colors.cardio,
+    habit: colors.complete,
   } as const;
 
   const weekLabels = [
