@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/core/supabase/client';
+import { recordDeletion } from '@/features/sync/services/deletedRecordsStorage';
 import type { Exercise, UserPreferences, WorkoutTemplate } from '../types';
 
 // ─── Storage keys ────────────────────────────────────────────────────────────
@@ -118,6 +119,7 @@ export async function updateTemplate(
 }
 
 export async function deleteTemplate(userId: string, id: string): Promise<void> {
+  await recordDeletion(userId, id, 'workout_templates');
   const templates = await getTemplates(userId);
   const filtered = templates.filter((t) => t.id !== id);
   // Re-index order after deletion
@@ -169,7 +171,8 @@ export async function updateExercise(
   await saveExercises(templateId, updated);
 }
 
-export async function deleteExercise(templateId: string, id: string): Promise<void> {
+export async function deleteExercise(userId: string, templateId: string, id: string): Promise<void> {
+  await recordDeletion(userId, id, 'exercises');
   const exercises = await getExercises(templateId);
   const filtered = exercises.filter((e) => e.id !== id);
   const reindexed = filtered.map((e, i) => ({ ...e, orderIndex: i }));

@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAuthStore } from '@/core/auth/authStore';
 import { triggerSync } from '@/core/sync/syncStore';
 import * as storage from '../services/workoutStorage';
 import type { Exercise } from '../types';
 
 export function useExercises(templateId: string) {
+  const userId = useAuthStore((s) => s.user?.id ?? '');
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,14 +45,14 @@ export function useExercises(templateId: string) {
 
   const deleteExercise = useCallback(
     async (id: string) => {
-      await storage.deleteExercise(templateId, id);
+      await storage.deleteExercise(userId, templateId, id);
       setExercises((prev) => {
         const filtered = prev.filter((e) => e.id !== id);
         return filtered.map((e, i) => ({ ...e, orderIndex: i }));
       });
       triggerSync();
     },
-    [templateId],
+    [templateId, userId],
   );
 
   const moveExercise = useCallback(

@@ -22,6 +22,7 @@ import {
   setOnboardingComplete,
   setStoredUserName,
 } from '@/core/storage';
+import { getDeletedRecords, wasDeleted } from '@/features/sync/services/deletedRecordsStorage';
 import { reportSyncStatus } from './syncStatusReporter';
 
 type TemplateType = 'gym' | 'cardio' | 'functional';
@@ -375,6 +376,19 @@ export async function syncAll(userId: string): Promise<void> {
       );
     }
 
+    const deletedRecords = await getDeletedRecords(userId);
+    if (deletedRecords.length > 0) {
+      const rows = deletedRecords.map((record) => ({
+        id: record.id,
+        table_name: record.tableName,
+        user_id: userId,
+        deleted_at: record.deletedAt,
+      }));
+      await runSupabaseCall('syncAll: upsert deleted_records', () =>
+        supabase.from('deleted_records').upsert(rows, { onConflict: 'id' }),
+      );
+    }
+
     const localName = await getStoredUserName(userId);
     if (localName) {
       await runSupabaseCall('syncAll: upsert user_profiles', () =>
@@ -472,20 +486,25 @@ export async function pullAll(userId: string): Promise<void> {
       }))
       .sort((a, b) => a.order_index - b.order_index);
 
-    const localTemplatesById = new Map(localTemplates.map((template) => [template.id, template]));
-    const mergedTemplates = remoteTemplates.map((remoteTemplate) => {
-      const localTemplate = localTemplatesById.get(remoteTemplate.id);
-      localTemplatesById.delete(remoteTemplate.id);
-
-      if (!localTemplate) {
-        return remoteTemplate;
+    const mergedTemplatesById = new Map(localTemplates.map((template) => [template.id, template]));
+    for (const remoteTemplate of remoteTemplates) {
+      const localTemplate = mergedTemplatesById.get(remoteTemplate.id);
+      if (localTemplate) {
+        mergedTemplatesById.set(
+          remoteTemplate.id,
+          isRemoteUpdatedAtNewer(remoteTemplate.updatedAt, localTemplate)
+            ? remoteTemplate
+            : localTemplate,
+        );
+        continue;
       }
 
-      return isRemoteUpdatedAtNewer(remoteTemplate.updatedAt, localTemplate)
-        ? remoteTemplate
-        : localTemplate;
-    });
-    mergedTemplates.push(...localTemplatesById.values());
+      const deleted = await wasDeleted(userId, remoteTemplate.id);
+      if (!deleted) {
+        mergedTemplatesById.set(remoteTemplate.id, remoteTemplate);
+      }
+    }
+    const mergedTemplates = Array.from(mergedTemplatesById.values());
 
     if (remoteTemplates.length > 0) {
       await saveTemplates(
@@ -533,8 +552,9 @@ export async function pullAll(userId: string): Promise<void> {
       if (!allTemplateIdSet.has(templateId)) continue;
 
       const localExercises = (await getExercises(templateId)) as SyncExercise[];
-      const localExercisesById = new Map(localExercises.map((exercise) => [exercise.id, exercise]));
-      const mergedExercises = remoteExercises.map((exercise) => {
+      const mergedExercisesById = new Map(localExercises.map((exercise) => [exercise.id, exercise]));
+
+      for (const exercise of remoteExercises) {
         const remoteExercise: SyncExercise = {
           id: exercise.id,
           templateId: exercise.template_id,
@@ -549,17 +569,23 @@ export async function pullAll(userId: string): Promise<void> {
           updatedAt: exercise.updated_at ?? undefined,
         };
 
-        const localExercise = localExercisesById.get(exercise.id);
-        localExercisesById.delete(exercise.id);
-        if (!localExercise) {
-          return remoteExercise;
+        const localExercise = mergedExercisesById.get(exercise.id);
+        if (localExercise) {
+          mergedExercisesById.set(
+            exercise.id,
+            isRemoteUpdatedAtNewer(exercise.updated_at, localExercise)
+              ? remoteExercise
+              : localExercise,
+          );
+          continue;
         }
 
-        return isRemoteUpdatedAtNewer(exercise.updated_at, localExercise)
-          ? remoteExercise
-          : localExercise;
-      });
-      mergedExercises.push(...localExercisesById.values());
+        const deleted = await wasDeleted(userId, exercise.id);
+        if (!deleted) {
+          mergedExercisesById.set(exercise.id, remoteExercise);
+        }
+      }
+      const mergedExercises = Array.from(mergedExercisesById.values());
 
       if (remoteExercises.length > 0) {
         await saveExercises(
@@ -710,17 +736,23 @@ export async function pullAll(userId: string): Promise<void> {
       createdAt: row.created_at,
       updatedAt: row.updated_at ?? undefined,
     }));
-    const localCardioById = new Map(localCardioLogs.map((log) => [log.id, log]));
-    const mergedCardioLogs: SyncCardioLog[] = remoteCardioLogs.map((remoteLog) => {
-      const localLog = localCardioById.get(remoteLog.id);
-      localCardioById.delete(remoteLog.id);
-      if (!localLog) {
-        return remoteLog;
+    const mergedCardioById = new Map(localCardioLogs.map((log) => [log.id, log]));
+    for (const remoteLog of remoteCardioLogs) {
+      const localLog = mergedCardioById.get(remoteLog.id);
+      if (localLog) {
+        mergedCardioById.set(
+          remoteLog.id,
+          isRemoteUpdatedAtNewer(remoteLog.updatedAt, localLog) ? remoteLog : localLog,
+        );
+        continue;
       }
 
-      return isRemoteUpdatedAtNewer(remoteLog.updatedAt, localLog) ? remoteLog : localLog;
-    });
-    mergedCardioLogs.push(...localCardioById.values());
+      const deleted = await wasDeleted(userId, remoteLog.id);
+      if (!deleted) {
+        mergedCardioById.set(remoteLog.id, remoteLog);
+      }
+    }
+    const mergedCardioLogs: SyncCardioLog[] = Array.from(mergedCardioById.values());
     if (remoteCardioLogs.length > 0) {
       await saveLogs(
         userId,

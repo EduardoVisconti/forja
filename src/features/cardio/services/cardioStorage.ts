@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { recordDeletion } from '@/features/sync/services/deletedRecordsStorage';
 import type { CardioLog, CardioType, CardioZone } from '../types';
 
 const logsKey = (userId: string) => `cardio:logs:${userId}`;
@@ -93,6 +94,7 @@ export async function updateLog(
 }
 
 export async function deleteLog(userId: string, id: string): Promise<void> {
+  await recordDeletion(userId, id, 'cardio_logs');
   const logs = await getLogs(userId);
   await saveLogs(userId, logs.filter((l) => l.id !== id));
 }
