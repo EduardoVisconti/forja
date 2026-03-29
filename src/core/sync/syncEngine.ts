@@ -9,6 +9,7 @@ import {
   getConfig,
   getExercises,
   getLogs,
+  getStoredUserName,
   getSetLogs,
   getTemplates,
   saveAllSessions,
@@ -374,6 +375,21 @@ export async function syncAll(userId: string): Promise<void> {
       );
     }
 
+    const localName = await getStoredUserName(userId);
+    if (localName) {
+      await runSupabaseCall('syncAll: upsert user_profiles', () =>
+        supabase.from('user_profiles').upsert(
+          {
+            id: userId,
+            display_name: localName,
+            onboarding_complete: true,
+            updated_at: now,
+          },
+          { onConflict: 'id' },
+        ),
+      );
+    }
+
     if (configs.length === 0) {
       await runSupabaseCall('syncAll: delete habit_configs for empty local set', () =>
         supabase.from('habit_configs').delete().eq('user_id', userId),
@@ -416,7 +432,10 @@ export async function pullAll(userId: string): Promise<void> {
     if (profile?.onboarding_complete) {
       await setOnboardingComplete(userId);
       if (profile.display_name) {
-        await setStoredUserName(userId, profile.display_name);
+        const localName = await getStoredUserName(userId);
+        if (!localName || localName.trim() === '') {
+          await setStoredUserName(userId, profile.display_name);
+        }
       }
     }
 
