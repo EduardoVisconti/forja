@@ -61,6 +61,12 @@ export function useOnboarding(): UseOnboardingResult {
       }
 
       await AsyncStorage.setItem(userNameKey(userId), trimmedName);
+      await supabase.from('user_profiles').upsert({
+        id: userId,
+        display_name: trimmedName,
+        onboarding_complete: true,
+        updated_at: new Date().toISOString(),
+      });
 
       await setOnboardingComplete(userId);
       setHasCompleted(true);
