@@ -9,6 +9,7 @@ export interface WorkoutTemplate {
   /** Backward-compatible alias for older local objects. */
   orderIndex: number;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Exercise {

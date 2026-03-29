@@ -51,6 +51,27 @@ function inFilter(ids: string[]): string {
   return `(${escaped.join(',')})`;
 }
 
+function timestampFrom(value: string | null | undefined): number {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function resolveLocalTimestamp(record: unknown): string | null | undefined {
+  if (!record || typeof record !== 'object') return undefined;
+  const values = record as Record<string, unknown>;
+  const timestamp =
+    values.updatedAt ?? values.updated_at ?? values.createdAt ?? values.created_at ?? undefined;
+  return typeof timestamp === 'string' ? timestamp : undefined;
+}
+
+function isRemoteUpdatedAtNewer(
+  remoteUpdatedAt: string | null | undefined,
+  localRecord: unknown,
+): boolean {
+  return timestampFrom(remoteUpdatedAt) > timestampFrom(resolveLocalTimestamp(localRecord));
+}
+
 export async function syncAll(userId: string): Promise<void> {
   const now = new Date().toISOString();
 
@@ -240,9 +261,22 @@ export async function syncAll(userId: string): Promise<void> {
 }
 
 export async function pullAll(userId: string): Promise<void> {
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('display_name, onboarding_complete')
+    .eq('id', userId)
+    .single();
+
+  if (profile?.onboarding_complete) {
+    await AsyncStorage.setItem(`onboarding:complete:${userId}`, 'true');
+    if (profile.display_name) {
+      await AsyncStorage.setItem(`user:name:${userId}`, profile.display_name);
+    }
+  }
+
   const { data: templatesData, error: templatesError } = await supabase
     .from('workout_templates')
-    .select('id, user_id, name, type, order_index, created_at')
+    .select('id, user_id, name, type, order_index, created_at, updated_at')
     .eq('user_id', userId)
     .order('order_index', { ascending: true });
   if (templatesError) throw templatesError;
@@ -257,21 +291,37 @@ export async function pullAll(userId: string): Promise<void> {
       order_index: row.order_index,
       orderIndex: row.order_index,
       createdAt: row.created_at,
+      updatedAt: row.updated_at ?? undefined,
     }))
     .sort((a, b) => a.order_index - b.order_index);
 
-  const localTemplateIds = new Set(localTemplates.map((template) => template.id));
-  const missingTemplates = remoteTemplates.filter((template) => !localTemplateIds.has(template.id));
-  if (missingTemplates.length > 0) {
-    const mergedTemplates = [...localTemplates, ...missingTemplates].sort(
-      (a, b) => a.order_index - b.order_index,
+  const localTemplatesById = new Map(localTemplates.map((template) => [template.id, template]));
+  const mergedTemplates = remoteTemplates.map((remoteTemplate) => {
+    const localTemplate = localTemplatesById.get(remoteTemplate.id);
+    localTemplatesById.delete(remoteTemplate.id);
+
+    if (!localTemplate) {
+      return remoteTemplate;
+    }
+
+    return isRemoteUpdatedAtNewer(remoteTemplate.updatedAt, localTemplate)
+      ? remoteTemplate
+      : localTemplate;
+  });
+  mergedTemplates.push(...localTemplatesById.values());
+
+  if (remoteTemplates.length > 0) {
+    await workoutStorage.saveTemplates(
+      userId,
+      mergedTemplates.sort((a, b) => a.order_index - b.order_index),
     );
-    await workoutStorage.saveTemplates(userId, mergedTemplates);
   }
 
   const { data: exercisesData, error: exercisesError } = await supabase
     .from('exercises')
-    .select('id, template_id, name, sets, reps, weight, weight_unit, rest_seconds, notes, order_index')
+    .select(
+      'id, template_id, name, sets, reps, weight, weight_unit, rest_seconds, notes, order_index, updated_at',
+    )
     .eq('user_id', userId);
   if (exercisesError) throw exercisesError;
 
@@ -288,6 +338,7 @@ export async function pullAll(userId: string): Promise<void> {
       rest_seconds: number;
       notes: string | null;
       order_index: number;
+      updated_at: string | null;
     }>
   > = {};
   for (const row of exercisesData ?? []) {
@@ -304,10 +355,9 @@ export async function pullAll(userId: string): Promise<void> {
     if (!allTemplateIdSet.has(templateId)) continue;
 
     const localExercises = await workoutStorage.getExercises(templateId);
-    const localExerciseIds = new Set(localExercises.map((exercise) => exercise.id));
-    const missingExercises = remoteExercises
-      .filter((exercise) => !localExerciseIds.has(exercise.id))
-      .map((exercise) => ({
+    const localExercisesById = new Map(localExercises.map((exercise) => [exercise.id, exercise]));
+    const mergedExercises = remoteExercises.map((exercise) => {
+      const remoteExercise = {
         id: exercise.id,
         templateId: exercise.template_id,
         name: exercise.name,
@@ -318,13 +368,26 @@ export async function pullAll(userId: string): Promise<void> {
         restSeconds: exercise.rest_seconds,
         notes: exercise.notes ?? '',
         orderIndex: exercise.order_index,
-      }));
+        updatedAt: exercise.updated_at ?? undefined,
+      };
 
-    if (missingExercises.length > 0) {
-      const mergedExercises = [...localExercises, ...missingExercises].sort(
-        (a, b) => a.orderIndex - b.orderIndex,
+      const localExercise = localExercisesById.get(exercise.id);
+      localExercisesById.delete(exercise.id);
+      if (!localExercise) {
+        return remoteExercise;
+      }
+
+      return isRemoteUpdatedAtNewer(exercise.updated_at, localExercise)
+        ? remoteExercise
+        : localExercise;
+    });
+    mergedExercises.push(...localExercisesById.values());
+
+    if (remoteExercises.length > 0) {
+      await workoutStorage.saveExercises(
+        templateId,
+        mergedExercises.sort((a, b) => a.orderIndex - b.orderIndex),
       );
-      await workoutStorage.saveExercises(templateId, mergedExercises);
     }
   }
 
@@ -410,7 +473,7 @@ export async function pullAll(userId: string): Promise<void> {
   const { data: cardioData, error: cardioError } = await supabase
     .from('cardio_logs')
     .select(
-      'id, user_id, date, training_type, zone, duration_minutes, distance_km, avg_pace, avg_hr, notes, created_at',
+      'id, user_id, date, training_type, zone, duration_minutes, distance_km, avg_pace, avg_hr, notes, created_at, updated_at',
     )
     .eq('user_id', userId)
     .order('date', { ascending: false });
@@ -429,19 +492,29 @@ export async function pullAll(userId: string): Promise<void> {
     avgHr: row.avg_hr,
     notes: row.notes ?? '',
     createdAt: row.created_at,
+    updatedAt: row.updated_at ?? undefined,
   }));
-  const localCardioIds = new Set(localCardioLogs.map((log) => log.id));
-  const missingCardioLogs = remoteCardioLogs.filter((log) => !localCardioIds.has(log.id));
-  if (missingCardioLogs.length > 0) {
-    const mergedCardioLogs = [...localCardioLogs, ...missingCardioLogs].sort((a, b) =>
-      b.date.localeCompare(a.date),
+  const localCardioById = new Map(localCardioLogs.map((log) => [log.id, log]));
+  const mergedCardioLogs = remoteCardioLogs.map((remoteLog) => {
+    const localLog = localCardioById.get(remoteLog.id);
+    localCardioById.delete(remoteLog.id);
+    if (!localLog) {
+      return remoteLog;
+    }
+
+    return isRemoteUpdatedAtNewer(remoteLog.updatedAt, localLog) ? remoteLog : localLog;
+  });
+  mergedCardioLogs.push(...localCardioById.values());
+  if (remoteCardioLogs.length > 0) {
+    await AsyncStorage.setItem(
+      cardioLogsKey(userId),
+      JSON.stringify(mergedCardioLogs.sort((a, b) => b.date.localeCompare(a.date))),
     );
-    await AsyncStorage.setItem(cardioLogsKey(userId), JSON.stringify(mergedCardioLogs));
   }
 
   const { data: checksData, error: checksError } = await supabase
     .from('habit_checks')
-    .select('id, user_id, date, score, total_active, habits, created_at')
+    .select('id, user_id, date, score, total_active, habits, created_at, updated_at')
     .eq('user_id', userId)
     .order('date', { ascending: true });
   if (checksError) throw checksError;
@@ -455,19 +528,34 @@ export async function pullAll(userId: string): Promise<void> {
     totalActive: row.total_active,
     habits: Array.isArray(row.habits) ? row.habits : [],
     createdAt: row.created_at,
+    updatedAt: row.updated_at ?? undefined,
   }));
-  const localCheckIds = new Set(localChecks.map((check) => check.id));
-  const missingChecks = remoteChecks.filter((check) => !localCheckIds.has(check.id));
-  if (missingChecks.length > 0) {
-    const mergedChecks = [...localChecks, ...missingChecks].sort((a, b) =>
-      a.date.localeCompare(b.date),
-    );
+  const checksByDate = new Map(localChecks.map((check) => [check.date, check]));
+  for (const remoteCheck of remoteChecks) {
+    const localCheck = checksByDate.get(remoteCheck.date);
+    if (!localCheck) {
+      checksByDate.set(remoteCheck.date, remoteCheck);
+      continue;
+    }
+
+    if (remoteCheck.score > localCheck.score) {
+      checksByDate.set(remoteCheck.date, remoteCheck);
+      continue;
+    }
+
+    if (remoteCheck.score === localCheck.score && isRemoteUpdatedAtNewer(remoteCheck.updatedAt, localCheck)) {
+      checksByDate.set(remoteCheck.date, remoteCheck);
+    }
+  }
+
+  if (remoteChecks.length > 0) {
+    const mergedChecks = Array.from(checksByDate.values()).sort((a, b) => a.date.localeCompare(b.date));
     await AsyncStorage.setItem(habitChecksKey(userId), JSON.stringify(mergedChecks));
   }
 
   const { data: configData, error: configError } = await supabase
     .from('habit_configs')
-    .select('id, user_id, label, emoji, active')
+    .select('id, user_id, label, emoji, active, updated_at')
     .eq('user_id', userId);
   if (configError) throw configError;
 
@@ -477,23 +565,21 @@ export async function pullAll(userId: string): Promise<void> {
     label: row.label,
     emoji: row.emoji ?? '',
     active: row.active ?? true,
+    updatedAt: row.updated_at ?? undefined,
   }));
-  const localConfigIds = new Set(localConfigs.map((config) => config.id));
-  const missingConfigs = remoteConfigs.filter((config) => !localConfigIds.has(config.id));
-  if (missingConfigs.length > 0) {
-    await habitStorage.saveConfig(userId, [...localConfigs, ...missingConfigs]);
-  }
-
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('display_name, onboarding_complete')
-    .eq('id', userId)
-    .single();
-
-  if (profile?.onboarding_complete) {
-    await AsyncStorage.setItem(`onboarding:complete:${userId}`, 'true');
-    if (profile.display_name) {
-      await AsyncStorage.setItem(`user:name:${userId}`, profile.display_name);
+  const localConfigsById = new Map(localConfigs.map((config) => [config.id, config]));
+  const mergedConfigs = remoteConfigs.map((remoteConfig) => {
+    const localConfig = localConfigsById.get(remoteConfig.id);
+    localConfigsById.delete(remoteConfig.id);
+    if (!localConfig) {
+      return remoteConfig;
     }
+
+    return isRemoteUpdatedAtNewer(remoteConfig.updatedAt, localConfig) ? remoteConfig : localConfig;
+  });
+  mergedConfigs.push(...localConfigsById.values());
+
+  if (remoteConfigs.length > 0) {
+    await habitStorage.saveConfig(userId, mergedConfigs);
   }
 }
