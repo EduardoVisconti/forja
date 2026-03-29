@@ -86,7 +86,7 @@ export async function syncAll(userId: string): Promise<void> {
         user_id: userId,
         name: e.name,
         sets: e.sets,
-        reps: e.reps,
+        reps: String(e.reps),
         weight: e.weight,
         weight_unit: e.weightUnit,
         rest_seconds: e.restSeconds,
@@ -94,13 +94,7 @@ export async function syncAll(userId: string): Promise<void> {
         order_index: e.orderIndex,
         updated_at: now,
       }));
-      const { error: exercisesUpsertError } = await supabase
-        .from('exercises')
-        .upsert(rows, { onConflict: 'id' });
-
-      if (exercisesUpsertError) {
-        console.log('[Sync ERROR] exercises upsert failed:', exercisesUpsertError);
-      }
+      await supabase.from('exercises').upsert(rows, { onConflict: 'id' });
     }
 
     if (exercises.length === 0) {
