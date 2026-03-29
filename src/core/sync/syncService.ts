@@ -483,4 +483,17 @@ export async function pullAll(userId: string): Promise<void> {
   if (missingConfigs.length > 0) {
     await habitStorage.saveConfig(userId, [...localConfigs, ...missingConfigs]);
   }
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('display_name, onboarding_complete')
+    .eq('id', userId)
+    .single();
+
+  if (profile?.onboarding_complete) {
+    await AsyncStorage.setItem(`onboarding:complete:${userId}`, 'true');
+    if (profile.display_name) {
+      await AsyncStorage.setItem(`user:name:${userId}`, profile.display_name);
+    }
+  }
 }
