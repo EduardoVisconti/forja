@@ -17,6 +17,10 @@ export async function getAllSessions(userId: string): Promise<WorkoutSession[]> 
   return raw ? JSON.parse(raw) : [];
 }
 
+export async function saveAllSessions(userId: string, sessions: WorkoutSession[]): Promise<void> {
+  await AsyncStorage.setItem(sessionsKey(userId), JSON.stringify(sessions));
+}
+
 export async function saveSetLogs(sessionId: string, logs: SetLog[]): Promise<void> {
   await AsyncStorage.setItem(logsKey(sessionId), JSON.stringify(logs));
 }

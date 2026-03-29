@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { useAuthStore } from '@/core/auth/authStore';
 import type { SyncStatus } from './types';
 import { syncAll } from './syncService';
+import { registerSyncStatusReporter } from './syncStatusReporter';
 
 interface SyncStore {
   syncStatus: SyncStatus;
@@ -48,6 +49,10 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
     }
   },
 }));
+
+registerSyncStatusReporter((status) => {
+  useSyncStore.getState().setSyncStatus(status);
+});
 
 export const triggerSync = () => {
   useSyncStore.getState().triggerSync();

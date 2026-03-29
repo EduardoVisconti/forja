@@ -89,7 +89,7 @@ export async function getChecks(userId: string): Promise<HabitCheck[]> {
   return migrated;
 }
 
-async function saveChecks(userId: string, checks: HabitCheck[]): Promise<void> {
+export async function saveChecks(userId: string, checks: HabitCheck[]): Promise<void> {
   await AsyncStorage.setItem(checksKey(userId), JSON.stringify(checks));
 }
 

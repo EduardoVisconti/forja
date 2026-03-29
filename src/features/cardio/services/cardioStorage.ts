@@ -63,7 +63,7 @@ export async function getLogs(userId: string): Promise<CardioLog[]> {
   return logs.sort((a, b) => b.date.localeCompare(a.date));
 }
 
-async function saveLogs(userId: string, logs: CardioLog[]): Promise<void> {
+export async function saveLogs(userId: string, logs: CardioLog[]): Promise<void> {
   await AsyncStorage.setItem(logsKey(userId), JSON.stringify(logs));
 }
 
