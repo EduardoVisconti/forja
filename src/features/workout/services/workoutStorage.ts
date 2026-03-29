@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/core/supabase/client';
 import type { Exercise, UserPreferences, WorkoutTemplate } from '../types';
 
 // ─── Storage keys ────────────────────────────────────────────────────────────
@@ -256,6 +257,17 @@ const SEED_TEMPLATES: Array<{
 export async function seedDefaultTemplates(userId: string): Promise<void> {
   const alreadySeeded = await AsyncStorage.getItem(keys.seeded(userId));
   if (alreadySeeded) return;
+
+  const { data } = await supabase
+    .from('workout_templates')
+    .select('id')
+    .eq('user_id', userId)
+    .limit(1);
+
+  if (data && data.length > 0) {
+    await AsyncStorage.setItem(keys.seeded(userId), 'true');
+    return;
+  }
 
   for (let ti = 0; ti < SEED_TEMPLATES.length; ti++) {
     const seed = SEED_TEMPLATES[ti];
