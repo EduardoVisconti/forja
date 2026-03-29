@@ -41,7 +41,6 @@ export const useSyncStore = create<SyncStore>((set, get) => ({
     set({ syncStatus: 'syncing' });
     try {
       await syncAll(userId);
-      console.log('[Sync] triggerSync completed successfully');
       set({ syncStatus: 'synced' });
     } catch {
       set({ syncStatus: 'error' });
