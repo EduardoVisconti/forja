@@ -84,16 +84,14 @@ function isRemoteUpdatedAtNewer(
   return timestampFrom(remoteUpdatedAt) > timestampFrom(resolveLocalTimestamp(localRecord));
 }
 
-function normalizeError(error: unknown): Error {
-  if (error instanceof Error) {
-    return error;
+function normalizeError(err: unknown): Error {
+  if (err instanceof Error) return err;
+  if (err && typeof err === 'object') {
+    const e = err as Record<string, unknown>;
+    const message = [e.message, e.code, e.details, e.hint].filter(Boolean).join(' | ');
+    return new Error(message || JSON.stringify(err));
   }
-
-  if (typeof error === 'string' && error.trim().length > 0) {
-    return new Error(error);
-  }
-
-  return new Error('Unknown sync error');
+  return new Error(String(err));
 }
 
 function reportAndBuildError(scope: string, error: unknown): Error {
@@ -167,6 +165,14 @@ type SyncHabitConfig = {
 };
 
 export async function syncAll(userId: string): Promise<void> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) {
+    console.warn('[SyncEngine] syncAll aborted — no active session');
+    return;
+  }
+
   try {
     const now = new Date().toISOString();
 
@@ -387,6 +393,14 @@ export async function syncAll(userId: string): Promise<void> {
 }
 
 export async function pullAll(userId: string): Promise<void> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) {
+    console.warn('[SyncEngine] pullAll aborted — no active session');
+    return;
+  }
+
   try {
     const profile = await runSupabaseCall<{
       display_name: string | null;
