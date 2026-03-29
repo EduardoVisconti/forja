@@ -258,6 +258,12 @@ export async function seedDefaultTemplates(userId: string): Promise<void> {
   const alreadySeeded = await AsyncStorage.getItem(keys.seeded(userId));
   if (alreadySeeded) return;
 
+  const existingTemplates = await getTemplates(userId);
+  if (existingTemplates.length > 0) {
+    await AsyncStorage.setItem(keys.seeded(userId), 'true');
+    return;
+  }
+
   const { data } = await supabase
     .from('workout_templates')
     .select('id')

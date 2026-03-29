@@ -4,13 +4,17 @@ import { triggerSync } from '@/core/sync/syncStore';
 import * as storage from '../services/workoutStorage';
 import type { WorkoutTemplate } from '../types';
 
+type LoadOptions = {
+  skipSeeding?: boolean;
+};
+
 export function useWorkoutTemplates() {
   const userId = useAuthStore((s) => s.user?.id ?? '');
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (options?: LoadOptions) => {
     if (!userId) {
       setTemplates([]);
       setError(null);
@@ -22,7 +26,9 @@ export function useWorkoutTemplates() {
     setError(null);
 
     try {
-      await storage.seedDefaultTemplates(userId);
+      if (!options?.skipSeeding) {
+        await storage.seedDefaultTemplates(userId);
+      }
       const data = await storage.getTemplates(userId);
       setTemplates(data);
     } catch (e) {
@@ -35,6 +41,17 @@ export function useWorkoutTemplates() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const reload = useCallback(async () => {
+    await load();
+  }, [load]);
+
+  const reloadWithOptions = useCallback(
+    async (options?: LoadOptions) => {
+      await load(options);
+    },
+    [load],
+  );
 
   const createTemplate = useCallback(
     async (data: Pick<WorkoutTemplate, 'name' | 'type'>) => {
@@ -151,6 +168,7 @@ export function useWorkoutTemplates() {
     reorderTemplates,
     moveTemplateUp,
     moveTemplateDown,
-    reload: load,
+    reload,
+    reloadWithOptions,
   };
 }
