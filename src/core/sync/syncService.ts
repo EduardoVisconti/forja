@@ -94,7 +94,13 @@ export async function syncAll(userId: string): Promise<void> {
         order_index: e.orderIndex,
         updated_at: now,
       }));
-      await supabase.from('exercises').upsert(rows, { onConflict: 'id' });
+      const { error: exercisesUpsertError } = await supabase
+        .from('exercises')
+        .upsert(rows, { onConflict: 'id' });
+
+      if (exercisesUpsertError) {
+        console.log('[Sync ERROR] exercises upsert failed:', exercisesUpsertError);
+      }
     }
 
     if (exercises.length === 0) {
@@ -161,7 +167,7 @@ export async function syncAll(userId: string): Promise<void> {
       date: l.date,
       training_type: l.trainingType,
       zone: l.zone,
-      duration_minutes: durationTextToMinutes(l.duration),
+      duration_minutes: Math.round(durationTextToMinutes(l.duration) * 100) / 100,
       distance_km: l.distanceKm,
       avg_pace: l.avgPace ?? '',
       avg_hr: l.avgHr,
@@ -269,61 +275,62 @@ export async function pullAll(userId: string): Promise<void> {
     await workoutStorage.saveTemplates(userId, mergedTemplates);
   }
 
-  const allTemplateIds = remoteTemplates.map((template) => template.id);
-  if (allTemplateIds.length > 0) {
-    const { data: exercisesData, error: exercisesError } = await supabase
-      .from('exercises')
-      .select('id, template_id, name, sets, reps, weight, weight_unit, rest_seconds, notes, order_index')
-      .eq('user_id', userId)
-      .in('template_id', allTemplateIds);
-    if (exercisesError) throw exercisesError;
+  const { data: exercisesData, error: exercisesError } = await supabase
+    .from('exercises')
+    .select('id, template_id, name, sets, reps, weight, weight_unit, rest_seconds, notes, order_index')
+    .eq('user_id', userId);
+  if (exercisesError) throw exercisesError;
 
-    const byTemplate: Record<
-      string,
-      Array<{
-        id: string;
-        template_id: string;
-        name: string;
-        sets: number;
-        reps: string;
-        weight: number;
-        weight_unit: 'kg' | 'lbs' | null;
-        rest_seconds: number;
-        notes: string | null;
-        order_index: number;
-      }>
-    > = {};
-    for (const row of exercisesData ?? []) {
-      if (!byTemplate[row.template_id]) {
-        byTemplate[row.template_id] = [];
-      }
-      byTemplate[row.template_id].push(row);
+  const byTemplate: Record<
+    string,
+    Array<{
+      id: string;
+      template_id: string;
+      name: string;
+      sets: number;
+      reps: string;
+      weight: number;
+      weight_unit: 'kg' | 'lbs' | null;
+      rest_seconds: number;
+      notes: string | null;
+      order_index: number;
+    }>
+  > = {};
+  for (const row of exercisesData ?? []) {
+    if (!byTemplate[row.template_id]) {
+      byTemplate[row.template_id] = [];
     }
+    byTemplate[row.template_id].push(row);
+  }
 
-    for (const [templateId, remoteExercises] of Object.entries(byTemplate)) {
-      const localExercises = await workoutStorage.getExercises(templateId);
-      const localExerciseIds = new Set(localExercises.map((exercise) => exercise.id));
-      const missingExercises = remoteExercises
-        .filter((exercise) => !localExerciseIds.has(exercise.id))
-        .map((exercise) => ({
-          id: exercise.id,
-          templateId: exercise.template_id,
-          name: exercise.name,
-          sets: exercise.sets,
-          reps: exercise.reps,
-          weight: exercise.weight,
-          weightUnit: exercise.weight_unit ?? 'kg',
-          restSeconds: exercise.rest_seconds,
-          notes: exercise.notes ?? '',
-          orderIndex: exercise.order_index,
-        }));
+  const allLocalTemplates = await workoutStorage.getTemplates(userId);
+  const allTemplateIdSet = new Set(allLocalTemplates.map((template) => template.id));
 
-      if (missingExercises.length > 0) {
-        const mergedExercises = [...localExercises, ...missingExercises].sort(
-          (a, b) => a.orderIndex - b.orderIndex,
-        );
-        await workoutStorage.saveExercises(templateId, mergedExercises);
-      }
+  for (const [templateId, remoteExercises] of Object.entries(byTemplate)) {
+    if (!allTemplateIdSet.has(templateId)) continue;
+
+    const localExercises = await workoutStorage.getExercises(templateId);
+    const localExerciseIds = new Set(localExercises.map((exercise) => exercise.id));
+    const missingExercises = remoteExercises
+      .filter((exercise) => !localExerciseIds.has(exercise.id))
+      .map((exercise) => ({
+        id: exercise.id,
+        templateId: exercise.template_id,
+        name: exercise.name,
+        sets: exercise.sets,
+        reps: String(exercise.reps),
+        weight: exercise.weight,
+        weightUnit: exercise.weight_unit ?? 'kg',
+        restSeconds: exercise.rest_seconds,
+        notes: exercise.notes ?? '',
+        orderIndex: exercise.order_index,
+      }));
+
+    if (missingExercises.length > 0) {
+      const mergedExercises = [...localExercises, ...missingExercises].sort(
+        (a, b) => a.orderIndex - b.orderIndex,
+      );
+      await workoutStorage.saveExercises(templateId, mergedExercises);
     }
   }
 
