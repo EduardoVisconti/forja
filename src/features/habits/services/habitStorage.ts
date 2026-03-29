@@ -65,7 +65,7 @@ export async function saveConfig(userId: string, config: HabitConfig[]): Promise
 
 export async function seedDefaultHabits(userId: string): Promise<HabitConfig[]> {
   const config: HabitConfig[] = HABIT_KEYS.map((key) => ({
-    id: key,
+    id: `${userId}_${key}`,
     label: DEFAULT_HABITS_CONFIG[key].label,
     emoji: DEFAULT_HABITS_CONFIG[key].emoji,
     active: true,
