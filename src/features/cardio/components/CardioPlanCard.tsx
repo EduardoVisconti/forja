@@ -74,6 +74,19 @@ export function CardioPlanCard({ plan, onComplete, onEdit, onDelete }: Props) {
           </View>
         ) : null}
 
+        {!isCompleted && plan.notes ? (
+          <Text
+            style={{
+              fontSize: 12,
+              color: colors.textSecondary,
+              marginTop: 6,
+              fontStyle: 'italic',
+            }}
+          >
+            {plan.notes}
+          </Text>
+        ) : null}
+
         {isCompleted && plan.completedAt ? (
           <Text variant="bodySmall" style={styles.completedDate}>
             {t('cardioPlan.completedAt', { date: formatDate(plan.completedAt.slice(0, 10)) })}
