@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/core/supabase/client';
 import { recordDeletion } from '@/features/sync/services/deletedRecordsStorage';
 import type { Exercise, UserPreferences, WorkoutTemplate } from '../types';
+import type { SetLog } from '../types/session';
 
 // ─── Storage keys ────────────────────────────────────────────────────────────
 
@@ -144,6 +145,42 @@ export async function getExercises(templateId: string): Promise<Exercise[]> {
 
 export async function saveExercises(templateId: string, exercises: Exercise[]): Promise<void> {
   await AsyncStorage.setItem(keys.exercises(templateId), JSON.stringify(exercises));
+}
+
+export async function updateExerciseWeightsFromSession(
+  userId: string,
+  templateId: string,
+  setLogs: SetLog[],
+): Promise<void> {
+  void userId;
+  const exercises = await getExercises(templateId);
+  if (exercises.length === 0) return;
+
+  // Group logs by exercise and keep the latest encountered set entry.
+  const lastSetByExercise = new Map<string, SetLog>();
+  for (const log of setLogs) {
+    lastSetByExercise.set(log.exerciseId, log);
+  }
+
+  let updated = false;
+  const updatedExercises = exercises.map((exercise) => {
+    const lastSet = lastSetByExercise.get(exercise.id);
+    if (!lastSet) return exercise;
+
+    const newWeight =
+      exercise.weightUnit === 'lbs'
+        ? Math.round(lastSet.weightKg * 2.20462 * 10) / 10
+        : Math.round(lastSet.weightKg * 10) / 10;
+
+    if (newWeight === exercise.weight) return exercise;
+
+    updated = true;
+    return { ...exercise, weight: newWeight };
+  });
+
+  if (updated) {
+    await saveExercises(templateId, updatedExercises);
+  }
 }
 
 export async function addExercise(

@@ -6,8 +6,12 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { triggerSync } from '@/core/sync/syncStore';
 import { autoCheckExerciseHabit } from '@/features/habits/services/habitStorage';
-import { saveSession, saveSetLogs } from '../services/sessionStorage';
-import { getExercises, parseRepsForVolume } from '../services/workoutStorage';
+import { getSetLogs, saveSession, saveSetLogs } from '../services/sessionStorage';
+import {
+  getExercises,
+  parseRepsForVolume,
+  updateExerciseWeightsFromSession,
+} from '../services/workoutStorage';
 import { useWorkoutSessionStore } from '../store/workoutSessionStore';
 import type { SessionExercise, SetLog } from '../types/session';
 import type { WorkoutTemplate } from '../types/index';
@@ -42,7 +46,8 @@ export function useActiveSession() {
   );
 
   const finishSession = useCallback(async () => {
-    const { sessionId, templateId, templateName, startedAt, setLogs, exercises } = store;
+    const { sessionId, templateId, templateName, startedAt, setLogs, exercises, completedExercises } =
+      store;
     if (!sessionId || !templateId || !startedAt) return;
 
     const finishedAt = new Date().toISOString();
@@ -65,6 +70,13 @@ export function useActiveSession() {
       durationMinutes,
       totalVolumeKg,
     });
+
+    const allSetLogs = await getSetLogs(sessionId);
+    const completedExerciseIds = new Set(
+      exercises.filter((exercise) => completedExercises[exercise.id]).map((exercise) => exercise.id),
+    );
+    const completedSetLogs = allSetLogs.filter((log) => completedExerciseIds.has(log.exerciseId));
+    await updateExerciseWeightsFromSession(userId, templateId, completedSetLogs);
 
     const authUserId = useAuthStore.getState().user?.id;
     if (authUserId) {
