@@ -4,7 +4,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { colors } from '@/core/theme/tokens';
 import { exerciseSchema, type ExerciseFormValues } from '../schemas/workoutSchemas';
 import type { Exercise, UserPreferences } from '../types';
 
@@ -87,7 +86,6 @@ export function ExerciseFormModal({
     });
     onDismiss();
   });
-  const modalTitle = isEditing ? t('exercise.editExercise') : t('exercise.newExercise');
 
   return (
     <Modal
@@ -102,9 +100,10 @@ export function ExerciseFormModal({
       >
         <View style={styles.modalContainer}>
           <View style={styles.titleContainer}>
-            <Text style={styles.modalTitle}>{modalTitle}</Text>
+            <Text variant="headlineSmall">
+              {isEditing ? t('exercise.editExercise') : t('exercise.newExercise')}
+            </Text>
           </View>
-
           <ScrollView
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
@@ -244,17 +243,16 @@ export function ExerciseFormModal({
               )}
             />
           </ScrollView>
-
           <View style={styles.actions}>
-          <Button onPress={onDismiss}>{t('common.cancel')}</Button>
-          <Button
-            mode="contained"
-            onPress={handleConfirm}
-            loading={isSubmitting}
-            disabled={isSubmitting}
-          >
-            {t('common.save')}
-          </Button>
+            <Button onPress={onDismiss}>{t('common.cancel')}</Button>
+            <Button
+              mode="contained"
+              onPress={handleConfirm}
+              loading={isSubmitting}
+              disabled={isSubmitting}
+            >
+              {t('common.save')}
+            </Button>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -266,23 +264,19 @@ const createStyles = () =>
   StyleSheet.create({
     keyboardAvoidingView: {
       flex: 1,
+      backgroundColor: '#141414',
     },
     modalContainer: {
       flex: 1,
-      backgroundColor: colors.surface,
       borderTopLeftRadius: 16,
       borderTopRightRadius: 16,
+      backgroundColor: '#141414',
+      overflow: 'hidden',
     },
     titleContainer: {
-      padding: 16,
+      paddingHorizontal: 16,
+      paddingTop: 16,
       paddingBottom: 8,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    modalTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.textPrimary,
     },
     fields: {
       padding: 16,
@@ -300,8 +294,8 @@ const createStyles = () =>
       justifyContent: 'flex-end',
       padding: 16,
       gap: 8,
-      backgroundColor: colors.surface,
+      backgroundColor: '#141414',
       borderTopWidth: 1,
-      borderTopColor: colors.border,
+      borderTopColor: '#2a2a2a',
     },
   });

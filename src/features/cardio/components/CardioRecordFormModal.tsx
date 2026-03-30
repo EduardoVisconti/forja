@@ -1,9 +1,17 @@
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useEffect, useMemo, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Chip, Dialog, Portal, Text, TextInput } from 'react-native-paper';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
+import { Button, Chip, Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
-import { colors, dialogActionsStyle, modalStyle } from '@/core/theme/tokens';
+import { colors } from '@/core/theme/tokens';
 import type { CardioRecord } from '../types/plans';
 
 const TRAINING_TYPES = ['regenerative', 'intervals', 'long', 'strong', 'walk'] as const;
@@ -141,10 +149,20 @@ export function CardioRecordFormModal({ visible, initial, onSubmit, onDismiss }:
   };
 
   return (
-    <Portal>
-      <Dialog visible={visible} onDismiss={onDismiss} style={modalStyle}>
-        <Dialog.Title>{modalTitle}</Dialog.Title>
-        <Dialog.Content style={styles.content}>
+    <Modal
+      visible={visible}
+      onRequestClose={onDismiss}
+      animationType="slide"
+      presentationStyle="pageSheet"
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoidingView}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.titleContainer}>
+            <Text variant="headlineSmall">{modalTitle}</Text>
+          </View>
           <ScrollView
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
@@ -262,28 +280,50 @@ export function CardioRecordFormModal({ visible, initial, onSubmit, onDismiss }:
               numberOfLines={4}
             />
           </ScrollView>
-        </Dialog.Content>
-        <Dialog.Actions style={dialogActionsStyle}>
-          <Button onPress={onDismiss}>{t('common.cancel')}</Button>
-          <Button mode="contained" onPress={handleSave}>
-            {t('common.save')}
-          </Button>
-        </Dialog.Actions>
-      </Dialog>
-    </Portal>
+          <View style={styles.actions}>
+            <Button onPress={onDismiss}>{t('common.cancel')}</Button>
+            <Button mode="contained" onPress={handleSave}>
+              {t('common.save')}
+            </Button>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    backgroundColor: 'transparent',
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    overflow: 'hidden',
+  },
+  titleContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   scrollContent: {
     gap: 12,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 40,
   },
   section: {
     gap: 8,
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    padding: 16,
+    gap: 8,
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   sectionLabel: {
     color: colors.textSecondary,
