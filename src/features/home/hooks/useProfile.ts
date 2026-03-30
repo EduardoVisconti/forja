@@ -103,6 +103,22 @@ export function useProfile({ visible, onNameUpdated }: UseProfileParams) {
 
     try {
       await AsyncStorage.setItem(userNameKey(userId), trimmedName);
+      const currentUserId = useAuthStore.getState().user?.id;
+      if (currentUserId && trimmedName) {
+        const { error: upsertProfileError } = await supabase.from('user_profiles').upsert(
+          {
+            id: currentUserId,
+            display_name: trimmedName,
+            onboarding_complete: true,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' },
+        );
+
+        if (upsertProfileError) {
+          throw upsertProfileError;
+        }
+      }
 
       const { error } = await supabase.auth.updateUser({
         data: { full_name: trimmedName },

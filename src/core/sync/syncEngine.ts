@@ -561,12 +561,10 @@ export async function pullAll(userId: string): Promise<void> {
 
     if (profile?.onboarding_complete) {
       await setOnboardingComplete(userId);
-      if (profile.display_name) {
-        const localName = await getStoredUserName(userId);
-        if (!localName || localName.trim() === '') {
-          await setStoredUserName(userId, profile.display_name);
-        }
-      }
+    }
+
+    if (profile?.display_name) {
+      await setStoredUserName(userId, profile.display_name);
     }
 
     const templatesData =
