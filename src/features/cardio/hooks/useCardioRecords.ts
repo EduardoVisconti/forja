@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '@/core/auth/authStore';
 import { triggerSync } from '@/core/sync/syncStore';
+import { autoCheckExerciseHabit } from '@/features/habits/services/habitStorage';
 import * as legacyStorage from '../services/cardioStorage';
 import * as storage from '../services/cardioPlanStorage';
 import type { CardioType, CardioZone } from '../types';
@@ -96,6 +97,10 @@ export function useCardioRecords() {
       const record = await storage.createRecord(userId, data);
       await mirrorRecordUpsertToLegacy(userId, record);
       setRecords((prev) => [record, ...prev]);
+      const authUserId = useAuthStore.getState().user?.id;
+      if (authUserId) {
+        await autoCheckExerciseHabit(authUserId);
+      }
       triggerSync();
       return record;
     },

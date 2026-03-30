@@ -5,6 +5,7 @@ import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { triggerSync } from '@/core/sync/syncStore';
+import { autoCheckExerciseHabit } from '@/features/habits/services/habitStorage';
 import { saveSession, saveSetLogs } from '../services/sessionStorage';
 import { getExercises, parseRepsForVolume } from '../services/workoutStorage';
 import { useWorkoutSessionStore } from '../store/workoutSessionStore';
@@ -64,6 +65,11 @@ export function useActiveSession() {
       durationMinutes,
       totalVolumeKg,
     });
+
+    const authUserId = useAuthStore.getState().user?.id;
+    if (authUserId) {
+      await autoCheckExerciseHabit(authUserId);
+    }
 
     triggerSync();
     store.endSession();

@@ -102,6 +102,31 @@ export async function getCheckForDate(userId: string, dateISO: string): Promise<
   return checks.find((c) => c.date === dateISO) ?? null;
 }
 
+export async function autoCheckExerciseHabit(userId: string): Promise<void> {
+  const configs = await getConfig(userId);
+  if (!configs) return;
+
+  const exerciseHabit = configs.find(
+    (c) =>
+      c.active &&
+      (c.id.toLowerCase().includes('exercis') || c.label.toLowerCase().includes('exercit')),
+  );
+  if (!exerciseHabit) return;
+
+  const todayDateISO = new Date().toISOString().split('T')[0];
+  const todayCheck = await getCheckForDate(userId, todayDateISO);
+
+  if (todayCheck) {
+    const alreadyChecked = todayCheck.habits.find(
+      (h) => h.habitId === exerciseHabit.id && h.checked,
+    );
+    if (alreadyChecked) return;
+  }
+
+  const activeHabitIds = configs.filter((c) => c.active).map((c) => c.id);
+  await upsertCheck(userId, exerciseHabit.id, true, activeHabitIds, todayDateISO);
+}
+
 /**
  * Creates or updates a check for today with the given habit toggle.
  * Only used when viewing today (toggles disabled otherwise).
