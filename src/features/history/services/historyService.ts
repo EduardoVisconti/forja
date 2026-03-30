@@ -1,8 +1,9 @@
 import { getAllSessions, getSetLogs } from '@/features/workout/services/sessionStorage';
 import { parseRepsForVolume } from '@/features/workout/services/workoutStorage';
 import type { SetLog, WorkoutSession } from '@/features/workout/types/session';
-import { getLogs as getCardioLogs } from '@/features/cardio/services/cardioStorage';
+import { getRecords as getCardioRecords } from '@/features/cardio/services/cardioPlanStorage';
 import type { CardioLog } from '@/features/cardio/types';
+import type { CardioRecord } from '@/features/cardio/types/plans';
 import { getChecks, getConfig } from '@/features/habits/services/habitStorage';
 import type { HabitCheck } from '@/features/habits/types';
 
@@ -80,6 +81,22 @@ function durationTextToMinutes(input: string): number {
   if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
 
   return 0;
+}
+
+function mapRecordToCardioLog(record: CardioRecord): CardioLog {
+  return {
+    id: record.id,
+    userId: record.userId,
+    date: record.performedAt,
+    trainingType: (record.trainingType as CardioLog['trainingType']) ?? null,
+    zone: (record.zone as CardioLog['zone']) ?? null,
+    duration: record.duration ?? '',
+    distanceKm: record.distanceKm ?? 0,
+    avgPace: record.avgPace ?? '',
+    avgHr: record.avgHr,
+    notes: record.notes ?? '',
+    createdAt: record.createdAt,
+  };
 }
 
 function ensureWorkoutAgg(daily: HistoryDailyAgg, dateISO: string): WorkoutDayAgg {
@@ -192,8 +209,9 @@ export async function getHistorySources(userId: string): Promise<HistorySources>
   }
 
   // Cardio aggregate.
-  const cardioLogs = await getCardioLogs(userId);
-  for (const log of cardioLogs) {
+  const cardioRecords = await getCardioRecords(userId);
+  for (const record of cardioRecords) {
+    const log = mapRecordToCardioLog(record);
     const dateISO = log.date;
     const agg = ensureCardioAgg(daily, dateISO);
     agg.logs.push(log);

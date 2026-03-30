@@ -72,6 +72,7 @@ export function useCardioRecords() {
     setIsLoading(true);
     setError(null);
     try {
+      await storage.migrateCardioLogsToRecords(userId);
       const data = await storage.getRecords(userId);
       setRecords(data);
     } catch (e) {

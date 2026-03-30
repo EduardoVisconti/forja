@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/core/auth/authStore';
-import { getLogs } from '@/features/cardio/services/cardioStorage';
+import { getRecords } from '@/features/cardio/services/cardioPlanStorage';
 import type { CardioLog, CardioType, CardioZone } from '@/features/cardio/types';
+import type { CardioRecord } from '@/features/cardio/types/plans';
 import { getConfig, getTodayCheck } from '@/features/habits/services/habitStorage';
 import { HABIT_KEYS, type HabitCheck, type HabitConfig } from '@/features/habits/types';
 import { getAllSessions } from '@/features/workout/services/sessionStorage';
@@ -122,6 +123,22 @@ function pickTodayCardio(cardioLogs: CardioLog[], todayISO: string): TodayCardio
     trainingType: latest.trainingType,
     zone: latest.zone,
     distanceKm: latest.distanceKm,
+  };
+}
+
+function mapRecordToCardioLog(record: CardioRecord): CardioLog {
+  return {
+    id: record.id,
+    userId: record.userId,
+    date: record.performedAt,
+    trainingType: (record.trainingType as CardioType) ?? null,
+    zone: (record.zone as CardioZone) ?? null,
+    duration: record.duration ?? '',
+    distanceKm: record.distanceKm ?? 0,
+    avgPace: record.avgPace ?? '',
+    avgHr: record.avgHr,
+    notes: record.notes ?? '',
+    createdAt: record.createdAt,
   };
 }
 
@@ -257,14 +274,15 @@ export function useHomeOverview() {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
-        const [sessions, cardioLogs, todayHabits, habitConfig, historySources, storedName] = await Promise.all([
+        const [sessions, cardioRecords, todayHabits, habitConfig, historySources, storedName] = await Promise.all([
           getAllSessions(userId),
-          getLogs(userId),
+          getRecords(userId),
           getTodayCheck(userId),
           getConfig(userId),
           getHistorySources(userId),
           AsyncStorage.getItem(userNameKey(userId)),
         ]);
+        const cardioLogs = cardioRecords.map(mapRecordToCardioLog);
         const now = new Date();
         const todayISO = toLocalDayISO(now);
         const todayWorkout = pickTodayWorkout(sessions, todayISO);

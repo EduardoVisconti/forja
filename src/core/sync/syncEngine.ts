@@ -8,7 +8,6 @@ import {
   getChecks,
   getConfig,
   getExercises,
-  getLogs,
   getPlans,
   getRecords as getCardioRecords,
   getStoredUserName,
@@ -18,7 +17,6 @@ import {
   saveChecks,
   saveConfig,
   saveExercises,
-  saveLogs,
   savePlans,
   saveRecords as saveCardioRecords,
   saveSetLogs,
@@ -30,39 +28,8 @@ import { getDeletedRecords, wasDeleted } from '@/features/sync/services/deletedR
 import { reportSyncStatus } from './syncStatusReporter';
 
 type TemplateType = 'gym' | 'cardio' | 'functional';
-type CardioTrainingType = 'regenerative' | 'intervals' | 'long' | 'walk' | 'strong' | null;
-type CardioZone = 'z1' | 'z2' | 'z3' | 'z4' | 'z5' | null;
+// Legacy — replaced by cardioPlanStorage records
 type HabitCheckItem = Array<{ habitId: string; checked: boolean }>;
-
-function durationTextToMinutes(input: string): number {
-  const value = input.trim();
-  if (!value) return 0;
-
-  const parts = value.split(':').map((part) => Number(part));
-  if (parts.some((part) => !Number.isFinite(part))) return 0;
-
-  if (parts.length === 1) return parts[0];
-  if (parts.length === 2) return parts[0] + parts[1] / 60;
-  if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
-
-  return 0;
-}
-
-function minutesToDurationText(input: number): string {
-  if (!Number.isFinite(input)) return '';
-  const totalSeconds = Math.max(0, Math.round(input * 60));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  }
-  if (seconds === 0) {
-    return String(minutes);
-  }
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
-}
 
 function inFilter(ids: string[]): string {
   const escaped = ids.map((id) => `"${id.replace(/"/g, '\\"')}"`);
@@ -133,21 +100,6 @@ type SyncExercise = {
   restSeconds: number;
   notes: string;
   orderIndex: number;
-  updatedAt?: string;
-};
-
-type SyncCardioLog = {
-  id: string;
-  userId: string;
-  date: string;
-  trainingType: CardioTrainingType;
-  zone: CardioZone;
-  duration: string;
-  distanceKm: number;
-  avgPace: string;
-  avgHr: number | null;
-  notes: string;
-  createdAt: string;
   updatedAt?: string;
 };
 
@@ -336,40 +288,6 @@ export async function syncAll(userId: string): Promise<void> {
           );
         }
       }
-    }
-
-    const cardioLogs = await getLogs(userId);
-    if (cardioLogs.length > 0) {
-      const rows = cardioLogs.map((log) => ({
-        id: log.id,
-        user_id: log.userId,
-        date: log.date,
-        training_type: log.trainingType,
-        zone: log.zone,
-        duration_minutes: Math.round(durationTextToMinutes(log.duration) * 100) / 100,
-        distance_km: log.distanceKm,
-        avg_pace: log.avgPace ?? '',
-        avg_hr: log.avgHr,
-        notes: log.notes ?? '',
-        created_at: log.createdAt,
-        updated_at: now,
-      }));
-      await runSupabaseCall('syncAll: upsert cardio_logs', () =>
-        supabase.from('cardio_logs').upsert(rows, { onConflict: 'id' }),
-      );
-    }
-    if (cardioLogs.length === 0) {
-      await runSupabaseCall('syncAll: delete cardio_logs for empty local set', () =>
-        supabase.from('cardio_logs').delete().eq('user_id', userId),
-      );
-    } else {
-      await runSupabaseCall('syncAll: delete stale cardio_logs', () =>
-        supabase
-          .from('cardio_logs')
-          .delete()
-          .eq('user_id', userId)
-          .not('id', 'in', inFilter(cardioLogs.map((log) => log.id))),
-      );
     }
 
     const cardioPlans = (await getPlans(userId)) as SyncCardioPlan[];
@@ -807,71 +725,6 @@ export async function pullAll(userId: string): Promise<void> {
           await saveSetLogs(sessionId, [...localSetLogs, ...missingSetLogs]);
         }
       }
-    }
-
-    const cardioData =
-      (await runSupabaseCall<
-        Array<{
-          id: string;
-          user_id: string;
-          date: string;
-          training_type: CardioTrainingType;
-          zone: CardioZone;
-          duration_minutes: number;
-          distance_km: number;
-          avg_pace: string | null;
-          avg_hr: number | null;
-          notes: string | null;
-          created_at: string;
-          updated_at: string | null;
-        }>
-      >('pullAll: fetch cardio_logs', () =>
-        supabase
-          .from('cardio_logs')
-          .select(
-            'id, user_id, date, training_type, zone, duration_minutes, distance_km, avg_pace, avg_hr, notes, created_at, updated_at',
-          )
-          .eq('user_id', userId)
-          .order('date', { ascending: false }),
-      )) ?? [];
-
-    const localCardioLogs = (await getLogs(userId)) as SyncCardioLog[];
-    const remoteCardioLogs: SyncCardioLog[] = cardioData.map((row) => ({
-      id: row.id,
-      userId: row.user_id,
-      date: row.date,
-      trainingType: row.training_type,
-      zone: row.zone,
-      duration: minutesToDurationText(row.duration_minutes),
-      distanceKm: row.distance_km,
-      avgPace: row.avg_pace ?? '',
-      avgHr: row.avg_hr,
-      notes: row.notes ?? '',
-      createdAt: row.created_at,
-      updatedAt: row.updated_at ?? undefined,
-    }));
-    const mergedCardioById = new Map(localCardioLogs.map((log) => [log.id, log]));
-    for (const remoteLog of remoteCardioLogs) {
-      const localLog = mergedCardioById.get(remoteLog.id);
-      if (localLog) {
-        mergedCardioById.set(
-          remoteLog.id,
-          isRemoteUpdatedAtNewer(remoteLog.updatedAt, localLog) ? remoteLog : localLog,
-        );
-        continue;
-      }
-
-      const deleted = await wasDeleted(userId, remoteLog.id);
-      if (!deleted) {
-        mergedCardioById.set(remoteLog.id, remoteLog);
-      }
-    }
-    const mergedCardioLogs: SyncCardioLog[] = Array.from(mergedCardioById.values());
-    if (remoteCardioLogs.length > 0) {
-      await saveLogs(
-        userId,
-        mergedCardioLogs.sort((a, b) => b.date.localeCompare(a.date)),
-      );
     }
 
     const cardioPlansData =

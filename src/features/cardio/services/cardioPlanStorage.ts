@@ -149,3 +149,46 @@ export async function deleteRecord(userId: string, id: string): Promise<void> {
     records.filter((record) => record.id !== id),
   );
 }
+
+export async function migrateCardioLogsToRecords(userId: string): Promise<void> {
+  const migratedKey = `cardio:migrated:${userId}`;
+  const alreadyMigrated = await AsyncStorage.getItem(migratedKey);
+  if (alreadyMigrated) return;
+
+  // Read legacy logs
+  const logsRaw = await AsyncStorage.getItem(`cardio:logs:${userId}`);
+  if (!logsRaw) {
+    await AsyncStorage.setItem(migratedKey, 'true');
+    return;
+  }
+
+  const logs = JSON.parse(logsRaw);
+  const records = await getRecords(userId);
+  const existingIds = new Set(records.map((r) => r.id));
+
+  const migrated = logs
+    .filter((log: any) => !existingIds.has(log.id))
+    .map((log: any) => ({
+      id: log.id,
+      userId: log.userId,
+      planId: null,
+      activityType: 'running' as const,
+      trainingType: log.trainingType ?? null,
+      performedAt: log.date,
+      duration: log.duration ?? null,
+      distanceKm: log.distanceKm ?? null,
+      avgPace: log.avgPace ?? null,
+      avgHr: log.avgHr ?? null,
+      zone: log.zone ?? null,
+      notes: log.notes ?? null,
+      perceivedEffort: null,
+      createdAt: log.createdAt,
+      updatedAt: log.createdAt,
+    }));
+
+  if (migrated.length > 0) {
+    await saveRecords(userId, [...records, ...migrated]);
+  }
+
+  await AsyncStorage.setItem(migratedKey, 'true');
+}
