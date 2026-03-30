@@ -57,6 +57,9 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+// Legacy storage. Kept for backward compatibility only.
+// Do not use for the new Cardio Plan / Record flow.
+// This will be migrated or frozen in a future version.
 export async function getLogs(userId: string): Promise<CardioLog[]> {
   const raw = await AsyncStorage.getItem(logsKey(userId));
   const parsed: LegacyCardioLog[] = raw ? JSON.parse(raw) : [];

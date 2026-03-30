@@ -9,6 +9,8 @@ import {
   getConfig,
   getExercises,
   getLogs,
+  getPlans,
+  getRecords as getCardioRecords,
   getStoredUserName,
   getSetLogs,
   getTemplates,
@@ -17,6 +19,8 @@ import {
   saveConfig,
   saveExercises,
   saveLogs,
+  savePlans,
+  saveRecords as saveCardioRecords,
   saveSetLogs,
   saveTemplates,
   setOnboardingComplete,
@@ -145,6 +149,43 @@ type SyncCardioLog = {
   notes: string;
   createdAt: string;
   updatedAt?: string;
+};
+
+type SyncCardioPlan = {
+  id: string;
+  userId: string;
+  activityType: 'running' | 'cycling' | 'swimming';
+  title: string;
+  trainingType: string | null;
+  plannedDate: string;
+  targetDistance: number | null;
+  targetDuration: string | null;
+  targetZone: string | null;
+  targetPace: string | null;
+  notes: string | null;
+  status: 'pending' | 'completed' | 'skipped';
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+  completedRecordId: string | null;
+};
+
+type SyncCardioRecord = {
+  id: string;
+  userId: string;
+  planId: string | null;
+  activityType: 'running' | 'cycling' | 'swimming';
+  trainingType: string | null;
+  performedAt: string;
+  duration: string | null;
+  distanceKm: number | null;
+  avgPace: string | null;
+  avgHr: number | null;
+  zone: string | null;
+  notes: string | null;
+  perceivedEffort: number | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type SyncHabitCheck = {
@@ -328,6 +369,81 @@ export async function syncAll(userId: string): Promise<void> {
           .delete()
           .eq('user_id', userId)
           .not('id', 'in', inFilter(cardioLogs.map((log) => log.id))),
+      );
+    }
+
+    const cardioPlans = (await getPlans(userId)) as SyncCardioPlan[];
+    if (cardioPlans.length > 0) {
+      const rows = cardioPlans.map((plan) => ({
+        id: plan.id,
+        user_id: plan.userId,
+        activity_type: plan.activityType,
+        title: plan.title,
+        training_type: plan.trainingType,
+        planned_date: plan.plannedDate,
+        target_distance: plan.targetDistance,
+        target_duration: plan.targetDuration,
+        target_zone: plan.targetZone,
+        target_pace: plan.targetPace,
+        notes: plan.notes,
+        status: plan.status,
+        created_at: plan.createdAt,
+        updated_at: plan.updatedAt ?? now,
+        completed_at: plan.completedAt,
+        completed_record_id: plan.completedRecordId,
+      }));
+      await runSupabaseCall('syncAll: upsert cardio_plans', () =>
+        supabase.from('cardio_plans').upsert(rows, { onConflict: 'id' }),
+      );
+    }
+    if (cardioPlans.length === 0) {
+      await runSupabaseCall('syncAll: delete cardio_plans for empty local set', () =>
+        supabase.from('cardio_plans').delete().eq('user_id', userId),
+      );
+    } else {
+      await runSupabaseCall('syncAll: delete stale cardio_plans', () =>
+        supabase
+          .from('cardio_plans')
+          .delete()
+          .eq('user_id', userId)
+          .not('id', 'in', inFilter(cardioPlans.map((plan) => plan.id))),
+      );
+    }
+
+    const cardioRecords = (await getCardioRecords(userId)) as SyncCardioRecord[];
+    if (cardioRecords.length > 0) {
+      const rows = cardioRecords.map((record) => ({
+        id: record.id,
+        user_id: record.userId,
+        plan_id: record.planId,
+        activity_type: record.activityType,
+        training_type: record.trainingType,
+        performed_at: record.performedAt,
+        duration: record.duration,
+        distance_km: record.distanceKm,
+        avg_pace: record.avgPace,
+        avg_hr: record.avgHr,
+        zone: record.zone,
+        notes: record.notes,
+        perceived_effort: record.perceivedEffort,
+        created_at: record.createdAt,
+        updated_at: record.updatedAt ?? now,
+      }));
+      await runSupabaseCall('syncAll: upsert cardio_records', () =>
+        supabase.from('cardio_records').upsert(rows, { onConflict: 'id' }),
+      );
+    }
+    if (cardioRecords.length === 0) {
+      await runSupabaseCall('syncAll: delete cardio_records for empty local set', () =>
+        supabase.from('cardio_records').delete().eq('user_id', userId),
+      );
+    } else {
+      await runSupabaseCall('syncAll: delete stale cardio_records', () =>
+        supabase
+          .from('cardio_records')
+          .delete()
+          .eq('user_id', userId)
+          .not('id', 'in', inFilter(cardioRecords.map((record) => record.id))),
       );
     }
 
@@ -757,6 +873,150 @@ export async function pullAll(userId: string): Promise<void> {
       await saveLogs(
         userId,
         mergedCardioLogs.sort((a, b) => b.date.localeCompare(a.date)),
+      );
+    }
+
+    const cardioPlansData =
+      (await runSupabaseCall<
+        Array<{
+          id: string;
+          user_id: string;
+          activity_type: 'running' | 'cycling' | 'swimming';
+          title: string;
+          training_type: string | null;
+          planned_date: string;
+          target_distance: number | null;
+          target_duration: string | null;
+          target_zone: string | null;
+          target_pace: string | null;
+          notes: string | null;
+          status: 'pending' | 'completed' | 'skipped';
+          created_at: string;
+          updated_at: string | null;
+          completed_at: string | null;
+          completed_record_id: string | null;
+        }>
+      >('pullAll: fetch cardio_plans', () =>
+        supabase
+          .from('cardio_plans')
+          .select(
+            'id, user_id, activity_type, title, training_type, planned_date, target_distance, target_duration, target_zone, target_pace, notes, status, created_at, updated_at, completed_at, completed_record_id',
+          )
+          .eq('user_id', userId)
+          .order('planned_date', { ascending: true }),
+      )) ?? [];
+
+    const localCardioPlans = (await getPlans(userId)) as SyncCardioPlan[];
+    const remoteCardioPlans: SyncCardioPlan[] = cardioPlansData.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      activityType: row.activity_type,
+      title: row.title,
+      trainingType: row.training_type,
+      plannedDate: row.planned_date,
+      targetDistance: row.target_distance,
+      targetDuration: row.target_duration,
+      targetZone: row.target_zone,
+      targetPace: row.target_pace,
+      notes: row.notes,
+      status: row.status,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at ?? row.created_at,
+      completedAt: row.completed_at,
+      completedRecordId: row.completed_record_id,
+    }));
+    const mergedCardioPlansById = new Map(localCardioPlans.map((plan) => [plan.id, plan]));
+    for (const remotePlan of remoteCardioPlans) {
+      const localPlan = mergedCardioPlansById.get(remotePlan.id);
+      if (localPlan) {
+        mergedCardioPlansById.set(
+          remotePlan.id,
+          isRemoteUpdatedAtNewer(remotePlan.updatedAt, localPlan) ? remotePlan : localPlan,
+        );
+        continue;
+      }
+
+      const deleted = await wasDeleted(userId, remotePlan.id);
+      if (!deleted) {
+        mergedCardioPlansById.set(remotePlan.id, remotePlan);
+      }
+    }
+    const mergedCardioPlans = Array.from(mergedCardioPlansById.values());
+    if (remoteCardioPlans.length > 0) {
+      await savePlans(
+        userId,
+        mergedCardioPlans.sort((a, b) => a.plannedDate.localeCompare(b.plannedDate)),
+      );
+    }
+
+    const cardioRecordsData =
+      (await runSupabaseCall<
+        Array<{
+          id: string;
+          user_id: string;
+          plan_id: string | null;
+          activity_type: 'running' | 'cycling' | 'swimming';
+          training_type: string | null;
+          performed_at: string;
+          duration: string | null;
+          distance_km: number | null;
+          avg_pace: string | null;
+          avg_hr: number | null;
+          zone: string | null;
+          notes: string | null;
+          perceived_effort: number | null;
+          created_at: string;
+          updated_at: string | null;
+        }>
+      >('pullAll: fetch cardio_records', () =>
+        supabase
+          .from('cardio_records')
+          .select(
+            'id, user_id, plan_id, activity_type, training_type, performed_at, duration, distance_km, avg_pace, avg_hr, zone, notes, perceived_effort, created_at, updated_at',
+          )
+          .eq('user_id', userId)
+          .order('performed_at', { ascending: false }),
+      )) ?? [];
+
+    const localCardioRecords = (await getCardioRecords(userId)) as SyncCardioRecord[];
+    const remoteCardioRecords: SyncCardioRecord[] = cardioRecordsData.map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      planId: row.plan_id,
+      activityType: row.activity_type,
+      trainingType: row.training_type,
+      performedAt: row.performed_at,
+      duration: row.duration,
+      distanceKm: row.distance_km,
+      avgPace: row.avg_pace,
+      avgHr: row.avg_hr,
+      zone: row.zone,
+      notes: row.notes,
+      perceivedEffort: row.perceived_effort,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at ?? row.created_at,
+    }));
+    const mergedCardioRecordsById = new Map(localCardioRecords.map((record) => [record.id, record]));
+    for (const remoteRecord of remoteCardioRecords) {
+      const localRecord = mergedCardioRecordsById.get(remoteRecord.id);
+      if (localRecord) {
+        mergedCardioRecordsById.set(
+          remoteRecord.id,
+          isRemoteUpdatedAtNewer(remoteRecord.updatedAt, localRecord) ? remoteRecord : localRecord,
+        );
+        continue;
+      }
+
+      const deleted = await wasDeleted(userId, remoteRecord.id);
+      if (!deleted) {
+        mergedCardioRecordsById.set(remoteRecord.id, remoteRecord);
+      }
+    }
+    const mergedCardioRecords = Array.from(mergedCardioRecordsById.values());
+    if (remoteCardioRecords.length > 0) {
+      await saveCardioRecords(
+        userId,
+        mergedCardioRecords.sort((a, b) => b.performedAt.localeCompare(a.performedAt)),
       );
     }
 

@@ -274,6 +274,66 @@
       "selectOne": "Selecione ao menos um tipo de treino ou zona"
     }
   },
+  "cardioPlan": {
+    "title": "Planos",
+    "records": "Registros",
+    "pending": "Pendentes",
+    "completedRecently": "Concluídos recentemente",
+    "newPlan": "Novo plano",
+    "editPlan": "Editar plano",
+    "newRecord": "Novo registro",
+    "editRecord": "Editar registro",
+    "completePlan": "Concluir treino",
+    "registerAsDone": "Registrar como feito",
+    "skipReschedule": "Pular / Remarcar",
+    "skipRescheduleSoon": "Funcionalidade em breve.",
+    "saveRecord": "Salvar registro",
+    "plannedLabel": "Planejado",
+    "doneSection": "O que foi feito",
+    "completedBadge": "Concluído",
+    "completedAt": "Concluído em {{date}}",
+    "viewRecord": "Ver registro",
+    "emptyPlans": "Nenhum plano criado ainda.",
+    "emptyRecords": "Nenhum registro ainda.",
+    "fromPlan": "A partir de um plano",
+    "rpe": "Esforço percebido",
+    "rpeValue": "Esforço: {{value}}/10",
+    "unitKm": "km",
+    "minPerKm": "min/km",
+    "bpm": "bpm",
+    "deletePlanTitle": "Excluir plano",
+    "deletePlanMessage": "Deseja excluir \"{{title}}\"?",
+    "deleteRecordTitle": "Excluir registro",
+    "deleteRecordMessage": "Deseja excluir este registro?",
+    "unsavedTitle": "Descartar alterações?",
+    "unsavedMessage": "Você tem alterações não salvas.",
+    "leave": "Sair sem salvar",
+    "planNotFound": "Plano não encontrado.",
+    "placeholders": {
+      "duration": "35:00",
+      "pace": "5:30",
+      "rpe": "1-10"
+    },
+    "form": {
+      "title": "Título",
+      "plannedDate": "Data planejada",
+      "performedAt": "Data realizada",
+      "trainingType": "Tipo de treino",
+      "targetDistance": "Distância alvo",
+      "targetDuration": "Duração alvo",
+      "targetZone": "Zona alvo",
+      "targetPace": "Pace alvo",
+      "notes": "Observações"
+    },
+    "errors": {
+      "titleRequired": "Digite um título para o plano"
+    },
+    "activity": {
+      "running": "Corrida",
+      "cycling": "Bike",
+      "swimming": "Natação"
+    }
+  },
   "habits": {
     "screenTitle": "Hábitos",
     "screenSubtitle": "Acompanhe sua consistência diária",
