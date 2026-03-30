@@ -68,6 +68,7 @@ export default function CompleteCardioPlanScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [form, setForm] = useState<CompletionFormState | null>(null);
   const initialSnapshotRef = useRef<string>('');
+  const savedSuccessfully = useRef(false);
 
   const plan = useMemo(() => plans.find((item) => item.id === planId) ?? null, [plans, planId]);
 
@@ -85,7 +86,7 @@ export default function CompleteCardioPlanScreen() {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (event) => {
-      if (!hasUnsavedChanges || isSaving) return;
+      if (savedSuccessfully.current || !hasUnsavedChanges || isSaving) return;
       event.preventDefault();
       Alert.alert(t('cardioPlan.unsavedTitle'), t('cardioPlan.unsavedMessage'), [
         { text: t('common.cancel'), style: 'cancel' },
@@ -136,6 +137,7 @@ export default function CompleteCardioPlanScreen() {
         perceivedEffort: Number.isFinite(parsedRpe) ? Math.min(10, Math.max(1, parsedRpe)) : null,
       });
       await completePlan(plan.id, newRecord.id);
+      savedSuccessfully.current = true;
       router.replace('/(tabs)/cardio');
     } finally {
       setIsSaving(false);
