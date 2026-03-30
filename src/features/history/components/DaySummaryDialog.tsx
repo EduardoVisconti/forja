@@ -19,6 +19,10 @@ export function DaySummaryDialog({ visible, summary, onDismiss }: Props) {
 
   const hasAny =
     Boolean(summary?.hasWorkout) || Boolean(summary?.hasCardio) || Boolean(summary?.hasHabits);
+  const cardioDurations = summary?.cardio?.logs
+    .map((log) => log.duration.trim())
+    .filter((duration) => duration.length > 0)
+    .join(' • ');
 
   return (
     <Portal>
@@ -57,9 +61,11 @@ export function DaySummaryDialog({ visible, summary, onDismiss }: Props) {
                         {t('history.daySummary.cardioTitle')}
                       </Text>
                       <Text>{t('history.daySummary.cardioLine', { count: summary.cardio.logs.length })}</Text>
-                      <Text style={styles.subtle}>
-                        {t('history.daySummary.cardioDurationLine', { minutes: summary.cardio.totalDurationMinutes })}
-                      </Text>
+                      {cardioDurations ? (
+                        <Text style={styles.subtle}>
+                          {t('history.daySummary.cardioDurationLine', { duration: cardioDurations })}
+                        </Text>
+                      ) : null}
                     </View>
                   ) : null}
 

@@ -13,7 +13,6 @@ export interface WorkoutDayAgg {
 
 export interface CardioDayAgg {
   logs: CardioLog[];
-  totalDurationMinutes: number;
 }
 
 export interface HabitDayAgg {
@@ -118,4 +117,3 @@ export interface HistorySources {
 export type SetLogWithDateISO = SetLog & {
   completedDateISO: string;
 };
-

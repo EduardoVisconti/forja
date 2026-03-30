@@ -1,7 +1,7 @@
 import { getAllSessions, getSetLogs } from '@/features/workout/services/sessionStorage';
 import { parseRepsForVolume } from '@/features/workout/services/workoutStorage';
 import type { SetLog, WorkoutSession } from '@/features/workout/types/session';
-import { getRecords as getCardioRecords } from '@/features/cardio/services/cardioPlanStorage';
+import { getRecords } from '@/features/cardio/services/cardioPlanStorage';
 import type { CardioLog } from '@/features/cardio/types';
 import type { CardioRecord } from '@/features/cardio/types/plans';
 import { getChecks, getConfig } from '@/features/habits/services/habitStorage';
@@ -69,20 +69,6 @@ function sumSessionVolumeKg(setLogs: SetLog[]): number {
   return setLogs.reduce((acc, l) => acc + parseRepsForVolume(String(l.repsDone)) * l.weightKg, 0);
 }
 
-function durationTextToMinutes(input: string): number {
-  const value = input.trim();
-  if (!value) return 0;
-
-  const parts = value.split(':').map((part) => Number(part));
-  if (parts.some((part) => !Number.isFinite(part))) return 0;
-
-  if (parts.length === 1) return parts[0];
-  if (parts.length === 2) return parts[0] + parts[1] / 60;
-  if (parts.length === 3) return parts[0] * 60 + parts[1] + parts[2] / 60;
-
-  return 0;
-}
-
 function mapRecordToCardioLog(record: CardioRecord): CardioLog {
   return {
     id: record.id,
@@ -118,7 +104,7 @@ function ensureWorkoutAgg(daily: HistoryDailyAgg, dateISO: string): WorkoutDayAg
 
 function ensureCardioAgg(daily: HistoryDailyAgg, dateISO: string): CardioDayAgg {
   if (daily.cardio[dateISO]) return daily.cardio[dateISO];
-  const initial: CardioDayAgg = { logs: [], totalDurationMinutes: 0 };
+  const initial: CardioDayAgg = { logs: [] };
   daily.cardio[dateISO] = initial;
   return initial;
 }
@@ -209,13 +195,12 @@ export async function getHistorySources(userId: string): Promise<HistorySources>
   }
 
   // Cardio aggregate.
-  const cardioRecords = await getCardioRecords(userId);
+  const cardioRecords = await getRecords(userId);
   for (const record of cardioRecords) {
     const log = mapRecordToCardioLog(record);
     const dateISO = log.date;
     const agg = ensureCardioAgg(daily, dateISO);
     agg.logs.push(log);
-    agg.totalDurationMinutes += durationTextToMinutes(log.duration);
   }
 
   // Habit aggregate + label mapping.

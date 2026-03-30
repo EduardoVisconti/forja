@@ -391,7 +391,7 @@
       "workoutsVolumeLine": "Volume: {{volume}} kg",
       "cardioTitle": "Cardio",
       "cardioLine": "{{count}} registro(s)",
-      "cardioDurationLine": "Duração: {{minutes}} min",
+      "cardioDurationLine": "Duração: {{duration}}",
       "habitsTitle": "Hábitos",
       "habitsScoreLine": "Score: {{score}}/{{total}}"
     },
