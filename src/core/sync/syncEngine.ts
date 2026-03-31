@@ -2,6 +2,7 @@
  * Sync engine: pushes local storage data to Supabase and pulls remote data into local storage.
  * Sync logic depends only on storage service APIs.
  */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/core/supabase/client';
 import {
   getAllSessions,
@@ -467,6 +468,38 @@ export async function pullAll(userId: string): Promise<void> {
   }
 
   try {
+    // Pull deleted records first so wasDeleted() works correctly
+    const deletedData = await runSupabaseCall<
+      Array<{
+        id: string;
+        table_name: string;
+        deleted_at: string;
+      }>
+    >('pullAll: fetch deleted_records', () =>
+      supabase
+        .from('deleted_records')
+        .select('id, table_name, deleted_at')
+        .eq('user_id', userId),
+    );
+
+    if (deletedData && deletedData.length > 0) {
+      const localDeleted = await getDeletedRecords(userId);
+      const localDeletedIds = new Set(localDeleted.map((record) => record.id));
+
+      const missing = deletedData
+        .filter((record) => !localDeletedIds.has(record.id))
+        .map((record) => ({
+          id: record.id,
+          tableName: record.table_name,
+          deletedAt: record.deleted_at,
+        }));
+
+      if (missing.length > 0) {
+        const merged = [...localDeleted, ...missing];
+        await AsyncStorage.setItem(`deleted_records:${userId}`, JSON.stringify(merged));
+      }
+    }
+
     const profile = await runSupabaseCall<{
       display_name: string | null;
       onboarding_complete: boolean | null;
