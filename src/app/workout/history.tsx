@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, FAB, IconButton, Text } from 'react-native-paper';
@@ -28,6 +28,7 @@ function formatMetricValue(value: number): string {
 
 export default function WorkoutHistoryScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [isSavingManual, setIsSavingManual] = useState(false);
   const { sessions, isLoading, error, reload, deleteSession, createManualSession } = useSessionHistory();
@@ -63,13 +64,18 @@ export default function WorkoutHistoryScreen() {
           headerStyle: { backgroundColor: '#0a0a0a' },
           headerTintColor: '#ffffff',
           headerBackTitle: '',
+          headerLeft: () => (
+            <IconButton
+              icon="arrow-left"
+              iconColor="#ffffff"
+              size={22}
+              onPress={() => router.navigate('/workout' as never)}
+              style={{ margin: 0 }}
+            />
+          ),
         }}
       />
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('workout.history.title')}</Text>
-        </View>
-
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         {isLoading ? (
           <View style={styles.center}>
             <ActivityIndicator />
@@ -138,16 +144,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 10,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#ffffff',
   },
   listContent: {
     paddingHorizontal: 16,
