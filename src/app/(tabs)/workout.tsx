@@ -76,8 +76,17 @@ export default function WorkoutScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('workout.screenTitle')}</Text>
-        <Text style={styles.subtitle}>{t('workout.screenSubtitle')}</Text>
+        <View style={styles.headerText}>
+          <Text style={styles.title}>{t('workout.screenTitle')}</Text>
+          <Text style={styles.subtitle}>{t('workout.screenSubtitle')}</Text>
+        </View>
+        <IconButton
+          icon="calendar-clock-outline"
+          size={22}
+          onPress={() => router.push('/workout/history')}
+          accessibilityLabel={t('workout.sessionHistory')}
+          style={styles.historyIconButton}
+        />
       </View>
 
       {isLoading ? (
@@ -162,6 +171,12 @@ const createStyles = (theme: MD3Theme) =>
       paddingHorizontal: 16,
       paddingTop: 16,
       paddingBottom: 12,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+    },
+    headerText: {
+      flex: 1,
     },
     title: {
       fontSize: 22,
@@ -172,6 +187,10 @@ const createStyles = (theme: MD3Theme) =>
       fontSize: 13,
       color: '#525252',
       marginTop: 2,
+    },
+    historyIconButton: {
+      margin: 0,
+      marginTop: -2,
     },
     center: {
       flex: 1,

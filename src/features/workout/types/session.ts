@@ -28,4 +28,6 @@ export interface WorkoutSession {
   durationMinutes: number;
   /** Sum of (repsDone × weightKg) across all sets */
   totalVolumeKg: number;
+  /** True when the session is added retroactively by the user. */
+  isManual?: boolean;
 }

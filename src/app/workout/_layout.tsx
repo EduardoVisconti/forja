@@ -9,6 +9,7 @@ export default function WorkoutLayout() {
         headerBackTitle: '',
       }}
     >
+      <Stack.Screen name="history" options={{ headerBackVisible: true }} />
       <Stack.Screen name="edit/[id]" />
       <Stack.Screen name="[id]" options={{ headerBackVisible: true }} />
       <Stack.Screen name="summary/[sessionId]" options={{ headerBackVisible: false }} />

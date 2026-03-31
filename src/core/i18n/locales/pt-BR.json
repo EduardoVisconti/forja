@@ -166,6 +166,17 @@
       "minZero": "Valor mínimo: 0",
       "tooHigh": "Valor muito alto",
       "notesTooLong": "Observações muito longas (máx. 200 caracteres)"
+    },
+    "sessionHistory": "Hist\u00f3rico de sess\u00f5es",
+    "history": {
+      "title": "Hist\u00f3rico de treinos",
+      "empty": "Nenhuma sess\u00e3o registrada ainda.",
+      "deleteTitle": "Deletar sess\u00e3o?",
+      "deleteMessage": "Esta a\u00e7\u00e3o n\u00e3o pode ser desfeita.",
+      "addManual": "Adicionar sess\u00e3o",
+      "manualTag": "Manual",
+      "selectTemplate": "Selecione um treino",
+      "selectDate": "Data da sess\u00e3o"
     }
   },
   "exercise": {
