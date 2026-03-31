@@ -16,7 +16,11 @@ function generateId(): string {
 }
 
 function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 /** Legacy check format (pre-migration) with boolean fields per HabitKey */
@@ -113,7 +117,8 @@ export async function autoCheckExerciseHabit(userId: string): Promise<void> {
   );
   if (!exerciseHabit) return;
 
-  const todayDateISO = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const todayDateISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayCheck = await getCheckForDate(userId, todayDateISO);
 
   if (todayCheck) {

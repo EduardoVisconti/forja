@@ -47,8 +47,15 @@ interface FormState {
   notes: string;
 }
 
+function toLocalDateISO(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
+  return toLocalDateISO(new Date());
 }
 
 function parseISODate(isoDate: string): Date {
@@ -121,7 +128,7 @@ export function CardioPlanFormModal({ visible, initial, onSubmit, onDismiss }: P
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (event.type !== 'set' || !selectedDate) return;
-    updateField('plannedDate', selectedDate.toISOString().split('T')[0]);
+    updateField('plannedDate', toLocalDateISO(selectedDate));
   };
 
   const handleSave = async () => {
