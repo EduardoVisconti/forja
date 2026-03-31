@@ -411,8 +411,9 @@ export async function syncAll(userId: string): Promise<void> {
     }
 
     const deletedRecords = await getDeletedRecords(userId);
-    if (deletedRecords.length > 0) {
-      const rows = deletedRecords.map((record) => ({
+    const uniqueDeleted = Array.from(new Map(deletedRecords.map((record) => [record.id, record])).values());
+    if (uniqueDeleted.length > 0) {
+      const rows = uniqueDeleted.map((record) => ({
         id: record.id,
         table_name: record.tableName,
         user_id: userId,

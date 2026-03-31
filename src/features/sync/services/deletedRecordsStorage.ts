@@ -15,6 +15,10 @@ export async function recordDeletion(
 ): Promise<void> {
   const raw = await AsyncStorage.getItem(key(userId));
   const records = (raw ? JSON.parse(raw) : []) as DeletedRecord[];
+
+  const alreadyExists = records.some((record: { id: string }) => record.id === id);
+  if (alreadyExists) return;
+
   records.push({ id, tableName, deletedAt: new Date().toISOString() });
   await AsyncStorage.setItem(key(userId), JSON.stringify(records));
 }
