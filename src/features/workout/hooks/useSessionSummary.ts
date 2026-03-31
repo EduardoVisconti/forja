@@ -7,10 +7,20 @@ export interface PR {
   weightKg: number;
 }
 
+export interface ExerciseSummary {
+  exerciseId: string;
+  exerciseName: string;
+  setsCompleted: number;
+  bestSetWeightKg: number;
+  bestSetReps: number;
+  isPR: boolean;
+}
+
 export interface SessionSummary {
   totalVolumeKg: number;
   durationMinutes: number;
   prs: PR[];
+  exerciseSummaries: ExerciseSummary[];
   setLogs: SetLog[];
 }
 
@@ -51,7 +61,31 @@ export function useSessionSummary(
           }
         }
 
-        setSummary({ totalVolumeKg, durationMinutes, prs, setLogs: logs });
+        const logsByExercise = new Map<string, SetLog[]>();
+        for (const log of logs) {
+          const exerciseLogs = logsByExercise.get(log.exerciseName) ?? [];
+          exerciseLogs.push(log);
+          logsByExercise.set(log.exerciseName, exerciseLogs);
+        }
+
+        const prExerciseNames = new Set(prs.map((pr) => pr.exerciseName));
+        const exerciseSummaries: ExerciseSummary[] = [...logsByExercise.values()].map(
+          (exerciseLogs) => {
+            const bestSet = exerciseLogs.reduce((best, current) =>
+              current.weightKg > best.weightKg ? current : best,
+            );
+            return {
+              exerciseId: exerciseLogs[0].exerciseId,
+              exerciseName: exerciseLogs[0].exerciseName,
+              setsCompleted: exerciseLogs.length,
+              bestSetWeightKg: bestSet.weightKg,
+              bestSetReps: bestSet.repsDone,
+              isPR: prExerciseNames.has(exerciseLogs[0].exerciseName),
+            };
+          },
+        );
+
+        setSummary({ totalVolumeKg, durationMinutes, prs, exerciseSummaries, setLogs: logs });
       } finally {
         setIsLoading(false);
       }
