@@ -30,8 +30,36 @@ export function useCardioPlans() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await storage.getPlans(userId);
-      setPlans(data);
+      const plans = await storage.getPlans(userId);
+      const records = await storage.getRecords(userId);
+      const recordIds = new Set(records.map((record) => record.id));
+
+      const cleanedPlans = plans.map((plan) => {
+        if (
+          plan.status === 'completed' &&
+          plan.completedRecordId &&
+          !recordIds.has(plan.completedRecordId)
+        ) {
+          return {
+            ...plan,
+            status: 'pending' as const,
+            completedAt: null,
+            completedRecordId: null,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+
+        return plan;
+      });
+
+      const hasChanges = cleanedPlans.some((plan, index) => plan.status !== plans[index].status);
+
+      if (hasChanges) {
+        await storage.savePlans(userId, cleanedPlans);
+        triggerSync();
+      }
+
+      setPlans(cleanedPlans);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {

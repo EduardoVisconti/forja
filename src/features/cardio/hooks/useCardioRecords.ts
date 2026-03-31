@@ -125,7 +125,8 @@ export function useCardioRecords() {
     async (id: string) => {
       await storage.deleteRecord(userId, id);
       await mirrorRecordDeleteFromLegacy(userId, id);
-      setRecords((prev) => prev.filter((record) => record.id !== id));
+      const latest = await storage.getRecords(userId);
+      setRecords(latest);
       triggerSync();
     },
     [userId],

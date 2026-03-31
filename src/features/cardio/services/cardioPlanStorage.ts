@@ -143,11 +143,32 @@ export async function updateRecord(
 
 export async function deleteRecord(userId: string, id: string): Promise<void> {
   await recordDeletion(userId, id, 'cardio_records');
+
   const records = await getRecords(userId);
+  const record = records.find((item) => item.id === id);
+
   await saveRecords(
     userId,
-    records.filter((record) => record.id !== id),
+    records.filter((item) => item.id !== id),
   );
+
+  // If this record completed a plan, revert the plan to pending.
+  if (record?.planId) {
+    const plans = await getPlans(userId);
+    const updatedPlans = plans.map((plan) =>
+      plan.id === record.planId
+        ? {
+            ...plan,
+            status: 'pending' as const,
+            completedAt: null,
+            completedRecordId: null,
+            updatedAt: nowISO(),
+          }
+        : plan,
+    );
+
+    await savePlans(userId, updatedPlans);
+  }
 }
 
 export async function migrateCardioLogsToRecords(userId: string): Promise<void> {
