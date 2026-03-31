@@ -667,7 +667,14 @@ export async function pullAll(userId: string): Promise<void> {
       totalVolumeKg: row.total_volume_kg,
     }));
     const localSessionIds = new Set(localSessions.map((session) => session.id));
-    const missingSessions = remoteSessions.filter((session) => !localSessionIds.has(session.id));
+    const missingSessions = [];
+    for (const session of remoteSessions) {
+      if (localSessionIds.has(session.id)) continue;
+      const deleted = await wasDeleted(userId, session.id);
+      if (!deleted) {
+        missingSessions.push(session);
+      }
+    }
     if (missingSessions.length > 0) {
       const mergedSessions = [...localSessions, ...missingSessions].sort((a, b) =>
         b.startedAt.localeCompare(a.startedAt),
@@ -707,6 +714,9 @@ export async function pullAll(userId: string): Promise<void> {
       }
 
       for (const [sessionId, remoteSetLogs] of Object.entries(bySession)) {
+        const isDeleted = await wasDeleted(userId, sessionId);
+        if (isDeleted) continue;
+
         const localSetLogs = await getSetLogs(sessionId);
         const localSetLogIds = new Set(localSetLogs.map((log) => log.id));
         const missingSetLogs = remoteSetLogs
