@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, Text } from 'react-native-paper';
+import { ActivityIndicator, Button } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { SessionSummaryCard } from '@/features/workout/components/SessionSummaryCard';
@@ -31,18 +31,26 @@ export default function SessionSummaryScreen() {
     sessionMeta?.totalVolumeKg ?? 0,
     sessionMeta?.durationMinutes ?? 0,
   );
+  const screenOptions = {
+    title: '',
+    headerStyle: { backgroundColor: '#0a0a0a' },
+    headerTintColor: '#ffffff',
+  } as const;
 
   if (isLoading || !summary) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
+      <View style={styles.screen}>
+        <Stack.Screen options={screenOptions} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
       </View>
     );
   }
 
   return (
-    <>
-      <Stack.Screen options={{ title: t('summary.title') }} />
+    <View style={styles.screen}>
+      <Stack.Screen options={screenOptions} />
       <ScrollView contentContainerStyle={styles.container}>
         <SessionSummaryCard summary={summary} unit={unit} />
         <Button
@@ -53,12 +61,16 @@ export default function SessionSummaryScreen() {
           {t('summary.backToWorkouts')}
         </Button>
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0a0a0a',
+  },
   container: { flexGrow: 1, padding: 16, gap: 16 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0a0a0a' },
   button: { marginTop: 8 },
 });

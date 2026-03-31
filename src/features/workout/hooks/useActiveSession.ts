@@ -9,12 +9,13 @@ import { autoCheckExerciseHabit } from '@/features/habits/services/habitStorage'
 import { getSetLogs, saveSession, saveSetLogs } from '../services/sessionStorage';
 import {
   getExercises,
-  parseRepsForVolume,
   updateExerciseWeightsFromSession,
 } from '../services/workoutStorage';
 import { useWorkoutSessionStore } from '../store/workoutSessionStore';
 import type { SessionExercise, SetLog } from '../types/session';
 import type { WorkoutTemplate } from '../types/index';
+
+const LBS_PER_KG = 2.20462;
 
 export function useActiveSession() {
   const router = useRouter();
@@ -54,10 +55,7 @@ export function useActiveSession() {
     const durationMinutes = Math.round(
       (new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 60000,
     );
-    const totalVolumeKg = setLogs.reduce(
-      (sum, l) => sum + parseRepsForVolume(String(l.repsDone)) * l.weightKg,
-      0,
-    );
+    const totalVolumeKg = setLogs.reduce((sum, l) => sum + l.repsDone * l.weightKg, 0);
 
     await saveSetLogs(sessionId, setLogs);
     await saveSession({
@@ -93,8 +91,9 @@ export function useActiveSession() {
   const completeSet = useCallback(
     (
       repsDone: number,
-      weightKg: number,
+      weightValue: number,
       options?: {
+        unit?: 'kg' | 'lbs';
         startRestTimer?: boolean;
       },
     ) => {
@@ -107,6 +106,9 @@ export function useActiveSession() {
       const currentSetNumber = Math.min((completedSets[exercise.id] ?? 0) + 1, exercise.sets);
       if ((completedSets[exercise.id] ?? 0) >= exercise.sets) return;
 
+      const normalizedWeightKg =
+        options?.unit === 'lbs' ? weightValue / LBS_PER_KG : weightValue;
+
       const log: SetLog = {
         id: Crypto.randomUUID(),
         sessionId,
@@ -114,7 +116,7 @@ export function useActiveSession() {
         exerciseName: exercise.name,
         setNumber: currentSetNumber,
         repsDone,
-        weightKg,
+        weightKg: normalizedWeightKg,
         completedAt: new Date().toISOString(),
       };
 

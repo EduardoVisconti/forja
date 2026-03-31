@@ -156,8 +156,9 @@ export default function ActiveSessionScreen() {
         restTimerEnabled={store.restTimerEnabled}
         onToggleRestTimer={store.toggleRestTimer}
         preferences={{ unit }}
-        onCompleteSet={(reps, weightKg) => {
-          completeSet(reps, weightKg, {
+        onCompleteSet={(reps, weightValue) => {
+          completeSet(reps, weightValue, {
+            unit,
             startRestTimer: store.restTimerEnabled,
           });
         }}

@@ -14,12 +14,10 @@ interface Props {
   restTimerEnabled: boolean;
   onToggleRestTimer: () => void;
   preferences: UserPreferences;
-  onCompleteSet: (reps: number, weightKg: number) => void;
+  onCompleteSet: (reps: number, weightValue: number) => void;
   onSkip: () => void;
   hideActions?: boolean;
 }
-
-const KG_TO_LBS = 2.20462;
 
 export function ActiveExerciseCard({
   exercise,
@@ -34,7 +32,6 @@ export function ActiveExerciseCard({
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const isLbs = preferences.unit === 'lbs';
   const [reps, setReps] = useState(String(exercise.reps));
   const [weight, setWeight] = useState(() => {
     const stored = exercise.weight;
@@ -70,8 +67,7 @@ export function ActiveExerciseCard({
     const repsNum = parseInt(reps, 10);
     const weightNum = parseFloat(weight);
     if (isNaN(repsNum) || isNaN(weightNum)) return;
-    const weightKg = isLbs ? weightNum / KG_TO_LBS : weightNum;
-    onCompleteSet(repsNum, weightKg);
+    onCompleteSet(repsNum, weightNum);
   };
 
   const handleInfo = async () => {
