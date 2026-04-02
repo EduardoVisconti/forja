@@ -39,7 +39,7 @@ export function PrExerciseList({ exercises, onPressExercise, unit }: Props) {
                     <View style={styles.row}>
                       <Text style={styles.title}>{item.exerciseName}</Text>
                       <Text style={styles.bestLine}>{`Melhor: ${bestWeight} ${unit}`}</Text>
-                      {diffKg !== null ? (
+                      {diffKg !== null && Math.abs(diffKg) > 0.05 ? (
                         <Text style={styles.diffLine}>{`+${diffKg.toFixed(1)}kg ${t('summary.vsLast')}`}</Text>
                       ) : null}
                     </View>

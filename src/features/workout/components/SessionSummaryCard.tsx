@@ -20,6 +20,7 @@ export function SessionSummaryCard({ summary, unit }: Props) {
   const displayVolume = isLbs
     ? (summary.totalVolumeKg * KG_TO_LBS).toFixed(0)
     : summary.totalVolumeKg.toFixed(0);
+  const volumeUnit = isLbs ? 'lbs' : 'kg';
 
   const formatWeight = (weightKg: number) =>
     isLbs ? (weightKg * KG_TO_LBS).toFixed(1) : weightKg.toFixed(1);
@@ -37,7 +38,7 @@ export function SessionSummaryCard({ summary, unit }: Props) {
         </View>
         <View style={styles.monthlyStat}>
           <Text style={styles.monthlyValue}>{displayVolume}</Text>
-          <Text style={styles.monthlyLabel}>{unit}</Text>
+          <Text style={styles.monthlyLabel}>{volumeUnit}</Text>
         </View>
         <View style={styles.monthlyStat}>
           <Text style={styles.monthlyValue}>{summary.exerciseSummaries.length}</Text>
