@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Chip, Divider, List, Text } from 'react-native-paper';
+import { Divider, List, Text } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@/core/theme/tokens';
 import type { SessionSummary } from '../hooks/useSessionSummary';
@@ -45,32 +45,30 @@ export function SessionSummaryCard({ summary, unit }: Props) {
         </View>
       </View>
 
-      {summary.prs.length > 0 ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{`🏆 ${t('summary.prsTitle')}`}</Text>
-          <View style={styles.prs}>
-            {summary.prs.map((pr) => (
-              <Chip key={pr.exerciseName} icon="trophy" style={styles.prChip}>
-                {`${pr.exerciseName} - ${formatWeight(pr.weightKg)} ${unit}`}
-              </Chip>
-            ))}
-          </View>
-        </View>
-      ) : null}
-
       <View style={styles.section}>
         {summary.exerciseSummaries.map((exercise, index) => (
           <View key={exercise.exerciseId}>
             <View style={styles.exerciseRow}>
               <View style={styles.exerciseInfo}>
-                <Text style={styles.exerciseName}>{exercise.exerciseName}</Text>
+                <Text style={[styles.exerciseName, exercise.isPR ? styles.exerciseNamePR : null]}>
+                  {exercise.exerciseName}
+                </Text>
                 <Text style={styles.exerciseMeta}>
                   {`${exercise.setsCompleted} séries · ${t('summary.bestSet')}: ${formatWeight(
                     exercise.bestSetWeightKg,
                   )} ${unit} × ${exercise.bestSetReps}`}
                 </Text>
+                {exercise.previousBestKg === null ? (
+                  <Text style={styles.exerciseHint}>{t('summary.firstTime')}</Text>
+                ) : exercise.diffKg !== null && exercise.diffKg < 0 ? (
+                  <Text style={styles.exerciseHint}>
+                    {`-${Math.abs(exercise.diffKg).toFixed(1)}kg ${t('summary.belowRecord')}`}
+                  </Text>
+                ) : null}
               </View>
-              {exercise.isPR ? <Text style={styles.prBadge}>🏆 PR</Text> : null}
+              {exercise.isPR && exercise.diffKg !== null ? (
+                <Text style={styles.prBadge}>{`🏆 +${exercise.diffKg.toFixed(1)}kg`}</Text>
+              ) : null}
             </View>
             {index < summary.exerciseSummaries.length - 1 ? <Divider style={styles.exerciseDivider} /> : null}
           </View>
@@ -141,15 +139,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#ffffff',
-    paddingHorizontal: 12,
-    paddingTop: 12,
-  },
-  prs: { gap: 8, padding: 12 },
-  prChip: {},
   exerciseRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -165,14 +154,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
   },
+  exerciseNamePR: {
+    color: colors.complete,
+  },
   exerciseMeta: {
     marginTop: 2,
     fontSize: 12,
     color: '#9ca3af',
   },
+  exerciseHint: {
+    marginTop: 2,
+    fontSize: 11,
+    color: '#525252',
+  },
   prBadge: {
     fontSize: 12,
-    color: '#22c55e',
+    color: colors.complete,
   },
   exerciseDivider: {
     backgroundColor: '#2a2a2a',

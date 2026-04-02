@@ -2,11 +2,6 @@ import { useEffect, useState } from 'react';
 import { getAllSetLogsForExercise, getSetLogs } from '../services/sessionStorage';
 import type { SetLog } from '../types/session';
 
-export interface PR {
-  exerciseName: string;
-  weightKg: number;
-}
-
 export interface ExerciseSummary {
   exerciseId: string;
   exerciseName: string;
@@ -14,12 +9,13 @@ export interface ExerciseSummary {
   bestSetWeightKg: number;
   bestSetReps: number;
   isPR: boolean;
+  previousBestKg: number | null;
+  diffKg: number | null;
 }
 
 export interface SessionSummary {
   totalVolumeKg: number;
   durationMinutes: number;
-  prs: PR[];
   exerciseSummaries: ExerciseSummary[];
   setLogs: SetLog[];
 }
@@ -40,7 +36,10 @@ export function useSessionSummary(
       try {
         const logs = await getSetLogs(sessionId);
         const exerciseIds = [...new Set(logs.map((l) => l.exerciseId))];
-        const prs: PR[] = [];
+        const exerciseComparisonById = new Map<
+          string,
+          { previousBestKg: number | null; diffKg: number | null; isPR: boolean }
+        >();
 
         for (const exerciseId of exerciseIds) {
           const allLogs = await getAllSetLogsForExercise(userId, exerciseId);
@@ -50,42 +49,40 @@ export function useSessionSummary(
           if (sessionLogs.length === 0) continue;
 
           const maxCurrentWeight = Math.max(...sessionLogs.map((l) => l.weightKg));
-          const maxPreviousWeight =
-            previousLogs.length > 0 ? Math.max(...previousLogs.map((l) => l.weightKg)) : 0;
+          const previousBestKg =
+            previousLogs.length > 0 ? Math.max(...previousLogs.map((l) => l.weightKg)) : null;
+          const diffKg = previousBestKg !== null ? maxCurrentWeight - previousBestKg : null;
+          const isPR = diffKg !== null ? diffKg > 0 : false;
 
-          if (maxCurrentWeight > maxPreviousWeight) {
-            prs.push({
-              exerciseName: sessionLogs[0].exerciseName,
-              weightKg: maxCurrentWeight,
-            });
-          }
+          exerciseComparisonById.set(exerciseId, { previousBestKg, diffKg, isPR });
         }
 
         const logsByExercise = new Map<string, SetLog[]>();
         for (const log of logs) {
-          const exerciseLogs = logsByExercise.get(log.exerciseName) ?? [];
+          const exerciseLogs = logsByExercise.get(log.exerciseId) ?? [];
           exerciseLogs.push(log);
-          logsByExercise.set(log.exerciseName, exerciseLogs);
+          logsByExercise.set(log.exerciseId, exerciseLogs);
         }
-
-        const prExerciseNames = new Set(prs.map((pr) => pr.exerciseName));
         const exerciseSummaries: ExerciseSummary[] = [...logsByExercise.values()].map(
           (exerciseLogs) => {
             const bestSet = exerciseLogs.reduce((best, current) =>
               current.weightKg > best.weightKg ? current : best,
             );
+            const comparison = exerciseComparisonById.get(exerciseLogs[0].exerciseId);
             return {
               exerciseId: exerciseLogs[0].exerciseId,
               exerciseName: exerciseLogs[0].exerciseName,
               setsCompleted: exerciseLogs.length,
               bestSetWeightKg: bestSet.weightKg,
               bestSetReps: bestSet.repsDone,
-              isPR: prExerciseNames.has(exerciseLogs[0].exerciseName),
+              isPR: comparison?.isPR ?? false,
+              previousBestKg: comparison?.previousBestKg ?? null,
+              diffKg: comparison?.diffKg ?? null,
             };
           },
         );
 
-        setSummary({ totalVolumeKg, durationMinutes, prs, exerciseSummaries, setLogs: logs });
+        setSummary({ totalVolumeKg, durationMinutes, exerciseSummaries, setLogs: logs });
       } finally {
         setIsLoading(false);
       }

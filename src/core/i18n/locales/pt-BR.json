@@ -233,6 +233,9 @@
     "viewAllSets": "Ver séries completas",
     "hideSets": "Ocultar séries",
     "prsTitle": "Recordes pessoais",
+    "firstTime": "primeira vez",
+    "belowRecord": "do recorde",
+    "vsLast": "vs anterior",
     "setsLog": "Séries realizadas",
     "set": "Série",
     "backToWorkouts": "Voltar aos treinos"

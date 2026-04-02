@@ -11,11 +11,13 @@ import { WeeklyHabitScoreLineChart } from '@/features/history/components/WeeklyH
 import { PrExerciseList } from '@/features/history/components/PrExerciseList';
 import { ExerciseWeightProgressionDialog } from '@/features/history/components/ExerciseWeightProgressionDialog';
 import { useHistoryProgress } from '@/features/history/hooks/useHistoryProgress';
+import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences';
 
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = createStyles(theme);
+  const { unit } = useUserPreferences();
   const {
     isLoading,
     calendarMonth,
@@ -84,7 +86,7 @@ export default function HistoryScreen() {
           <WeeklyStreakCard data={weeklyStreak} />
           <WeeklyHabitScoreLineChart data={weeklyHabitScore} />
 
-          <PrExerciseList exercises={prExercises} onPressExercise={openExerciseDialog} />
+          <PrExerciseList exercises={prExercises} onPressExercise={openExerciseDialog} unit={unit} />
 
           <ExerciseWeightProgressionDialog
             visible={exerciseDialogVisible}
