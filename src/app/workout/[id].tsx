@@ -10,7 +10,10 @@ import { RestTimerCard } from '@/features/workout/components/RestTimerCard';
 import { useActiveSession } from '@/features/workout/hooks/useActiveSession';
 import { useRestTimer } from '@/features/workout/hooks/useRestTimer';
 import { useUserPreferences } from '@/features/workout/hooks/useUserPreferences';
-import { useWorkoutSessionStore } from '@/features/workout/store/workoutSessionStore';
+import {
+  clearPersistedSession,
+  useWorkoutSessionStore,
+} from '@/features/workout/store/workoutSessionStore';
 
 export default function ActiveSessionScreen() {
   const { t } = useTranslation();
@@ -38,6 +41,7 @@ export default function ActiveSessionScreen() {
         style: 'destructive',
         onPress: () => {
           store.endSession();
+          void clearPersistedSession();
           router.navigate('/(tabs)/workout');
         },
       },
@@ -157,7 +161,7 @@ export default function ActiveSessionScreen() {
         onToggleRestTimer={store.toggleRestTimer}
         preferences={{ unit }}
         onCompleteSet={(reps, weightValue) => {
-          completeSet(reps, weightValue, {
+          void completeSet(reps, weightValue, {
             unit,
             startRestTimer: store.restTimerEnabled,
           });

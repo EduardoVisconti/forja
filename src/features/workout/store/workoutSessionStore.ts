@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { SessionExercise, SetLog } from '../types/session';
 
 export interface ActiveSessionState {
@@ -42,6 +43,79 @@ interface ActiveSessionActions {
 
 type WorkoutSessionStore = ActiveSessionState & ActiveSessionActions;
 
+const ACTIVE_SESSION_KEY = 'workout:active_session';
+
+type PersistedActiveSessionSnapshot = Pick<
+  ActiveSessionState,
+  | 'sessionId'
+  | 'templateId'
+  | 'templateName'
+  | 'userId'
+  | 'startedAt'
+  | 'exercises'
+  | 'currentExerciseIndex'
+  | 'completedSets'
+  | 'completedExercises'
+  | 'setLogs'
+  | 'restTimerEnabled'
+>;
+
+export async function persistActiveSession(state: ActiveSessionState): Promise<void> {
+  if (!state.sessionId) {
+    await AsyncStorage.removeItem(ACTIVE_SESSION_KEY);
+    return;
+  }
+
+  const snapshot: PersistedActiveSessionSnapshot = {
+    sessionId: state.sessionId,
+    templateId: state.templateId,
+    templateName: state.templateName,
+    userId: state.userId,
+    startedAt: state.startedAt,
+    exercises: state.exercises,
+    currentExerciseIndex: state.currentExerciseIndex,
+    completedSets: state.completedSets,
+    completedExercises: state.completedExercises,
+    setLogs: state.setLogs,
+    restTimerEnabled: state.restTimerEnabled,
+  };
+
+  await AsyncStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(snapshot));
+}
+
+export async function loadPersistedSession(): Promise<ActiveSessionState | null> {
+  const raw = await AsyncStorage.getItem(ACTIVE_SESSION_KEY);
+  if (!raw) return null;
+
+  try {
+    const snapshot = JSON.parse(raw) as Partial<PersistedActiveSessionSnapshot>;
+    if (!snapshot.sessionId) return null;
+
+    return {
+      sessionId: snapshot.sessionId ?? null,
+      templateId: snapshot.templateId ?? null,
+      templateName: snapshot.templateName ?? '',
+      userId: snapshot.userId ?? null,
+      startedAt: snapshot.startedAt ?? null,
+      exercises: snapshot.exercises ?? [],
+      currentExerciseIndex: snapshot.currentExerciseIndex ?? 0,
+      completedSets: snapshot.completedSets ?? {},
+      completedExercises: snapshot.completedExercises ?? {},
+      setLogs: snapshot.setLogs ?? [],
+      nextExercise: null,
+      restSecondsRemaining: null,
+      timerRunning: false,
+      restTimerEnabled: snapshot.restTimerEnabled ?? true,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function clearPersistedSession(): Promise<void> {
+  await AsyncStorage.removeItem(ACTIVE_SESSION_KEY);
+}
+
 function getNextExercise(
   exercises: SessionExercise[],
   currentExerciseIndex: number,
@@ -69,7 +143,7 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
   timerRunning: false,
   restTimerEnabled: true,
 
-  startSession: ({ sessionId, templateId, templateName, userId, exercises }) =>
+  startSession: ({ sessionId, templateId, templateName, userId, exercises }) => {
     set({
       sessionId,
       templateId,
@@ -85,9 +159,11 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       restSecondsRemaining: null,
       timerRunning: false,
       restTimerEnabled: true,
-    }),
+    });
+    void persistActiveSession(useWorkoutSessionStore.getState());
+  },
 
-  endSession: () =>
+  endSession: () => {
     set({
       sessionId: null,
       templateId: null,
@@ -103,7 +179,9 @@ export const useWorkoutSessionStore = create<WorkoutSessionStore>((set) => ({
       restSecondsRemaining: null,
       timerRunning: false,
       restTimerEnabled: true,
-    }),
+    });
+    void clearPersistedSession();
+  },
 
   setCurrentExerciseIndex: (index) =>
     set((state) => ({

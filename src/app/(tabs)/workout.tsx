@@ -9,9 +9,11 @@ import { useWorkoutTemplates } from '@/features/workout/hooks/useWorkoutTemplate
 import { TemplateCard } from '@/features/workout/components/TemplateCard';
 import { TemplateFormModal } from '@/features/workout/components/TemplateFormModal';
 import { useActiveSession } from '@/features/workout/hooks/useActiveSession';
+import { useSessionRecovery } from '@/features/workout/hooks/useSessionRecovery';
+import { useExerciseCounts } from '@/features/workout/hooks/useExerciseCounts';
+import { useWorkoutSessionStore } from '@/features/workout/store/workoutSessionStore';
 import type { WorkoutTemplate } from '@/features/workout/types';
 import type { TemplateFormValues } from '@/features/workout/schemas/workoutSchemas';
-import { useExerciseCounts } from '@/features/workout/hooks/useExerciseCounts';
 import { colors } from '@/core/theme/tokens';
 
 export default function WorkoutScreen() {
@@ -32,6 +34,9 @@ export default function WorkoutScreen() {
   } = useWorkoutTemplates();
   const exerciseCounts = useExerciseCounts(templates);
   const { startSession } = useActiveSession();
+  const { checked } = useSessionRecovery();
+  const activeSessionId = useWorkoutSessionStore((state) => state.sessionId);
+  const activeTemplateId = useWorkoutSessionStore((state) => state.templateId);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<WorkoutTemplate | null>(null);
@@ -99,54 +104,71 @@ export default function WorkoutScreen() {
           </Button>
         </View>
       ) : (
-        <FlatList
-          data={templates}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>🔥</Text>
-              <Text style={styles.emptyText}>{t('workout.emptyHint')}</Text>
-              <Button mode="contained" onPress={handleOpenCreate} style={styles.emptyAction}>
-                {t('workout.emptyAction')}
+        <>
+          {checked && activeSessionId && activeTemplateId ? (
+            <View style={styles.recoveryBanner}>
+              <Text style={styles.bannerText}>🏋️ Você tem um treino em andamento</Text>
+              <Button
+                mode="contained"
+                compact
+                onPress={() => router.push(`/workout/${activeTemplateId}` as never)}
+              >
+                Continuar
               </Button>
             </View>
-          }
-          renderItem={({ item, index }) => (
-            <View style={styles.templateRow}>
-              <View style={styles.reorder}>
-                <IconButton
-                  icon="chevron-up"
-                  size={18}
-                  disabled={index === 0}
-                  onPress={() => {
-                    void moveTemplateUp(item.id);
-                  }}
-                  style={styles.reorderBtn}
-                />
-                <IconButton
-                  icon="chevron-down"
-                  size={18}
-                  disabled={index === templates.length - 1}
-                  onPress={() => {
-                    void moveTemplateDown(item.id);
-                  }}
-                  style={styles.reorderBtn}
-                />
+          ) : null}
+
+          <FlatList
+            data={templates}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.list}
+            ListEmptyComponent={
+              <View style={styles.empty}>
+                <Text style={styles.emptyIcon}>🔥</Text>
+                <Text style={styles.emptyText}>{t('workout.emptyHint')}</Text>
+                <Button mode="contained" onPress={handleOpenCreate} style={styles.emptyAction}>
+                  {t('workout.emptyAction')}
+                </Button>
               </View>
-              <View style={styles.templateCardContainer}>
-                <TemplateCard
-                  template={item}
-                  exerciseCount={exerciseCounts[item.id] ?? 0}
-                  onPress={() => handlePressCard(item)}
-                  onEdit={() => handleOpenEdit(item)}
-                  onDelete={() => handleDelete(item)}
-                  onStart={() => startSession(item)}
-                />
+            }
+            renderItem={({ item, index }) => (
+              <View style={styles.templateRow}>
+                <View style={styles.reorder}>
+                  <IconButton
+                    icon="chevron-up"
+                    size={18}
+                    disabled={index === 0}
+                    onPress={() => {
+                      void moveTemplateUp(item.id);
+                    }}
+                    style={styles.reorderBtn}
+                  />
+                  <IconButton
+                    icon="chevron-down"
+                    size={18}
+                    disabled={index === templates.length - 1}
+                    onPress={() => {
+                      void moveTemplateDown(item.id);
+                    }}
+                    style={styles.reorderBtn}
+                  />
+                </View>
+                <View style={styles.templateCardContainer}>
+                  <TemplateCard
+                    template={item}
+                    exerciseCount={exerciseCounts[item.id] ?? 0}
+                    onPress={() => handlePressCard(item)}
+                    onEdit={() => handleOpenEdit(item)}
+                    onDelete={() => handleDelete(item)}
+                    onStart={() => {
+                      void startSession(item);
+                    }}
+                  />
+                </View>
               </View>
-            </View>
-          )}
-        />
+            )}
+          />
+        </>
       )}
 
       <FAB icon="plus" style={styles.fab} onPress={handleOpenCreate} />
@@ -191,6 +213,23 @@ const createStyles = (theme: MD3Theme) =>
     historyIconButton: {
       margin: 0,
       marginTop: -2,
+    },
+    recoveryBanner: {
+      backgroundColor: '#1a1a1a',
+      borderLeftWidth: 3,
+      borderLeftColor: colors.workout,
+      margin: 16,
+      marginBottom: 0,
+      padding: 12,
+      borderRadius: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    bannerText: {
+      flex: 1,
+      color: '#ffffff',
     },
     center: {
       flex: 1,

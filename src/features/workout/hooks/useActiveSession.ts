@@ -11,7 +11,11 @@ import {
   getExercises,
   updateExerciseWeightsFromSession,
 } from '../services/workoutStorage';
-import { useWorkoutSessionStore } from '../store/workoutSessionStore';
+import {
+  clearPersistedSession,
+  persistActiveSession,
+  useWorkoutSessionStore,
+} from '../store/workoutSessionStore';
 import type { SessionExercise, SetLog } from '../types/session';
 import type { WorkoutTemplate } from '../types/index';
 
@@ -40,6 +44,7 @@ export function useActiveSession() {
         userId,
         exercises: sessionExercises,
       });
+      await persistActiveSession(useWorkoutSessionStore.getState());
 
       router.push(`/workout/${template.id}` as never);
     },
@@ -82,6 +87,7 @@ export function useActiveSession() {
     }
 
     triggerSync();
+    await clearPersistedSession();
     store.endSession();
     router.replace(`/workout/summary/${sessionId}` as never);
   }, [store, userId, router]);
@@ -89,7 +95,7 @@ export function useActiveSession() {
   finishRef.current = finishSession;
 
   const completeSet = useCallback(
-    (
+    async (
       repsDone: number,
       weightValue: number,
       options?: {
@@ -121,6 +127,7 @@ export function useActiveSession() {
       };
 
       store.logSet(log);
+      await persistActiveSession(useWorkoutSessionStore.getState());
       const shouldStartRestTimer = options?.startRestTimer ?? true;
       if (shouldStartRestTimer) {
         store.startRestTimer(exercise.restSeconds || 60);
