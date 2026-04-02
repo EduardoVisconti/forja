@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/core/auth/authStore';
-import { getRecords } from '@/features/cardio/services/cardioPlanStorage';
+import { getPlans, getRecords } from '@/features/cardio/services/cardioPlanStorage';
 import type { CardioLog, CardioType, CardioZone } from '@/features/cardio/types';
 import type { CardioRecord } from '@/features/cardio/types/plans';
 import { getConfig, getTodayCheck } from '@/features/habits/services/habitStorage';
 import { HABIT_KEYS, type HabitCheck, type HabitConfig } from '@/features/habits/types';
 import { getAllSessions } from '@/features/workout/services/sessionStorage';
+import { useWorkoutSessionStore } from '@/features/workout/store/workoutSessionStore';
 import { getHistorySources } from '@/features/history/services/historyService';
 import type { WorkoutSession } from '@/features/workout/types/session';
 import type { HistorySources } from '@/features/history/types/historyTypes';
@@ -23,6 +24,22 @@ interface TodayCardio {
   trainingType: CardioType;
   zone: CardioZone;
   distanceKm: number;
+}
+
+interface ActiveSessionOverview {
+  sessionId: string;
+  templateId: string;
+  templateName: string;
+  completedExercises: number;
+  totalExercises: number;
+}
+
+interface TodayCardioPlan {
+  planId: string;
+  title: string;
+  trainingType: string | null;
+  targetDistance: number | null;
+  targetDuration: string | null;
 }
 
 interface MonthlyStats {
@@ -57,7 +74,9 @@ interface HomeOverviewState {
   displayName: string;
   todayHabits: HabitCheck | null;
   todayWorkout: TodayWorkout | null;
+  activeSession: ActiveSessionOverview | null;
   todayCardio: TodayCardio | null;
+  todayCardioPlan: TodayCardioPlan | null;
   todayActivity: TodayActivityState;
   todayHabitsSummary: TodayHabitsSummary;
   weeklyStreak: WeeklyStreakVM | null;
@@ -72,7 +91,9 @@ const initialState: HomeOverviewState = {
   displayName: '',
   todayHabits: null,
   todayWorkout: null,
+  activeSession: null,
   todayCardio: null,
+  todayCardioPlan: null,
   todayActivity: { hasWorkout: false, hasCardio: false, hasAny: false, count: 0 },
   todayHabitsSummary: { score: 0, totalActive: HABIT_KEYS.length, remaining: HABIT_KEYS.length, progress: 0, isComplete: false },
   weeklyStreak: null,
@@ -224,8 +245,12 @@ function resolveInsightType({
   return 'motivational';
 }
 
-function buildTodayActivity(todayWorkout: TodayWorkout | null, todayCardio: TodayCardio | null): TodayActivityState {
-  const hasWorkout = Boolean(todayWorkout);
+function buildTodayActivity(
+  todayWorkout: TodayWorkout | null,
+  todayCardio: TodayCardio | null,
+  activeSession: ActiveSessionOverview | null,
+): TodayActivityState {
+  const hasWorkout = Boolean(todayWorkout || activeSession);
   const hasCardio = Boolean(todayCardio);
   return {
     hasWorkout,
@@ -274,21 +299,42 @@ export function useHomeOverview() {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
-        const [sessions, cardioRecords, todayHabits, habitConfig, historySources, storedName] = await Promise.all([
+        const [sessions, cardioRecords, todayHabits, habitConfig, historySources, storedName, plans] = await Promise.all([
           getAllSessions(userId),
           getRecords(userId),
           getTodayCheck(userId),
           getConfig(userId),
           getHistorySources(userId),
           AsyncStorage.getItem(userNameKey(userId)),
+          getPlans(userId),
         ]);
         const cardioLogs = cardioRecords.map(mapRecordToCardioLog);
         const now = new Date();
         const todayISO = toLocalDayISO(now);
+        const storeState = useWorkoutSessionStore.getState();
+        const activeSession = storeState.sessionId
+          ? {
+              sessionId: storeState.sessionId,
+              templateId: storeState.templateId ?? '',
+              templateName: storeState.templateName,
+              completedExercises: Object.keys(storeState.completedExercises).length,
+              totalExercises: storeState.exercises.length,
+            }
+          : null;
         const todayWorkout = pickTodayWorkout(sessions, todayISO);
         const todayCardio = pickTodayCardio(cardioLogs, todayISO);
+        const todayPlan = plans.find((plan) => plan.plannedDate === todayISO && plan.status === 'pending') ?? null;
+        const todayCardioPlan = todayPlan
+          ? {
+              planId: todayPlan.id,
+              title: todayPlan.title,
+              trainingType: todayPlan.trainingType,
+              targetDistance: todayPlan.targetDistance,
+              targetDuration: todayPlan.targetDuration,
+            }
+          : null;
         const totalActiveHabits = resolveTotalActiveHabits(todayHabits, habitConfig);
-        const todayActivity = buildTodayActivity(todayWorkout, todayCardio);
+        const todayActivity = buildTodayActivity(todayWorkout, todayCardio, activeSession);
         const todayHabitsSummary = buildTodayHabitsSummary(todayHabits, totalActiveHabits);
         const monthlyStats = buildMonthlyStats({
           sessions,
@@ -315,7 +361,9 @@ export function useHomeOverview() {
           ),
           todayHabits,
           todayWorkout,
+          activeSession,
           todayCardio,
+          todayCardioPlan,
           todayActivity,
           todayHabitsSummary,
           weeklyStreak: historySources.weeklyStreak,

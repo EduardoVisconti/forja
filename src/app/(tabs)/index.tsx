@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Card, IconButton, Text, useTheme } from 'react-native-paper';
+import { useRouter } from 'expo-router';
+import { Button, Card, IconButton, Text, useTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +12,7 @@ import { colors } from '@/core/theme/tokens';
 import { WeeklyStreakCard } from '@/features/history/components/WeeklyStreakCard';
 import { ProfileModal } from '@/features/home/components/ProfileModal';
 import { useHomeOverview } from '@/features/home/hooks/useHomeOverview';
+import { useWorkoutSessionStore } from '@/features/workout/store/workoutSessionStore';
 
 function capitalize(text: string): string {
   if (!text) return text;
@@ -34,15 +36,21 @@ function getGreetingKey(hour: number): 'home.goodMorning' | 'home.goodAfternoon'
 
 export default function HomeScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const theme = useTheme();
   const styles = createStyles(theme);
   const { signOut, isLoading } = useAuth();
   const [profileVisible, setProfileVisible] = useState(false);
+  const workoutSessionId = useWorkoutSessionStore((state) => state.sessionId);
+  const workoutTemplateId = useWorkoutSessionStore((state) => state.templateId);
+  const workoutTemplateName = useWorkoutSessionStore((state) => state.templateName);
+  const workoutCompletedExercises = useWorkoutSessionStore((state) => state.completedExercises);
+  const workoutExercises = useWorkoutSessionStore((state) => state.exercises);
   const {
     weeklyStreak,
     todayWorkout,
     todayCardio,
-    todayActivity,
+    todayCardioPlan,
     todayHabitsSummary,
     monthlyStats,
     insightType,
@@ -58,6 +66,30 @@ export default function HomeScreen() {
   const progressWidth = `${Math.min(100, Math.max(0, todayHabitsSummary.progress * 100))}%` as `${number}%`;
   const cardioTitle = todayCardio?.trainingType ? t(`cardio.trainingType.${todayCardio.trainingType}`) : t('cardio.title');
   const cardioZoneLabel = todayCardio?.zone ? t(`cardio.zone.${todayCardio.zone}`) : null;
+  const activeSession = workoutSessionId
+    ? {
+        sessionId: workoutSessionId,
+        templateId: workoutTemplateId ?? '',
+        templateName: workoutTemplateName,
+        completedExercises: Object.keys(workoutCompletedExercises).length,
+        totalExercises: workoutExercises.length,
+      }
+    : null;
+  const activeSessionProgress = activeSession && activeSession.totalExercises > 0
+    ? (activeSession.completedExercises / activeSession.totalExercises) * 100
+    : 0;
+  const activeSessionProgressWidth = `${Math.min(100, Math.max(0, activeSessionProgress))}%` as `${number}%`;
+  const showContinueWorkoutCard = Boolean(activeSession);
+  const showTodayWorkoutCard = !showContinueWorkoutCard && Boolean(todayWorkout);
+  const showPlannedCardioCard = Boolean(todayCardioPlan && !todayCardio);
+  const showDoneCardioCard = !showPlannedCardioCard && Boolean(todayCardio);
+  const hasQuickActions =
+    showContinueWorkoutCard || showTodayWorkoutCard || showPlannedCardioCard || showDoneCardioCard;
+  const plannedCardioSubtitle = todayCardioPlan
+    ? todayCardioPlan.targetDistance !== null
+      ? `${todayCardioPlan.targetDistance}km`
+      : todayCardioPlan.targetDuration ?? ''
+    : '';
   const habitsRemainingText = t(
     insightMeta.remainingHabits > 1 ? 'home.habitsRemainingPlural' : 'home.habitsRemaining',
     { count: insightMeta.remainingHabits },
@@ -111,15 +143,42 @@ export default function HomeScreen() {
 
         <Text style={styles.motivationalText}>{motivationalPhrase}</Text>
 
-        {todayActivity.hasAny ? (
-          <View style={styles.todayActivityRow}>
-            {todayWorkout ? (
+        {hasQuickActions ? (
+          <View style={styles.todayActivityStack}>
+            {showContinueWorkoutCard && activeSession ? (
+              <Card style={[styles.card, styles.todayWorkoutCard]}>
+                <Card.Content>
+                  <Text style={styles.cardTitle}>{t('home.sessionInProgress')}</Text>
+                  <Text style={styles.activityPrimary}>{activeSession.templateName}</Text>
+                  <Text style={styles.activitySecondary}>
+                    {t('home.exercisesProgress', {
+                      completed: activeSession.completedExercises,
+                      total: activeSession.totalExercises,
+                    })}
+                  </Text>
+                  <View style={styles.workoutProgressTrack}>
+                    <View style={[styles.workoutProgressFill, { width: activeSessionProgressWidth }]} />
+                  </View>
+                  <Button
+                    mode="contained"
+                    compact
+                    buttonColor={colors.workout}
+                    textColor="#ffffff"
+                    style={styles.quickActionButton}
+                    onPress={() => router.push(`/workout/${activeSession.templateId}` as never)}
+                    disabled={!activeSession.templateId}
+                  >
+                    {t('home.continueWorkout')}
+                  </Button>
+                </Card.Content>
+              </Card>
+            ) : null}
+
+            {showTodayWorkoutCard && todayWorkout ? (
               <Card
                 style={[
                   styles.card,
-                  styles.todayActivityCard,
                   styles.todayWorkoutCard,
-                  todayActivity.count === 1 && styles.todayActivityCardSingle,
                 ]}
               >
                 <Card.Content>
@@ -134,13 +193,31 @@ export default function HomeScreen() {
               </Card>
             ) : null}
 
-            {todayCardio ? (
+            {showPlannedCardioCard && todayCardioPlan ? (
+              <Card style={[styles.card, styles.todayCardioCard]}>
+                <Card.Content>
+                  <Text style={styles.cardTitle}>{t('home.cardioPlannedToday')}</Text>
+                  <Text style={styles.activityPrimary}>{todayCardioPlan.title}</Text>
+                  {plannedCardioSubtitle ? (
+                    <Text style={styles.activitySecondary}>{plannedCardioSubtitle}</Text>
+                  ) : null}
+                  <Button
+                    mode="outlined"
+                    compact
+                    style={styles.quickActionButton}
+                    onPress={() => router.push(`/cardio/complete/${todayCardioPlan.planId}` as never)}
+                  >
+                    {t('home.registerAsDone')}
+                  </Button>
+                </Card.Content>
+              </Card>
+            ) : null}
+
+            {showDoneCardioCard && todayCardio ? (
               <Card
                 style={[
                   styles.card,
-                  styles.todayActivityCard,
                   styles.todayCardioCard,
-                  todayActivity.count === 1 && styles.todayActivityCardSingle,
                 ]}
               >
                 <Card.Content>
@@ -276,12 +353,8 @@ const createStyles = (theme: MD3Theme) =>
       color: '#9ca3af',
       marginBottom: 10,
     },
-    todayActivityRow: {
-      flexDirection: 'row',
+    todayActivityStack: {
       gap: 8,
-    },
-    todayActivityCard: {
-      flex: 1,
     },
     todayWorkoutCard: {
       borderLeftWidth: 3,
@@ -291,8 +364,22 @@ const createStyles = (theme: MD3Theme) =>
       borderLeftWidth: 3,
       borderLeftColor: colors.cardio,
     },
-    todayActivityCardSingle: {
+    workoutProgressTrack: {
       width: '100%',
+      height: 4,
+      borderRadius: 99,
+      backgroundColor: '#262626',
+      overflow: 'hidden',
+      marginTop: 8,
+      marginBottom: 10,
+    },
+    workoutProgressFill: {
+      height: '100%',
+      borderRadius: 99,
+      backgroundColor: colors.complete,
+    },
+    quickActionButton: {
+      alignSelf: 'flex-start',
     },
     activityPrimary: {
       fontSize: 16,
